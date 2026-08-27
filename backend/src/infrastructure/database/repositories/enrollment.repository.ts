@@ -50,6 +50,21 @@ export class EnrollmentRepository {
     return this.findById(id);
   }
 
+  async findAll(): Promise<Enrollment[]> {
+    return this.repo.find({
+      relations: ['student', 'student.user', 'cycle', 'subjects', 'subjects.subject', 'subjects.schedule'],
+      order: { enrolledAt: 'DESC' },
+    });
+  }
+
+  async findByCycle(cycleId: string): Promise<Enrollment[]> {
+    return this.repo.find({
+      where: { cycleId },
+      relations: ['student', 'student.user', 'cycle', 'subjects', 'subjects.subject', 'subjects.schedule'],
+      order: { enrolledAt: 'DESC' },
+    });
+  }
+
   async count(): Promise<number> {
     return this.repo.count();
   }

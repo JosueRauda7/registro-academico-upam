@@ -16,6 +16,22 @@ export class PaymentRepository {
     return this.repo.findOne({ where: { id }, relations: ['student', 'student.user', 'cycle'] });
   }
 
+  async findAll(): Promise<Payment[]> {
+    return this.repo.find({
+      relations: ['student', 'student.user', 'cycle'],
+      order: { createdAt: 'DESC' },
+      take: 200,
+    });
+  }
+
+  async findByCycle(cycleId: string): Promise<Payment[]> {
+    return this.repo.find({
+      where: { cycleId },
+      relations: ['student', 'student.user', 'cycle'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async findByReference(reference: string): Promise<Payment | null> {
     return this.repo.findOne({ where: { reference }, relations: ['student', 'student.user', 'cycle'] });
   }

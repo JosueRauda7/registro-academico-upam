@@ -24,21 +24,26 @@ export class PaymentsService {
     private readonly emailService: EmailService,
   ) {}
 
-  async createTuitionPayment(studentId: string, cycleId: string) {
-    const student = await this.studentRepository.findById(studentId);
+  private async resolveStudentId(userId: string): Promise<string> {
+    const student = await this.studentRepository.findByUserId(userId);
     if (!student) {
       throw new NotFoundException('Estudiante no encontrado');
     }
+    return student.id;
+  }
+
+  async createTuitionPayment(userId: string, cycleId: string) {
+    const studentId = await this.resolveStudentId(userId);
+    const student = await this.studentRepository.findById(studentId);
 
     const cycle = await this.cycleRepository.findById(cycleId);
     if (!cycle) {
       throw new NotFoundException('Ciclo no encontrado');
     }
 
-    // Check if already paid
     const existingPayment = await this.paymentRepository.findTuitionPayment(studentId, cycleId);
     if (existingPayment) {
-      throw new BadRequestException('La matrícula de este ciclo ya ha sido pagada');
+      throw new BadRequestException('La matricula de este ciclo ya ha sido pagada');
     }
 
     const reference = this.wompiGateway.generateReference();
@@ -49,17 +54,16 @@ export class PaymentsService {
       amount: cycle.tuitionAmount,
       status: PaymentStatus.PENDING,
       type: PaymentType.TUITION,
-      description: `Matrícula ${cycle.name}`,
+      description: `Matricula ${cycle.name}`,
       reference,
     });
 
-    // Create Wompi payment
     try {
       const wompiResponse = await this.wompiGateway.createPayment({
         amountInCents: Math.round(cycle.tuitionAmount * 100),
         currency: 'USD',
         reference,
-        customerEmail: student.user.email,
+        customerEmail: student!.user.email,
       });
 
       this.logger.log(`Wompi payment created: ${wompiResponse.data.id}`);
@@ -67,7 +71,7 @@ export class PaymentsService {
       return {
         payment,
         wompiOrderId: wompiResponse.data.id,
-        message: 'Pago de matrícula creado. Procese el pago con Wompi.',
+        message: 'Pago de matricula creado. Procese el pago con Wompi.',
       };
     } catch (error) {
       this.logger.error(`Wompi error: ${error.message}`);
@@ -75,11 +79,8 @@ export class PaymentsService {
     }
   }
 
-  async createMonthlyPayment(studentId: string, cycleId: string, month: number) {
-    const student = await this.studentRepository.findById(studentId);
-    if (!student) {
-      throw new NotFoundException('Estudiante no encontrado');
-    }
+  async createMonthlyPayment(userId: string, cycleId: string, month: number) {
+    const studentId = await this.resolveStudentId(userId);
 
     const cycle = await this.cycleRepository.findById(cycleId);
     if (!cycle) {
@@ -90,7 +91,6 @@ export class PaymentsService {
       throw new BadRequestException(`El mes debe estar entre 1 y ${cycle.monthlyCount}`);
     }
 
-    // Check if already paid this month
     const existingPayments = await this.paymentRepository.findByStudentAndCycle(studentId, cycleId);
     const alreadyPaid = existingPayments.some(
       (p) =>
@@ -104,6 +104,7 @@ export class PaymentsService {
     }
 
     const reference = this.wompiGateway.generateReference();
+    const student = await this.studentRepository.findById(studentId);
 
     const payment = await this.paymentRepository.create({
       studentId,
@@ -121,7 +122,7 @@ export class PaymentsService {
         amountInCents: Math.round(cycle.monthlyAmount * 100),
         currency: 'USD',
         reference,
-        customerEmail: student.user.email,
+        customerEmail: student!.user.email,
       });
 
       return {
@@ -174,15 +175,89 @@ export class PaymentsService {
     return { received: true };
   }
 
-  async getMyPayments(studentId: string) {
+  async createManualPayment(
+    collectorId: string,
+    data: {
+      studentId: string;
+      cycleId: string;
+      amount: number;
+      type: 'tuition' | 'monthly';
+      month?: number;
+      description?: string;
+    },
+  ) {
+    const student = await this.studentRepository.findById(data.studentId);
+    if (!student) {
+      throw new NotFoundException('Estudiante no encontrado');
+    }
+
+    const cycle = await this.cycleRepository.findById(data.cycleId);
+    if (!cycle) {
+      throw new NotFoundException('Ciclo no encontrado');
+    }
+
+    if (data.type === 'tuition') {
+      const existing = await this.paymentRepository.findTuitionPayment(data.studentId, data.cycleId);
+      if (existing) {
+        throw new BadRequestException('La matricula de este ciclo ya ha sido pagada');
+      }
+    }
+
+    if (data.type === 'monthly') {
+      if (!data.month || data.month < 1 || data.month > cycle.monthlyCount) {
+        throw new BadRequestException(`El mes debe estar entre 1 y ${cycle.monthlyCount}`);
+      }
+      const existingPayments = await this.paymentRepository.findByStudentAndCycle(data.studentId, data.cycleId);
+      const alreadyPaid = existingPayments.some(
+        (p) => p.type === PaymentType.MONTHLY && p.month === data.month && p.status === PaymentStatus.COMPLETED,
+      );
+      if (alreadyPaid) {
+        throw new BadRequestException(`El pago del mes ${data.month} ya fue realizado`);
+      }
+    }
+
+    const reference = this.wompiGateway.generateReference();
+
+    const payment = await this.paymentRepository.create({
+      studentId: data.studentId,
+      cycleId: data.cycleId,
+      amount: data.amount,
+      status: PaymentStatus.COMPLETED,
+      type: data.type === 'monthly' ? PaymentType.MONTHLY : PaymentType.TUITION,
+      month: data.month || null,
+      description: data.description || `Pago manual - ${data.type === 'tuition' ? 'Matricula' : `Mensualidad ${data.month}`}`,
+      reference,
+      paymentDate: new Date(),
+    });
+
+    this.logger.log(`Manual payment created: ${payment.id} by collector ${collectorId}`);
+
+    await this.emailService.sendPaymentConfirmation(student.user.email, {
+      studentName: `${student.user.firstName} ${student.user.lastName}`,
+      amount: data.amount,
+      cycleName: cycle.name,
+      type: data.type === 'tuition' ? 'tuition' : 'monthly',
+      reference,
+    });
+
+    return {
+      payment,
+      message: 'Pago manual registrado exitosamente',
+    };
+  }
+
+  async getMyPayments(userId: string) {
+    const studentId = await this.resolveStudentId(userId);
     return this.paymentRepository.findByStudent(studentId);
   }
 
-  async getMyPaymentsByCycle(studentId: string, cycleId: string) {
+  async getMyPaymentsByCycle(userId: string, cycleId: string) {
+    const studentId = await this.resolveStudentId(userId);
     return this.paymentRepository.findByStudentAndCycle(studentId, cycleId);
   }
 
-  async getMonthlyPayments(studentId: string, cycleId: string) {
+  async getMonthlyPayments(userId: string, cycleId: string) {
+    const studentId = await this.resolveStudentId(userId);
     const payments = await this.paymentRepository.findByStudentAndCycle(studentId, cycleId);
     return payments.filter((p) => p.type === PaymentType.MONTHLY);
   }
@@ -197,11 +272,9 @@ export class PaymentsService {
 
   async getAllPayments(cycleId?: string) {
     if (cycleId) {
-      const payments = await this.paymentRepository.findByStudentAndCycle('', cycleId);
-      return payments;
+      return this.paymentRepository.findByCycle(cycleId);
     }
-    // Return recent payments
-    return [];
+    return this.paymentRepository.findAll();
   }
 
   async getPaymentStats(cycleId: string) {
@@ -209,7 +282,8 @@ export class PaymentsService {
     return { totalCollected: total };
   }
 
-  async getMyPaymentSummary(studentId: string, cycleId: string) {
+  async getMyPaymentSummary(userId: string, cycleId: string) {
+    const studentId = await this.resolveStudentId(userId);
     const payments = await this.paymentRepository.findByStudentAndCycle(studentId, cycleId);
     const cycle = await this.cycleRepository.findById(cycleId);
 

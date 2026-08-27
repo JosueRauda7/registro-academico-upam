@@ -9,6 +9,7 @@ import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { EnrollmentPage } from '@/pages/enrollments/EnrollmentPage';
 import { EnrollmentHistoryPage } from '@/pages/enrollments/EnrollmentHistoryPage';
 import { PaymentsPage } from '@/pages/payments/PaymentsPage';
+import { ColecturiaPage } from '@/pages/payments/ColecturiaPage';
 import { ReportsPage } from '@/pages/reports/ReportsPage';
 import { CyclesPage } from '@/pages/cycles/CyclesPage';
 import { StudentsListPage } from '@/pages/students/StudentsListPage';
@@ -60,6 +61,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PaymentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/colecturia"
+            element={
+              <ProtectedRoute>
+                <ColecturiaPage />
               </ProtectedRoute>
             }
           />

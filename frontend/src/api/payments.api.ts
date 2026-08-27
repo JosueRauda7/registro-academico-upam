@@ -12,6 +12,18 @@ export const paymentsApi = {
     return res.data.data;
   },
 
+  createManualPayment: async (data: {
+    studentId: string;
+    cycleId: string;
+    amount: number;
+    type: 'tuition' | 'monthly';
+    month?: number;
+    description?: string;
+  }) => {
+    const res = await api.post('/payments/manual', data);
+    return res.data.data;
+  },
+
   getMyPayments: async (): Promise<Payment[]> => {
     const res = await api.get('/payments/my');
     return res.data.data;

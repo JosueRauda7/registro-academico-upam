@@ -37,6 +37,8 @@ services:
       WOMPI_PUBLIC_KEY: pk_test_abc123
       WOMPI_PRIVATE_KEY: sk_test_abc123
       WOMPI_BASE_URL: https://sandbox.wompi.co/v1
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-UPAM <no-reply@upam.edu.sv>}
       FRONTEND_URL: http://localhost:5173
       PORT: 3000
     depends_on:

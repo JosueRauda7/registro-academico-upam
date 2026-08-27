@@ -10,7 +10,7 @@ import {
   GraduationCap,
   Calendar,
   BarChart3,
-  Settings,
+  Banknote,
 } from 'lucide-react';
 
 interface NavItem {
@@ -22,10 +22,11 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/pagos', icon: CreditCard, label: 'Pagos' },
+  { to: '/pagos', icon: CreditCard, label: 'Pagos', roles: [UserRole.STUDENT] },
   { to: '/inscripcion', icon: BookOpen, label: 'Inscripcion de Materias', roles: [UserRole.STUDENT] },
   { to: '/mis-materias', icon: GraduationCap, label: 'Mis Materias', roles: [UserRole.STUDENT] },
   { to: '/historial', icon: FileText, label: 'Historial', roles: [UserRole.STUDENT] },
+  { to: '/colecturia', icon: Banknote, label: 'Colecturia', roles: [UserRole.COLLECTOR, UserRole.ADMINISTRATOR] },
   { to: '/estudiantes', icon: Users, label: 'Estudiantes', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/ciclos', icon: Calendar, label: 'Ciclos', roles: [UserRole.ADMINISTRATOR] },
   { to: '/reportes', icon: BarChart3, label: 'Reportes', roles: [UserRole.ADMINISTRATOR, UserRole.COLLECTOR, UserRole.ADMINISTRATIVE] },

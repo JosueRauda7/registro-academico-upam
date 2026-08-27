@@ -4,6 +4,8 @@ import { EnrollmentRepository } from '../../infrastructure/database/repositories
 import { StudentRepository } from '../../infrastructure/database/repositories/student.repository';
 import { CycleRepository } from '../../infrastructure/database/repositories/cycle.repository';
 import { PaymentType } from '../../domain/enums/payment-type.enum';
+import * as ExcelJS from 'exceljs';
+import * as PDFDocument from 'pdfkit';
 
 @Injectable()
 export class ReportsService {
@@ -29,7 +31,7 @@ export class ReportsService {
       payments = await this.paymentRepository.findByStudent(studentId);
     }
 
-    const workbook = new (await import('exceljs')).default.Workbook();
+    const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Pagos');
 
     sheet.columns = [
@@ -39,22 +41,21 @@ export class ReportsService {
       { header: 'Mes', key: 'month', width: 10 },
       { header: 'Monto', key: 'amount', width: 12 },
       { header: 'Estado', key: 'status', width: 15 },
-      { header: 'Descripción', key: 'description', width: 30 },
+      { header: 'Descripcion', key: 'description', width: 30 },
     ];
 
-    sheet.getRow(1).font = { bold: true };
+    sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
     sheet.getRow(1).fill = {
       type: 'pattern',
       pattern: 'solid',
       fgColor: { argb: '1B4F72' },
     };
-    sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
 
     payments.forEach((p) => {
       sheet.addRow({
         date: p.createdAt?.toLocaleDateString() || '',
         reference: p.reference,
-        type: p.type === PaymentType.TUITION ? 'Matrícula' : 'Mensualidad',
+        type: p.type === PaymentType.TUITION ? 'Matricula' : 'Mensualidad',
         month: p.month || '-',
         amount: `$${Number(p.amount).toFixed(2)}`,
         status: this.translateStatus(p.status),
@@ -66,10 +67,9 @@ export class ReportsService {
   }
 
   async generateEnrollmentReport(cycleId: string) {
-    const enrollments = await this.enrollmentRepository.findByStudent('');
-    const cycleEnrollments = enrollments.filter((e) => e.cycleId === cycleId);
+    const enrollments = await this.enrollmentRepository.findByCycle(cycleId);
 
-    const workbook = new (await import('exceljs')).default.Workbook();
+    const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Inscripciones');
 
     sheet.columns = [
@@ -77,9 +77,9 @@ export class ReportsService {
       { header: 'Estudiante', key: 'student', width: 30 },
       { header: 'Carrera', key: 'career', width: 25 },
       { header: 'Materias', key: 'subjects', width: 40 },
-      { header: 'Total Créditos', key: 'credits', width: 15 },
+      { header: 'Total Creditos', key: 'credits', width: 15 },
       { header: 'Estado', key: 'status', width: 15 },
-      { header: 'Fecha Inscripción', key: 'date', width: 18 },
+      { header: 'Fecha Inscripcion', key: 'date', width: 18 },
     ];
 
     sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
@@ -89,13 +89,13 @@ export class ReportsService {
       fgColor: { argb: '1B4F72' },
     };
 
-    for (const enrollment of cycleEnrollments) {
-      const student = await this.studentRepository.findById(enrollment.studentId);
+    for (const enrollment of enrollments) {
+      const student = enrollment.student;
       sheet.addRow({
         carnet: student?.carnet || '',
         student: student ? `${student.user.firstName} ${student.user.lastName}` : '',
         career: student?.career || '',
-        subjects: enrollment.subjects?.map((es) => es.subject?.name).join(', ') || '',
+        subjects: enrollment.subjects?.map((es) => es.subject?.name).filter(Boolean).join(', ') || '',
         credits: enrollment.subjects?.reduce((sum, es) => sum + (es.subject?.credits || 0), 0) || 0,
         status: enrollment.status,
         date: enrollment.enrolledAt?.toLocaleDateString() || '',
@@ -106,10 +106,10 @@ export class ReportsService {
   }
 
   async generateCollectionReport(cycleId: string) {
-    const payments = await this.paymentRepository.findByStudentAndCycle('', cycleId);
+    const payments = await this.paymentRepository.findByCycle(cycleId);
 
-    const workbook = new (await import('exceljs')).default.Workbook();
-    const sheet = workbook.addWorksheet('Recaudación');
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Recaudacion');
 
     sheet.columns = [
       { header: 'Fecha', key: 'date', width: 15 },
@@ -131,7 +131,6 @@ export class ReportsService {
     let totalPending = 0;
 
     for (const p of payments) {
-      const student = await this.studentRepository.findById(p.studentId);
       const amount = Number(p.amount);
       if (p.status === 'completed') totalCollected += amount;
       else totalPending += amount;
@@ -139,14 +138,14 @@ export class ReportsService {
       sheet.addRow({
         date: p.createdAt?.toLocaleDateString() || '',
         reference: p.reference,
-        student: student ? `${student.user.firstName} ${student.user.lastName}` : '',
-        type: p.type === PaymentType.TUITION ? 'Matrícula' : `Mensualidad ${p.month || ''}`,
+        student: p.student?.user ? `${p.student.user.firstName} ${p.student.user.lastName}` : '',
+        type: p.type === PaymentType.TUITION ? 'Matricula' : `Mensualidad ${p.month || ''}`,
         amount: `$${amount.toFixed(2)}`,
         status: this.translateStatus(p.status),
       });
     }
 
-    const summaryRow = sheet.addRow([]);
+    sheet.addRow([]);
     sheet.addRow(['Total Recaudado', `$${totalCollected.toFixed(2)}`]);
     sheet.addRow(['Total Pendiente', `$${totalPending.toFixed(2)}`]);
 
@@ -154,19 +153,18 @@ export class ReportsService {
   }
 
   async generateStudentListReport(cycleId: string) {
-    const enrollments = await this.enrollmentRepository.findByStudent('');
-    const cycleEnrollments = enrollments.filter((e) => e.cycleId === cycleId);
+    const enrollments = await this.enrollmentRepository.findByCycle(cycleId);
 
-    const workbook = new (await import('exceljs')).default.Workbook();
+    const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Lista de Estudiantes');
 
     sheet.columns = [
       { header: 'Carnet', key: 'carnet', width: 15 },
-      { header: 'Código', key: 'code', width: 18 },
+      { header: 'Codigo', key: 'code', width: 18 },
       { header: 'Nombre', key: 'name', width: 30 },
       { header: 'Carrera', key: 'career', width: 25 },
       { header: 'Email', key: 'email', width: 25 },
-      { header: 'Teléfono', key: 'phone', width: 15 },
+      { header: 'Telefono', key: 'phone', width: 15 },
     ];
 
     sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
@@ -176,8 +174,8 @@ export class ReportsService {
       fgColor: { argb: '1B4F72' },
     };
 
-    for (const enrollment of cycleEnrollments) {
-      const student = await this.studentRepository.findById(enrollment.studentId);
+    for (const enrollment of enrollments) {
+      const student = enrollment.student;
       if (student) {
         sheet.addRow({
           carnet: student.carnet,
@@ -199,34 +197,32 @@ export class ReportsService {
       throw new Error('Pago no encontrado');
     }
 
-    const PDFDocument = (await import('pdfkit')).default;
-    const stream = new PDFDocument({ size: 'letter', margin: 50 });
+    const PDFDoc = PDFDocument as any;
+    const doc = new PDFDoc({ size: 'letter', margin: 50 });
 
     const chunks: Buffer[] = [];
-    stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
 
-    const buffer = await new Promise<Buffer>((resolve) => {
-      stream.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.fontSize(20).text('UNIVERSIDAD PANAMERICANA DE EL SALVADOR', { align: 'center' });
+    doc.fontSize(14).text('Comprobante de Pago', { align: 'center' });
+    doc.moveDown();
+
+    doc.fontSize(11);
+    doc.text(`Referencia: ${payment.reference}`);
+    doc.text(`Fecha: ${payment.createdAt?.toLocaleDateString() || ''}`);
+    doc.text(`Tipo: ${payment.type === PaymentType.TUITION ? 'Matricula' : `Mensualidad ${payment.month}`}`);
+    doc.text(`Descripcion: ${payment.description}`);
+    doc.moveDown();
+    doc.fontSize(14).text(`Monto: $${Number(payment.amount).toFixed(2)}`);
+    doc.moveDown();
+    doc.fontSize(11).text(`Estado: ${this.translateStatus(payment.status)}`);
+    doc.text(`Metodo de pago: ${payment.paymentMethod}`);
+
+    return new Promise<Buffer>((resolve, reject) => {
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', (err: Error) => reject(err));
+      doc.end();
     });
-
-    stream.fontSize(20).text('UNIVERSIDAD PANAMERICANA DE EL SALVADOR', { align: 'center' });
-    stream.fontSize(14).text('Comprobante de Pago', { align: 'center' });
-    stream.moveDown();
-
-    stream.fontSize(11);
-    stream.text(`Referencia: ${payment.reference}`);
-    stream.text(`Fecha: ${payment.createdAt?.toLocaleDateString() || ''}`);
-    stream.text(`Tipo: ${payment.type === PaymentType.TUITION ? 'Matrícula' : `Mensualidad ${payment.month}`}`);
-    stream.text(`Descripción: ${payment.description}`);
-    stream.moveDown();
-    stream.fontSize(14).text(`Monto: $${Number(payment.amount).toFixed(2)}`);
-    stream.moveDown();
-    stream.fontSize(11).text(`Estado: ${this.translateStatus(payment.status)}`);
-    stream.text(`Método de pago: ${payment.paymentMethod}`);
-
-    stream.end();
-
-    return buffer;
   }
 
   private translateStatus(status: string): string {
