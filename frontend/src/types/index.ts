@@ -3,7 +3,16 @@ export enum UserRole {
   ADMINISTRATOR = 'administrator',
   COLLECTOR = 'collector',
   ADMINISTRATIVE = 'administrative',
+  TEACHER = 'teacher',
 }
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  [UserRole.STUDENT]: 'Estudiante',
+  [UserRole.ADMINISTRATOR]: 'Administrador',
+  [UserRole.COLLECTOR]: 'Colector',
+  [UserRole.ADMINISTRATIVE]: 'Administrativo',
+  [UserRole.TEACHER]: 'Docente',
+};
 
 export enum PaymentStatus {
   PENDING = 'pending',
@@ -24,12 +33,39 @@ export enum EnrollmentStatus {
   COMPLETED = 'completed',
 }
 
+export interface SystemSettings {
+  logoUrl: string | null;
+  primaryColor: string;
+  institutionName: string;
+}
+
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
   role: UserRole;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateUserData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  career?: string;
+  carnet?: string;
+}
+
+export interface UpdateUserData {
+  firstName?: string;
+  lastName?: string;
+  role?: UserRole;
+  isActive?: boolean;
+  password?: string;
 }
 
 export interface Student {
@@ -69,16 +105,195 @@ export interface Subject {
   isActive: boolean;
 }
 
-export interface Schedule {
+export type PensumSubjectState = 'completed' | 'enrolled' | 'pending';
+
+export interface PensumSubjectHistory {
+  cycleId: string;
+  cycleName: string;
+  cycleYear: number;
+  cycleSemester: number;
+  esStatus: string;
+  enrollmentStatus: string;
+}
+
+export interface PensumSubject extends Subject {
+  state?: PensumSubjectState;
+  history?: PensumSubjectHistory[];
+}
+
+export interface PensumSemester {
+  semester: number;
+  subjects: PensumSubject[];
+}
+
+export interface PensumYear {
+  year: number;
+  semesters: PensumSemester[];
+}
+
+export interface PensumSummary {
+  completedSubjects: number;
+  enrolledSubjects: number;
+  pendingSubjects: number;
+  completedCredits: number;
+  enrolledCredits: number;
+  pendingCredits: number;
+}
+
+export interface Career {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  years: number;
+  semestersPerYear: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CareerInput {
+  code: string;
+  name: string;
+  description?: string;
+  years: number;
+  semestersPerYear: number;
+}
+
+export interface PensumCareerConfig {
+  id: string;
+  code: string;
+  name: string;
+  years: number;
+  semestersPerYear: number;
+  isActive: boolean;
+}
+
+export interface Pensum {
+  career: string;
+  totalSubjects: number;
+  totalCredits: number;
+  years: PensumYear[];
+  student?: PensumSummary;
+  careerConfig?: PensumCareerConfig | null;
+}
+
+export interface Teacher {
+  id: string;
+  userId?: string | null;
+  name: string;
+  email: string;
+  phone: string;
+  department: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TeacherGroup {
+  id: string;
+  groupNumber: number;
+  subjectId: string;
+  subjectCode: string;
+  subjectName: string;
+  credits: number;
+  cycleId: string;
+  cycleName: string;
+  cycleYear: number;
+  cycleSemester: number;
+  enrolledCount: number;
+  gradedCount: number;
+  capacity: number;
+  classroomName: string;
+  cycleEnded: boolean;
+}
+
+export interface GradeRecord {
+  enrollmentSubjectId: string;
+  subjectId: string;
+  code: string;
+  name: string;
+  credits: number;
+  career: string;
+  score: number;
+  status: 'approved' | 'failed';
+  gradedAt: string;
+  cycleName: string;
+  cycleYear: number;
+  cycleSemester: number;
+}
+
+export interface GradesSummary {
+  totalSubjects: number;
+  approvedSubjects: number;
+  failedSubjects: number;
+  approvedCredits: number;
+  failedCredits: number;
+  cum: number | null;
+}
+
+export interface MyGrades {
+  records: GradeRecord[];
+  summary: GradesSummary;
+}
+
+export interface GroupRosterStudent {
+  enrollmentSubjectId: string;
+  studentCode: string;
+  carnet: string;
+  studentName: string;
+  score: number | null;
+  status: 'approved' | 'failed' | null;
+  gradedAt: string | null;
+}
+
+export interface GroupRoster {
+  group: {
+    id: string;
+    groupNumber: number;
+    subjectCode: string;
+    subjectName: string;
+    credits: number;
+    cycleName: string;
+    cycleEnded: boolean;
+  };
+  students: GroupRosterStudent[];
+}
+
+export interface Classroom {
+  id: string;
+  name: string;
+  building: string;
+  capacity: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubjectGroup {
   id: string;
   subjectId: string;
   cycleId: string;
+  teacherId: string | null;
+  classroomId: string;
+  groupNumber: number;
+  capacity: number;
+  enrolledCount: number;
+  isActive: boolean;
+  subject?: Subject;
+  cycle?: Cycle;
+  teacher?: Teacher;
+  classroom?: Classroom;
+  schedules?: Schedule[];
+}
+
+export interface Schedule {
+  id: string;
+  groupId: string;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
-  classroom: string;
-  capacity: number;
-  enrolledCount: number;
+  group?: SubjectGroup;
   subject?: Subject;
 }
 
@@ -148,6 +363,13 @@ export interface ApiResponse<T> {
 export interface AuthResponse {
   user: User;
   student: Student | null;
+  teacher: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    department: string;
+  } | null;
   token: string;
 }
 

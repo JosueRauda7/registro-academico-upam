@@ -5,8 +5,8 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Enrollment } from './enrollment.entity';
-import { Schedule } from './schedule.entity';
 import { Payment } from './payment.entity';
+import { SubjectGroup } from './subject-group.entity';
 
 @Entity('cycles')
 export class Cycle {
@@ -46,9 +46,9 @@ export class Cycle {
   @OneToMany(() => Enrollment, (enrollment) => enrollment.cycle)
   enrollments: Enrollment[];
 
-  @OneToMany(() => Schedule, (schedule) => schedule.cycle)
-  schedules: Schedule[];
-
   @OneToMany(() => Payment, (payment) => payment.cycle)
   payments: Payment[];
+
+  @OneToMany(() => SubjectGroup, (group) => group.cycle)
+  groups: SubjectGroup[];
 }

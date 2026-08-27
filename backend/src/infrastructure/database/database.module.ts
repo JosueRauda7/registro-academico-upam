@@ -10,6 +10,13 @@ import { Schedule } from './entities/schedule.entity';
 import { Enrollment } from './entities/enrollment.entity';
 import { EnrollmentSubject } from './entities/enrollment-subject.entity';
 import { Payment } from './entities/payment.entity';
+import { Teacher } from './entities/teacher.entity';
+import { Classroom } from './entities/classroom.entity';
+import { SubjectGroup } from './entities/subject-group.entity';
+import { SystemSetting } from './entities/system-setting.entity';
+import { Career } from './entities/career.entity';
+import { Grade } from './entities/grade.entity';
+import { LegacyCompletedSubject } from './entities/legacy-completed-subject.entity';
 import { UserRepository } from './repositories/user.repository';
 import { StudentRepository } from './repositories/student.repository';
 import { CycleRepository } from './repositories/cycle.repository';
@@ -18,6 +25,13 @@ import { ScheduleRepository } from './repositories/schedule.repository';
 import { EnrollmentRepository } from './repositories/enrollment.repository';
 import { EnrollmentSubjectRepository } from './repositories/enrollment-subject.repository';
 import { PaymentRepository } from './repositories/payment.repository';
+import { TeacherRepository } from './repositories/teacher.repository';
+import { ClassroomRepository } from './repositories/classroom.repository';
+import { SubjectGroupRepository } from './repositories/subject-group.repository';
+import { SystemSettingRepository } from './repositories/system-setting.repository';
+import { CareerRepository } from './repositories/career.repository';
+import { GradeRepository } from './repositories/grade.repository';
+import { LegacyCompletedSubjectRepository } from './repositories/legacy-completed-subject.repository';
 
 const entities = [
   User,
@@ -29,6 +43,13 @@ const entities = [
   Enrollment,
   EnrollmentSubject,
   Payment,
+  Teacher,
+  Classroom,
+  SubjectGroup,
+  SystemSetting,
+  Career,
+  Grade,
+  LegacyCompletedSubject,
 ];
 
 const repositories = [
@@ -40,6 +61,13 @@ const repositories = [
   EnrollmentRepository,
   EnrollmentSubjectRepository,
   PaymentRepository,
+  TeacherRepository,
+  ClassroomRepository,
+  SubjectGroupRepository,
+  SystemSettingRepository,
+  CareerRepository,
+  GradeRepository,
+  LegacyCompletedSubjectRepository,
 ];
 
 @Module({

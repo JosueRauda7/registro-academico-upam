@@ -106,7 +106,7 @@ export function EnrollmentPage() {
   };
 
   const getSchedulesForSubject = (subjectId: string) => {
-    return schedules.filter((s) => s.subjectId === subjectId);
+    return schedules.filter((s) => s.group?.subjectId === subjectId);
   };
 
   const isSubjectEnrolled = (subjectId: string) => {
@@ -185,7 +185,7 @@ export function EnrollmentPage() {
                       {es.subject?.code} - {es.subject?.name}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {es.schedule && `${getDayName(es.schedule.dayOfWeek)} ${formatTime(es.schedule.startTime)} - ${formatTime(es.schedule.endTime)} | ${es.schedule.classroom}`}
+                      {es.schedule && `${getDayName(es.schedule.dayOfWeek)} ${formatTime(es.schedule.startTime)} - ${formatTime(es.schedule.endTime)} | ${es.schedule.group?.classroom?.name || '-'}${es.schedule.group?.teacher ? ` | Prof: ${es.schedule.group.teacher.name}` : ''}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -247,20 +247,33 @@ export function EnrollmentPage() {
                                 {getDayName(schedule.dayOfWeek)}
                               </span>{' '}
                               {formatTime(schedule.startTime)} -{' '}
-                              {formatTime(schedule.endTime)} | {schedule.classroom}
+                              {formatTime(schedule.endTime)} |
+                              <span className="ml-1 font-medium">
+                                {schedule.group?.classroom?.name}
+                              </span>
+                              {schedule.group?.teacher && (
+                                <span className="ml-2 text-gray-600">
+                                  Prof: {schedule.group.teacher.name}
+                                </span>
+                              )}
                               <span className="ml-2 text-gray-500">
-                                ({schedule.enrolledCount}/{schedule.capacity} cupos)
+                                Grupo {schedule.group?.groupNumber} (
+                                {schedule.group?.enrolledCount}/{schedule.group?.capacity} cupos)
                               </span>
                             </div>
                             <Button
                               size="sm"
-                              disabled={schedule.enrolledCount >= schedule.capacity}
+                              disabled={
+                                (schedule.group?.enrolledCount ?? 0) >=
+                                (schedule.group?.capacity ?? 0)
+                              }
                               loading={enrolling === subject.id}
                               onClick={() =>
                                 handleEnrollSubject(subject.id, schedule.id)
                               }
                             >
-                              {schedule.enrolledCount >= schedule.capacity
+                              {(schedule.group?.enrolledCount ?? 0) >=
+                              (schedule.group?.capacity ?? 0)
                                 ? 'Sin cupos'
                                 : 'Reservar'}
                             </Button>

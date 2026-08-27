@@ -27,7 +27,16 @@ export class EnrollmentsService {
     private readonly emailService: EmailService,
   ) {}
 
-  async getEnrollment(studentId: string, cycleId: string) {
+  private async resolveStudentId(userId: string): Promise<string> {
+    const student = await this.studentRepository.findByUserId(userId);
+    if (!student) {
+      throw new NotFoundException('Estudiante no encontrado');
+    }
+    return student.id;
+  }
+
+  async getEnrollment(userId: string, cycleId: string) {
+    const studentId = await this.resolveStudentId(userId);
     const enrollment = await this.enrollmentRepository.findByStudentAndCycle(studentId, cycleId);
     if (!enrollment) {
       throw new NotFoundException('Inscripción no encontrada para este ciclo');
@@ -35,11 +44,13 @@ export class EnrollmentsService {
     return enrollment;
   }
 
-  async getMyEnrollments(studentId: string) {
+  async getMyEnrollments(userId: string) {
+    const studentId = await this.resolveStudentId(userId);
     return this.enrollmentRepository.findByStudent(studentId);
   }
 
-  async enrollInCycle(studentId: string, cycleId: string) {
+  async enrollInCycle(userId: string, cycleId: string) {
+    const studentId = await this.resolveStudentId(userId);
     // Verify cycle is open
     const cycle = await this.cycleRepository.findById(cycleId);
     if (!cycle || !cycle.enrollmentOpen) {
@@ -68,7 +79,9 @@ export class EnrollmentsService {
     return enrollment;
   }
 
-  async enrollSubject(studentId: string, cycleId: string, subjectId: string, scheduleId: string) {
+  async enrollSubject(userId: string, cycleId: string, subjectId: string, scheduleId: string) {
+    const studentId = await this.resolveStudentId(userId);
+
     // Get or create enrollment for this cycle
     let enrollment = await this.enrollmentRepository.findActiveByStudentAndCycle(studentId, cycleId);
 
@@ -119,8 +132,13 @@ export class EnrollmentsService {
       throw new NotFoundException('Horario no encontrado');
     }
 
-    if (schedule.enrolledCount >= schedule.capacity) {
-      throw new BadRequestException('No hay cupos disponibles en este horario');
+    const group = schedule.group;
+    if (!group) {
+      throw new NotFoundException('Grupo no encontrado para este horario');
+    }
+
+    if (group.enrolledCount >= group.capacity) {
+      throw new BadRequestException('No hay cupos disponibles en este grupo');
     }
 
     // Check schedule conflicts
@@ -137,7 +155,7 @@ export class EnrollmentsService {
       );
     }
 
-    // Reserve seat
+    // Reserve seat in group
     await this.scheduleRepository.incrementEnrolledCount(scheduleId);
 
     // Create enrollment subject
@@ -150,17 +168,18 @@ export class EnrollmentsService {
 
     return {
       enrollmentSubject,
-      message: `Materia ${subject.name} reservada exitosamente. Asignatura: ${schedule.dayOfWeek} ${schedule.startTime}-${schedule.endTime} en ${schedule.classroom}`,
+      message: `Materia ${subject.name} reservada exitosamente. Grupo ${group.groupNumber}: ${schedule.dayOfWeek} ${schedule.startTime}-${schedule.endTime} en ${group.classroom?.name}`,
     };
   }
 
-  async cancelSubject(studentId: string, enrollmentSubjectId: string) {
+  async cancelSubject(userId: string, enrollmentSubjectId: string) {
     const enrollmentSubject = await this.enrollmentSubjectRepository.findById(enrollmentSubjectId);
     if (!enrollmentSubject) {
       throw new NotFoundException('Inscripción de materia no encontrada');
     }
 
     // Verify ownership
+    const studentId = await this.resolveStudentId(userId);
     const enrollment = await this.enrollmentRepository.findById(enrollmentSubject.enrollmentId);
     if (!enrollment || enrollment.studentId !== studentId) {
       throw new BadRequestException('No tiene permiso para cancelar esta inscripción');
@@ -181,7 +200,8 @@ export class EnrollmentsService {
     return { message: 'Materia cancelada exitosamente' };
   }
 
-  async confirmEnrollment(studentId: string, cycleId: string) {
+  async confirmEnrollment(userId: string, cycleId: string) {
+    const studentId = await this.resolveStudentId(userId);
     const enrollment = await this.enrollmentRepository.findActiveByStudentAndCycle(studentId, cycleId);
     if (!enrollment) {
       throw new NotFoundException('Inscripción activa no encontrada');
@@ -217,9 +237,9 @@ export class EnrollmentsService {
 
   async getAllEnrollments(cycleId?: string) {
     if (cycleId) {
-      return this.enrollmentRepository.findByStudent('');
+      return this.enrollmentRepository.findByCycle(cycleId);
     }
-    return this.enrollmentRepository.findByStudent('');
+    return this.enrollmentRepository.findAll();
   }
 
   async getEnrollmentStats(cycleId: string) {

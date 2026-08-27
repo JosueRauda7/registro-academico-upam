@@ -8,6 +8,15 @@ import { EnrollmentsModule } from './application/enrollments/enrollments.module'
 import { PaymentsModule } from './application/payments/payments.module';
 import { StudentsModule } from './application/students/students.module';
 import { ReportsModule } from './application/reports/reports.module';
+import { TeachersModule } from './application/teachers/teachers.module';
+import { ClassroomsModule } from './application/classrooms/classrooms.module';
+import { SubjectGroupsModule } from './application/subject-groups/subject-groups.module';
+import { UsersModule } from './application/users/users.module';
+import { SettingsModule } from './application/settings/settings.module';
+import { PensumModule } from './application/pensum/pensum.module';
+import { CareersModule } from './application/careers/careers.module';
+import { GradesModule } from './application/grades/grades.module';
+import { LegacySubjectsModule } from './application/legacy-subjects/legacy-subjects.module';
 
 @Module({
   imports: [
@@ -20,6 +29,14 @@ import { ReportsModule } from './application/reports/reports.module';
     PaymentsModule,
     StudentsModule,
     ReportsModule,
+    TeachersModule,
+    ClassroomsModule,
+    SubjectGroupsModule,
+    UsersModule,
+    SettingsModule,
+    PensumModule,
+    CareersModule,
+    GradesModule,
   ],
 })
 export class AppModule {}

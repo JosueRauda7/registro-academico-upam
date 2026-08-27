@@ -2,15 +2,18 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
   const configService = app.get(ConfigService);
 
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
   app.use(helmet());
   app.enableCors({
     origin: configService.get<string>('FRONTEND_URL', 'http://localhost:5173'),
@@ -61,6 +64,10 @@ async function bootstrap() {
     .addTag('Enrollments', 'Inscripcion de materias')
     .addTag('Payments', 'Pagos de matricula y mensualidades')
     .addTag('Students', 'Gestion de estudiantes')
+    .addTag('Users', 'Gestion de usuarios del sistema')
+    .addTag('Settings', 'Configuracion del sistema (logo, color, nombre)')
+    .addTag('Pensum', 'Pensum de carreras y seguimiento del estudiante')
+    .addTag('Careers', 'Mantenimiento de carreras')
     .addTag('Reports', 'Generacion de reportes Excel y PDF')
     .build();
 

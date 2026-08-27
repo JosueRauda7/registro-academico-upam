@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { UserRole } from '@/types';
 import { AuthProvider } from '@/context/AuthContext';
+import { SettingsProvider } from '@/context/SettingsContext';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
@@ -13,11 +15,22 @@ import { ColecturiaPage } from '@/pages/payments/ColecturiaPage';
 import { ReportsPage } from '@/pages/reports/ReportsPage';
 import { CyclesPage } from '@/pages/cycles/CyclesPage';
 import { StudentsListPage } from '@/pages/students/StudentsListPage';
+import { PlanningPage } from '@/pages/planning/PlanningPage';
+import { SchedulePage } from '@/pages/schedule/SchedulePage';
+import { SubjectsPage } from '@/pages/subjects/SubjectsPage';
+import { UsersPage } from '@/pages/users/UsersPage';
+import { SettingsPage } from '@/pages/settings/SettingsPage';
+import { PensumPage } from '@/pages/pensum/PensumPage';
+import { MyPensumPage } from '@/pages/pensum/MyPensumPage';
+import { CareersPage } from '@/pages/careers/CareersPage';
+import { TeacherGroupsPage } from '@/pages/grades/TeacherGroupsPage';
+import { GradeEntryPage } from '@/pages/grades/GradeEntryPage';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <SettingsProvider>
+      <AuthProvider>
+        <BrowserRouter>
         <Toaster position="top-right" />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -96,11 +109,92 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/planificacion"
+            element={
+              <ProtectedRoute>
+                <PlanningPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/horario"
+            element={
+              <ProtectedRoute>
+                <SchedulePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mi-pensum"
+            element={
+              <ProtectedRoute>
+                <MyPensumPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pensum"
+            element={
+              <ProtectedRoute>
+                <PensumPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/carreras"
+            element={
+              <ProtectedRoute>
+                <CareersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notas-docente"
+            element={
+              <ProtectedRoute roles={[UserRole.TEACHER, UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE]}>
+                <TeacherGroupsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notas-docente/:groupId"
+            element={
+              <ProtectedRoute roles={[UserRole.TEACHER, UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE]}>
+                <GradeEntryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/materias"
+            element={
+              <ProtectedRoute>
+                <SubjectsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/usuarios"
+            element={
+              <ProtectedRoute>
+                <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/configuracion"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </SettingsProvider>
   );
 }
 

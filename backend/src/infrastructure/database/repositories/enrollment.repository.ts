@@ -4,6 +4,19 @@ import { Repository } from 'typeorm';
 import { Enrollment } from '../entities/enrollment.entity';
 import { EnrollmentStatus } from '../../../domain/enums/enrollment-status.enum';
 
+const ENROLLMENT_RELATIONS = [
+  'student',
+  'student.user',
+  'cycle',
+  'subjects',
+  'subjects.subject',
+  'subjects.schedule',
+  'subjects.schedule.group',
+  'subjects.schedule.group.subject',
+  'subjects.schedule.group.teacher',
+  'subjects.schedule.group.classroom',
+];
+
 @Injectable()
 export class EnrollmentRepository {
   constructor(
@@ -14,14 +27,14 @@ export class EnrollmentRepository {
   async findById(id: string): Promise<Enrollment | null> {
     return this.repo.findOne({
       where: { id },
-      relations: ['student', 'student.user', 'cycle', 'subjects', 'subjects.subject', 'subjects.schedule'],
+      relations: ENROLLMENT_RELATIONS,
     });
   }
 
   async findByStudentAndCycle(studentId: string, cycleId: string): Promise<Enrollment | null> {
     return this.repo.findOne({
       where: { studentId, cycleId },
-      relations: ['student', 'student.user', 'cycle', 'subjects', 'subjects.subject', 'subjects.schedule'],
+      relations: ENROLLMENT_RELATIONS,
     });
   }
 
@@ -36,7 +49,7 @@ export class EnrollmentRepository {
   async findActiveByStudentAndCycle(studentId: string, cycleId: string): Promise<Enrollment | null> {
     return this.repo.findOne({
       where: { studentId, cycleId, status: EnrollmentStatus.ACTIVE },
-      relations: ['subjects', 'subjects.subject', 'subjects.schedule'],
+      relations: ENROLLMENT_RELATIONS,
     });
   }
 
@@ -52,7 +65,7 @@ export class EnrollmentRepository {
 
   async findAll(): Promise<Enrollment[]> {
     return this.repo.find({
-      relations: ['student', 'student.user', 'cycle', 'subjects', 'subjects.subject', 'subjects.schedule'],
+      relations: ENROLLMENT_RELATIONS,
       order: { enrolledAt: 'DESC' },
     });
   }
@@ -60,7 +73,7 @@ export class EnrollmentRepository {
   async findByCycle(cycleId: string): Promise<Enrollment[]> {
     return this.repo.find({
       where: { cycleId },
-      relations: ['student', 'student.user', 'cycle', 'subjects', 'subjects.subject', 'subjects.schedule'],
+      relations: ENROLLMENT_RELATIONS,
       order: { enrolledAt: 'DESC' },
     });
   }

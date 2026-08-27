@@ -5,9 +5,9 @@ export default {
     extend: {
       colors: {
         upam: {
-          primary: '#1B4F72',
-          secondary: '#2E86C1',
-          accent: '#F39C12',
+          primary: 'rgb(var(--upam-primary) / <alpha-value>)',
+          secondary: 'rgb(var(--upam-secondary) / <alpha-value>)',
+          accent: 'rgb(var(--upam-accent) / <alpha-value>)',
           dark: '#1a202c',
           light: '#EBF5FB',
         },

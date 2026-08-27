@@ -2,10 +2,11 @@ import { cn, getStatusColor, getStatusLabel } from '@/utils/validators';
 
 interface BadgeProps {
   status: string;
+  label?: string;
   className?: string;
 }
 
-export function Badge({ status, className }: BadgeProps) {
+export function Badge({ status, label, className }: BadgeProps) {
   return (
     <span
       className={cn(
@@ -14,7 +15,7 @@ export function Badge({ status, className }: BadgeProps) {
         className,
       )}
     >
-      {getStatusLabel(status)}
+      {label || getStatusLabel(status)}
     </span>
   );
 }

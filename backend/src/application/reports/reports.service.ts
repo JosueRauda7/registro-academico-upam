@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PaymentRepository } from '../../infrastructure/database/repositories/payment.repository';
 import { EnrollmentRepository } from '../../infrastructure/database/repositories/enrollment.repository';
 import { StudentRepository } from '../../infrastructure/database/repositories/student.repository';
@@ -21,7 +21,7 @@ export class ReportsService {
   async generateStudentPaymentsReport(studentId: string, cycleId?: string) {
     const student = await this.studentRepository.findById(studentId);
     if (!student) {
-      throw new Error('Estudiante no encontrado');
+      throw new NotFoundException('Estudiante no encontrado');
     }
 
     let payments;
@@ -194,7 +194,7 @@ export class ReportsService {
   async generatePdfPaymentReceipt(paymentId: string) {
     const payment = await this.paymentRepository.findById(paymentId);
     if (!payment) {
-      throw new Error('Pago no encontrado');
+      throw new NotFoundException('Pago no encontrado');
     }
 
     const PDFDoc = PDFDocument as any;

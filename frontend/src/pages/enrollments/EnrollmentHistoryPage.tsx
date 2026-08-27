@@ -80,7 +80,7 @@ export function EnrollmentHistoryPage() {
                                 {getDayName(es.schedule.dayOfWeek)}{' '}
                                 {formatTime(es.schedule.startTime)} -{' '}
                                 {formatTime(es.schedule.endTime)} |{' '}
-                                {es.schedule.classroom}
+                                {es.schedule.group?.classroom?.name || '-'}
                               </span>
                             )}
                           </div>

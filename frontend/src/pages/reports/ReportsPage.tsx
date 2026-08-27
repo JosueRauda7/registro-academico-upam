@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { cyclesApi } from '@/api/cycles.api';
 import { reportsApi } from '@/api/reports.api';
-import { Cycle } from '@/types';
+import { gradesApi } from '@/api/grades.api';
+import { Cycle, TeacherGroup, UserRole } from '@/types';
 import toast from 'react-hot-toast';
 import {
   FileSpreadsheet,
@@ -19,10 +20,14 @@ export function ReportsPage() {
   const { user, hasRole } = useAuth();
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [selectedCycle, setSelectedCycle] = useState<string>('');
+  const [teacherGroups, setTeacherGroups] = useState<TeacherGroup[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
 
   useEffect(() => {
     loadCycles();
+    if (hasRole(UserRole.TEACHER)) {
+      loadTeacherGroups();
+    }
   }, []);
 
   const loadCycles = async () => {
@@ -32,6 +37,28 @@ export function ReportsPage() {
       if (data.length > 0) setSelectedCycle(data[0].id);
     } catch (err) {
       toast.error('Error al cargar ciclos');
+    }
+  };
+
+  const loadTeacherGroups = async () => {
+    try {
+      const data = await gradesApi.getTeacherGroups();
+      setTeacherGroups(data);
+    } catch (err) {
+      // noop
+    }
+  };
+
+  const handleDownloadGroupExcel = async (groupId: string, filename: string) => {
+    setLoading(`group-${groupId}`);
+    try {
+      const data = await gradesApi.exportGroup(groupId);
+      downloadFile(data, filename);
+      toast.success('Reporte descargado');
+    } catch (err) {
+      toast.error('Error al descargar reporte');
+    } finally {
+      setLoading(null);
     }
   };
 
@@ -166,6 +193,48 @@ export function ReportsPage() {
             ))}
           </select>
         </div>
+
+        {hasRole(UserRole.TEACHER) && (
+          <Card title="Notas de Estudiantes por Grupo" subtitle="Lista de estudiantes y calificaciones de cada grupo que imparte">
+            <div className="space-y-3">
+              {teacherGroups.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  No tienes grupos asignados.
+                </p>
+              ) : (
+                teacherGroups.map((group) => (
+                  <div
+                    key={group.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 p-3"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {group.subjectCode} - {group.subjectName}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {group.cycleName} | Grupo {group.groupNumber} |{' '}
+                        {group.enrolledCount} estudiantes | {group.gradedCount} con nota
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      loading={loading === `group-${group.id}`}
+                      onClick={() =>
+                        handleDownloadGroupExcel(
+                          group.id,
+                          `notas-${group.subjectCode}-grupo${group.groupNumber}.xlsx`,
+                        )
+                      }
+                    >
+                      <Download size={14} className="mr-2" /> Excel
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {filteredReports.map((report) => (

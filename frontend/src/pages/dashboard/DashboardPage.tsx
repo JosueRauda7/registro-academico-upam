@@ -6,6 +6,7 @@ import { UserRole } from '@/types';
 import { paymentsApi } from '@/api/payments.api';
 import { enrollmentsApi } from '@/api/enrollments.api';
 import { cyclesApi } from '@/api/cycles.api';
+import { gradesApi } from '@/api/grades.api';
 import { formatCurrency } from '@/utils/formatDate';
 import {
   CreditCard,
@@ -14,12 +15,14 @@ import {
   Calendar,
   TrendingUp,
   Users,
+  GraduationCap,
 } from 'lucide-react';
 
 export function DashboardPage() {
-  const { user, student, hasRole } = useAuth();
+  const { user, student, teacher, hasRole, roleLabel } = useAuth();
   const [stats, setStats] = useState<any>(null);
   const [currentCycle, setCurrentCycle] = useState<any>(null);
+  const [myGrades, setMyGrades] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -34,9 +37,19 @@ export function DashboardPage() {
     } catch (err) {
       // Cycle might not be available
     }
+
+    if (hasRole(UserRole.STUDENT)) {
+      try {
+        const grades = await gradesApi.getMy();
+        setMyGrades(grades);
+      } catch (err) {
+        // Notas might not be available
+      }
+    }
   };
 
   const isStudent = hasRole(UserRole.STUDENT);
+  const isTeacher = hasRole(UserRole.TEACHER);
 
   return (
     <Layout>
@@ -48,7 +61,9 @@ export function DashboardPage() {
           <p className="text-gray-500">
             {isStudent
               ? `Panel del estudiante - ${student?.career || ''}`
-              : `Panel de ${user?.role === UserRole.ADMINISTRATOR ? 'Administrador' : user?.role === UserRole.COLLECTOR ? 'Colector' : 'Administrativo'}`}
+              : isTeacher
+                ? `Panel del docente - ${teacher?.department || ''}`
+                : `Panel de ${roleLabel}`}
           </p>
         </div>
 
@@ -86,6 +101,45 @@ export function DashboardPage() {
                 <div>
                   <p className="text-sm text-gray-500">Carnet</p>
                   <p className="font-semibold">{student?.carnet}</p>
+                </div>
+              </Card>
+              <Card className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100">
+                  <TrendingUp className="text-indigo-600" size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">CUM</p>
+                  <p className="font-semibold">
+                    {myGrades?.summary?.cum != null ? myGrades.summary.cum.toFixed(2) : '-'}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {myGrades?.summary?.totalSubjects ?? 0} materias calificadas
+                  </p>
+                </div>
+              </Card>
+            </>
+          )}
+
+          {isTeacher && (
+            <>
+              <Card className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                  <BookOpen className="text-blue-600" size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Departamento</p>
+                  <p className="font-semibold">{teacher?.department || '-'}</p>
+                </div>
+              </Card>
+              <Card className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
+                  <GraduationCap className="text-green-600" size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Grupos a cargo</p>
+                  <a href="/notas-docente" className="font-semibold text-upam-primary hover:underline">
+                    Gestionar notas
+                  </a>
                 </div>
               </Card>
             </>
@@ -153,6 +207,39 @@ export function DashboardPage() {
                   </a>
                 </>
               )}
+              {isStudent && (
+                <a
+                  href="/mi-pensum"
+                  className="block rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <p className="font-medium">Mi Pensum y Notas</p>
+                  <p className="text-sm text-gray-500">
+                    Consulta el avance de tu carrera y tus calificaciones
+                  </p>
+                </a>
+              )}
+              {isTeacher && (
+                <>
+                  <a
+                    href="/notas-docente"
+                    className="block rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <p className="font-medium">Registrar Notas</p>
+                    <p className="text-sm text-gray-500">
+                      Califica a los estudiantes de tus grupos
+                    </p>
+                  </a>
+                  <a
+                    href="/reportes"
+                    className="block rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <p className="font-medium">Reportes por Grupo</p>
+                    <p className="text-sm text-gray-500">
+                      Descarga la lista de estudiantes con notas en Excel
+                    </p>
+                  </a>
+                </>
+              )}
               {hasRole(UserRole.ADMINISTRATOR) && (
                 <>
                   <a
@@ -198,19 +285,15 @@ export function DashboardPage() {
             </div>
           </Card>
 
-          <Card title="Informacion del Sistema">
+          <Card title="Mi Cuenta">
             <div className="space-y-4 text-sm">
               <div className="flex justify-between border-b pb-2">
-                <span className="text-gray-500">Institucion</span>
-                <span className="font-medium">Universidad Panamericana de El Salvador</span>
-              </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="text-gray-500">Sistema</span>
-                <span className="font-medium">Registro Academico v1.0</span>
+                <span className="text-gray-500">Nombre</span>
+                <span className="font-medium">{user?.firstName} {user?.lastName}</span>
               </div>
               <div className="flex justify-between border-b pb-2">
                 <span className="text-gray-500">Rol</span>
-                <span className="font-medium capitalize">{user?.role}</span>
+                <span className="font-medium">{roleLabel}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Correo</span>

@@ -21,6 +21,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('upam_token');
       localStorage.removeItem('upam_user');
+      localStorage.removeItem('upam_student');
+      localStorage.removeItem('upam_teacher');
       window.location.href = '/login';
     }
     return Promise.reject(error);

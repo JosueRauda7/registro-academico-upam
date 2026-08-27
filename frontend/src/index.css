@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --upam-primary: 27 79 114;
+  --upam-secondary: 46 134 193;
+  --upam-accent: 243 156 18;
+}
+
 @layer base {
   body {
     @apply text-gray-900 antialiased;

@@ -1,15 +1,42 @@
 import api from './axios';
 import { Subject, Schedule } from '@/types';
 
+export interface SubjectInput {
+  code: string;
+  name: string;
+  credits: number;
+  career: string;
+  year: number;
+  semester: number;
+  isActive?: boolean;
+}
+
 export const subjectsApi = {
-  findAll: async (career?: string): Promise<Subject[]> => {
-    const params = career ? { career } : {};
+  findAll: async (career?: string, all = false): Promise<Subject[]> => {
+    const params: any = {};
+    if (career) params.career = career;
+    if (all) params.all = 'true';
     const res = await api.get('/subjects', { params });
     return res.data.data;
   },
 
   findById: async (id: string): Promise<Subject> => {
     const res = await api.get(`/subjects/${id}`);
+    return res.data.data;
+  },
+
+  create: async (data: SubjectInput): Promise<Subject> => {
+    const res = await api.post('/subjects', data);
+    return res.data.data;
+  },
+
+  update: async (id: string, data: Partial<SubjectInput>): Promise<Subject> => {
+    const res = await api.put(`/subjects/${id}`, data);
+    return res.data.data;
+  },
+
+  remove: async (id: string): Promise<Subject> => {
+    const res = await api.delete(`/subjects/${id}`);
     return res.data.data;
   },
 

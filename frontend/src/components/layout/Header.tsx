@@ -1,9 +1,15 @@
 import { useAuth } from '@/context/AuthContext';
-import { LogOut, Bell } from 'lucide-react';
+import { useSettings } from '@/context/SettingsContext';
+import { LogOut, Bell, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export function Header() {
+interface HeaderProps {
+  onOpenSidebar: () => void;
+}
+
+export function Header({ onOpenSidebar }: HeaderProps) {
   const { user, logout } = useAuth();
+  const { branding } = useSettings();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -12,14 +18,21 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">
-          Universidad Panamericana de El Salvador
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 sm:px-6">
+      <div className="flex min-w-0 items-center gap-3">
+        <button
+          onClick={onOpenSidebar}
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 lg:hidden"
+          aria-label="Abrir menu"
+        >
+          <Menu size={22} />
+        </button>
+        <h2 className="truncate text-base font-semibold text-gray-900 sm:text-lg">
+          {branding.institutionName || 'Universidad Panamericana de El Salvador'}
         </h2>
       </div>
-      <div className="flex items-center gap-4">
-        <button className="relative p-2 text-gray-500 hover:text-gray-700">
+      <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+        <button className="relative p-2 text-gray-500 hover:text-gray-700" aria-label="Notificaciones">
           <Bell size={20} />
           <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
         </button>
@@ -28,7 +41,7 @@ export function Header() {
           className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600"
         >
           <LogOut size={18} />
-          <span>Cerrar sesion</span>
+          <span className="hidden sm:inline">Cerrar sesion</span>
         </button>
       </div>
     </header>

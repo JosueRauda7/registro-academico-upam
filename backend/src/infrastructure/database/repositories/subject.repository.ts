@@ -26,6 +26,14 @@ export class SubjectRepository {
     return this.repo.find({ where: { isActive: true } });
   }
 
+  async findAllIncludingInactive(): Promise<Subject[]> {
+    return this.repo.find({ order: { year: 'ASC', semester: 'ASC', code: 'ASC' } });
+  }
+
+  async countActiveByCareer(career: string): Promise<number> {
+    return this.repo.count({ where: { career, isActive: true } });
+  }
+
   async create(data: Partial<Subject>): Promise<Subject> {
     const subject = this.repo.create(data);
     return this.repo.save(subject);
@@ -33,6 +41,11 @@ export class SubjectRepository {
 
   async update(id: string, data: Partial<Subject>): Promise<Subject | null> {
     await this.repo.update(id, data);
+    return this.findById(id);
+  }
+
+  async deactivate(id: string): Promise<Subject | null> {
+    await this.repo.update(id, { isActive: false });
     return this.findById(id);
   }
 

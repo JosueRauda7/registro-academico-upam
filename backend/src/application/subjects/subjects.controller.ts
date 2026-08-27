@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { SubjectsService } from './subjects.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -14,11 +14,12 @@ export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar materias', description: 'Retorna todas las materias, opcionalmente filtradas por carrera.' })
+  @ApiOperation({ summary: 'Listar materias', description: 'Retorna todas las materias, opcionalmente filtradas por carrera. Con all=true retorna tambien las inactivas.' })
   @ApiQuery({ name: 'career', required: false, description: 'Filtrar por carrera', example: 'Ingenieria en Sistemas' })
+  @ApiQuery({ name: 'all', required: false, description: 'Incluir materias inactivas', example: 'true' })
   @ApiResponse({ status: 200, description: 'Lista de materias' })
-  findAll(@Query('career') career?: string) {
-    return this.subjectsService.findAll(career);
+  findAll(@Query('career') career?: string, @Query('all') all?: string) {
+    return this.subjectsService.findAll(career, all === 'true');
   }
 
   @Get(':id')
@@ -48,26 +49,36 @@ export class SubjectsController {
   }
 
   @Post()
-  @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Crear materia', description: 'Solo administradores pueden crear materias.' })
+  @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
+  @ApiOperation({ summary: 'Crear materia', description: 'Administradores y administrativos pueden crear materias.' })
   @ApiResponse({ status: 201, description: 'Materia creada exitosamente' })
-  @ApiResponse({ status: 403, description: 'Sin permisos de administrador' })
+  @ApiResponse({ status: 403, description: 'Sin permisos' })
   create(@Body() body: any) {
     return this.subjectsService.create(body);
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMINISTRATOR)
+  @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
   @ApiOperation({ summary: 'Actualizar materia' })
   @ApiParam({ name: 'id', description: 'UUID de la materia' })
   @ApiResponse({ status: 200, description: 'Materia actualizada' })
-  @ApiResponse({ status: 403, description: 'Sin permisos de administrador' })
+  @ApiResponse({ status: 403, description: 'Sin permisos' })
   update(@Param('id') id: string, @Body() body: any) {
     return this.subjectsService.update(id, body);
   }
 
+  @Delete(':id')
+  @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
+  @ApiOperation({ summary: 'Desactivar materia', description: 'Desactiva (eliminacion logica) una materia. No se eliminan inscripciones existentes.' })
+  @ApiParam({ name: 'id', description: 'UUID de la materia' })
+  @ApiResponse({ status: 200, description: 'Materia desactivada' })
+  @ApiResponse({ status: 404, description: 'Materia no encontrada' })
+  remove(@Param('id') id: string) {
+    return this.subjectsService.remove(id);
+  }
+
   @Post('schedules')
-  @Roles(UserRole.ADMINISTRATOR)
+  @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
   @ApiOperation({ summary: 'Crear horario para una materia', description: 'Asigna un horario (dia, hora, aula, cupo) a una materia en un ciclo.' })
   @ApiResponse({ status: 201, description: 'Horario creado exitosamente' })
   @ApiResponse({ status: 400, description: 'La materia o ciclo no existen' })

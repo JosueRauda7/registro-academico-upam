@@ -4,7 +4,7 @@ import {
   Column,
   OneToMany,
 } from 'typeorm';
-import { Schedule } from './schedule.entity';
+import { SubjectGroup } from './subject-group.entity';
 import { EnrollmentSubject } from './enrollment-subject.entity';
 import { Prerequisite } from './prerequisite.entity';
 
@@ -34,8 +34,8 @@ export class Subject {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @OneToMany(() => Schedule, (schedule) => schedule.subject)
-  schedules: Schedule[];
+  @OneToMany(() => SubjectGroup, (group) => group.subject)
+  groups: SubjectGroup[];
 
   @OneToMany(() => EnrollmentSubject, (es) => es.subject)
   enrollmentSubjects: EnrollmentSubject[];

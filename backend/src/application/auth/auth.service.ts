@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { UserRepository } from '../../infrastructure/database/repositories/user.repository';
 import { StudentRepository } from '../../infrastructure/database/repositories/student.repository';
+import { TeacherRepository } from '../../infrastructure/database/repositories/teacher.repository';
 import { EmailService } from '../../infrastructure/email/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -22,6 +23,7 @@ export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly studentRepository: StudentRepository,
+    private readonly teacherRepository: TeacherRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
@@ -101,6 +103,20 @@ export class AuthService {
       }
     }
 
+    let teacherData: any = null;
+    if (user.role === UserRole.TEACHER) {
+      const teacher = await this.teacherRepository.findByUserId(user.id);
+      if (teacher) {
+        teacherData = {
+          id: teacher.id,
+          name: teacher.name,
+          email: teacher.email,
+          phone: teacher.phone,
+          department: teacher.department,
+        };
+      }
+    }
+
     return {
       user: {
         id: user.id,
@@ -110,6 +126,7 @@ export class AuthService {
         role: user.role,
       },
       student: studentData,
+      teacher: teacherData,
       token,
     };
   }
@@ -182,6 +199,20 @@ export class AuthService {
       }
     }
 
+    let teacherData: any = null;
+    if (user.role === UserRole.TEACHER) {
+      const teacher = await this.teacherRepository.findByUserId(user.id);
+      if (teacher) {
+        teacherData = {
+          id: teacher.id,
+          name: teacher.name,
+          email: teacher.email,
+          phone: teacher.phone,
+          department: teacher.department,
+        };
+      }
+    }
+
     return {
       id: user.id,
       email: user.email,
@@ -189,6 +220,7 @@ export class AuthService {
       lastName: user.lastName,
       role: user.role,
       student: studentData,
+      teacher: teacherData,
     };
   }
 

@@ -1,4 +1,4 @@
-# Registro Academico - Universidad Panamericana de El Salvador
+﻿# Registro Academico - Universidad Panamericana de El Salvador
 
 Sistema web completo para la gestion de matricula e inscripcion de materias de la **Universidad Panamericana de El Salvador (UPAM)**. Proyecto ficticio desarrollado con arquitectura limpia en backend y buenas practicas en frontend.
 
@@ -16,6 +16,7 @@ Sistema web completo para la gestion de matricula e inscripcion de materias de l
 - [Credenciales de prueba](#credenciales-de-prueba)
 - [Endpoints API](#endpoints-api)
 - [Funcionalidades por rol](#funcionalidades-por-rol)
+- [Configuracion del sistema](#configuracion-del-sistema)
 - [Reportes disponibles](#reportes-disponibles)
 - [Configuracion de Wompi](#configuracion-de-wompi)
 - [Docker](#docker)
@@ -33,7 +34,7 @@ Este sistema permite a los estudiantes de la UPAM realizar el proceso completo d
 4. **Pago de mensualidades** mes a mes durante el ciclo
 5. **Generacion de reportes** en Excel y PDF para administracion y contabilidad
 
-El sistema cuenta con 4 roles de usuario con permisos diferenciados y un panel de administracion completo.
+El sistema cuenta con 5 roles de usuario con permisos diferenciados, un panel de administracion completo (usuarios, materias, docentes, salones, planificacion y configuracion del sistema) y una interfaz personalizable (logo y color institucional).
 
 ---
 
@@ -76,10 +77,12 @@ El sistema cuenta con 4 roles de usuario con permisos diferenciados y un panel d
 
 | Rol | Descripcion | Permisos principales |
 |-----|-------------|----------------------|
-| **Estudiante** | Persona matriculada en la universidad | Inscribir materias, pagar matricula/mensualidades, ver historial, generar reportes propios |
-| **Administrador** | Administrador del sistema con acceso total | Gestionar ciclos, estudiantes, abrir/cerrar inscripciones, todos los reportes |
+| **Estudiante** | Persona matriculada en la universidad | Inscribir materias, pagar matricula/mensualidades, ver horario, ver historial, generar reportes propios |
+| **Administrador** | Administrador del sistema con acceso total | Gestionar ciclos, estudiantes, materias, docentes, salones, usuarios y configuracion; abrir/cerrar inscripciones; todos los reportes |
 | **Colector** | Personal encargado de cobros | Ver pagos, reportes de recaudacion, comprobantes de pago |
-| **Administrativo** | Personal administrativo | Gestionar estudiantes, ver inscripciones, reportes de inscripcion y lista de estudiantes |
+| **Administrativo** | Personal administrativo | Gestionar estudiantes, materias, docentes, salones y planificacion; ver inscripciones y reportes |
+
+| **Docente** | Catedratico con cuenta de acceso | Registrar notas de sus grupos, ver lista de estudiantes de cada materia y exportar reporte de notas en Excel |
 
 ---
 
@@ -155,9 +158,21 @@ backend/src/
 │   │   ├── cycles.controller.ts    ← Rutas: /cycles/*
 │   │   └── cycles.module.ts
 │   ├── subjects/
-│   │   ├── subjects.service.ts     ← Materias, horarios, prerrequisitos
-│   │   ├── subjects.controller.ts  ← Rutas: /subjects/*
+│   │   ├── subjects.service.ts     ← Materias y prerrequisitos
+│   │   ├── subjects.controller.ts  ← Rutas: /subjects/* (CRUD admin/administrativo)
 │   │   └── subjects.module.ts
+│   ├── subject-groups/
+│   │   ├── subject-groups.service.ts ← Grupos por materia/ciclo con horarios, capacidad y docente
+│   │   ├── subject-groups.controller.ts ← Rutas: /subject-groups/*
+│   │   └── subject-groups.module.ts
+│   ├── teachers/
+│   │   ├── teachers.service.ts     ← CRUD docentes
+│   │   ├── teachers.controller.ts  ← Rutas: /teachers/* (admin/administrativo)
+│   │   └── teachers.module.ts
+│   ├── classrooms/
+│   │   ├── classrooms.service.ts   ← CRUD salones
+│   │   ├── classrooms.controller.ts ← Rutas: /classrooms/* (admin/administrativo)
+│   │   └── classrooms.module.ts
 │   ├── enrollments/
 │   │   ├── enrollments.service.ts  ← Inscripcion ciclo, reservar/cancelar materias, confirmar
 │   │   ├── enrollments.controller.ts ← Rutas: /enrollments/*
@@ -170,6 +185,22 @@ backend/src/
 │   │   ├── students.service.ts     ← CRUD estudiantes
 │   │   ├── students.controller.ts  ← Rutas: /students/*
 │   │   └── students.module.ts
+│   ├── users/
+│   │   ├── users.service.ts        ← CRUD de cuentas de usuario (solo admin)
+│   │   ├── users.controller.ts     ← Rutas: /users/* (solo administrador)
+│   │   └── users.module.ts
+│   ├── settings/
+│   │   ├── settings.service.ts     ← Configuracion del sistema (logo, color, nombre)
+│   │   ├── settings.controller.ts  ← Rutas: /settings/public y /settings (admin)
+│   │   └── settings.module.ts
+│   ├── pensum/
+│   │   ├── pensum.service.ts       ← Pensum por carrera + estado/historial por materia (estudiante)
+│   │   ├── pensum.controller.ts    ← Ruta: /pensum (estudiante, admin, administrativo)
+│   │   └── pensum.module.ts
+│   ├── careers/
+│   │   ├── careers.service.ts      ← Mantenimiento de carreras (estructura del pensum: anos/semestres)
+│   │   ├── careers.controller.ts   ← Rutas: /careers/* (lectura todos, escritura admin/administrativo)
+│   │   └── careers.module.ts
 │   └── reports/
 │       ├── reports.service.ts      ← Generacion de Excel (ExcelJS) y PDF (PDFKit)
 │       ├── reports.controller.ts   ← Rutas: /reports/*
@@ -184,19 +215,29 @@ backend/src/
 │   │   │   ├── cycle.entity.ts
 │   │   │   ├── subject.entity.ts
 │   │   │   ├── prerequisite.entity.ts
+│   │   │   ├── subject-group.entity.ts
 │   │   │   ├── schedule.entity.ts
+│   │   │   ├── teacher.entity.ts
+│   │   │   ├── classroom.entity.ts
 │   │   │   ├── enrollment.entity.ts
 │   │   │   ├── enrollment-subject.entity.ts
+│   │   │   ├── system-setting.entity.ts
+│   │   │   ├── career.entity.ts
 │   │   │   └── payment.entity.ts
 │   │   ├── repositories/           ← Repositorios TypeORM con metodos de acceso a datos
 │   │   │   ├── user.repository.ts
 │   │   │   ├── student.repository.ts
 │   │   │   ├── cycle.repository.ts
 │   │   │   ├── subject.repository.ts
+│   │   │   ├── subject-group.repository.ts
 │   │   │   ├── schedule.repository.ts
+│   │   │   ├── teacher.repository.ts
+│   │   │   ├── classroom.repository.ts
 │   │   │   ├── enrollment.repository.ts
 │   │   │   ├── enrollment-subject.repository.ts
-│   │   │   └── payment.repository.ts
+│   │   │   ├── payment.repository.ts
+│   │   │   ├── system-setting.repository.ts
+│   │   │   └── career.repository.ts
 │   │   └── seeds/
 │   │       └── seed.ts             ← Script de semilla con datos de prueba
 │   ├── payment/
@@ -230,16 +271,23 @@ frontend/src/
 │   ├── axios.ts                      ← Cliente Axios con interceptores JWT
 │   ├── auth.api.ts                   ← Login, register, forgot/reset password, profile
 │   ├── cycles.api.ts                 ← Ciclos academicos
-│   ├── subjects.api.ts               ← Materias y horarios
+│   ├── subjects.api.ts               ← Materias (CRUD) y prerrequisitos
+│   ├── subject-groups.api.ts         ← Grupos por materia/ciclo con horarios
+│   ├── teachers.api.ts               ← Docentes
+│   ├── classrooms.api.ts             ← Salones
 │   ├── enrollments.api.ts            ← Inscripciones
 │   ├── payments.api.ts               ← Pagos matricula/mensualidades
-│   └── reports.api.ts                ← Descarga de reportes Excel/PDF
+│   ├── reports.api.ts                ← Descarga de reportes Excel/PDF
+│   ├── users.api.ts                  ← Gestion de usuarios (admin)
+│   ├── settings.api.ts               ← Configuracion del sistema (logo, color)
+│   ├── pensum.api.ts                 ← Pensum del estudiante y de carreras
+│   └── careers.api.ts                ← Mantenimiento de carreras
 │
 ├── components/
 │   ├── layout/
 │   │   ├── Layout.tsx                ← Layout principal (sidebar + header + contenido)
-│   │   ├── Sidebar.tsx               ← Barra lateral con navegacion filtrada por rol
-│   │   └── Header.tsx                ← Cabecera con nombre de usuario y cerrar sesion
+│   │   ├── Sidebar.tsx               ← Barra lateral con navegacion filtrada por rol y logo/color institucional
+│   │   └── Header.tsx                ← Cabecera con nombre de institucion, usuario y cerrar sesion
 │   ├── ui/
 │   │   ├── Button.tsx                ← Boton con variantes (primary, secondary, danger, ghost, outline)
 │   │   ├── Input.tsx                 ← Input con label y mensaje de error
@@ -250,7 +298,8 @@ frontend/src/
 │       └── ProtectedRoute.tsx        ← Ruta protegida con verificacion JWT y roles
 │
 ├── context/
-│   └── AuthContext.tsx               ← Contexto de autenticacion (user, student, login, logout)
+│   ├── AuthContext.tsx               ← Contexto de autenticacion (user, student, login, logout)
+│   └── SettingsContext.tsx           ← Contexto de configuracion (aplica logo/color via CSS vars)
 │
 ├── pages/
 │   ├── auth/
@@ -258,18 +307,37 @@ frontend/src/
 │   │   ├── ForgotPasswordPage.tsx    ← Solicitar recuperacion de contrasena
 │   │   └── ResetPasswordPage.tsx     ← Establecer nueva contrasena con token
 │   ├── dashboard/
-│   │   └── DashboardPage.tsx         ← Panel principal con estadisticas y acciones rapidas
+│   │   └── DashboardPage.tsx         ← Panel principal con ciclo actual y acciones rapidas
 │   ├── enrollments/
 │   │   ├── EnrollmentPage.tsx        ← Inscripcion de materias (reservar, cancelar, confirmar)
 │   │   └── EnrollmentHistoryPage.tsx ← Historial de inscripciones por ciclo
 │   ├── payments/
-│   │   └── PaymentsPage.tsx          ← Pagos de matricula y mensualidades con resumen
+│   │   ├── PaymentsPage.tsx          ← Pagos de matricula y mensualidades con resumen
+│   │   └── ColecturiaPage.tsx        ← Consulta y cobros de la colecturia (colector/admin)
+│   ├── planning/
+│   │   └── PlanningPage.tsx          ← Planificacion academica: grupos/horarios, docentes y salones
+│   ├── schedule/
+│   │   └── SchedulePage.tsx          ← Horario semanal del estudiante
+│   ├── subjects/
+│   │   └── SubjectsPage.tsx          ← Gestion del catalogo de materias (admin/administrativo)
+│   ├── users/
+│   │   └── UsersPage.tsx             ← Gestion de usuarios del sistema (solo admin)
+│   ├── settings/
+│   │   └── SettingsPage.tsx          ← Configuracion del sistema: logo y color principal (solo admin)
+│   ├── pensum/
+│   │   ├── MyPensumPage.tsx          ← Pensum del estudiante con indicadores cursada/inscrita/pendiente
+│   │   └── PensumPage.tsx            ← Gestion del pensum por carrera (admin/administrativo)
+│   ├── careers/
+│   │   └── CareersPage.tsx           ← Mantenimiento de carreras: CRUD y estructura del pensum (anos/semestres)
+   grades/
+      TeacherGroupsPage.tsx   Lista de grupos del docente
+      GradeEntryPage.tsx     Registro y export de notas del grupo
 │   ├── reports/
 │   │   └── ReportsPage.tsx           ← Descarga de reportes Excel/PDF
 │   ├── cycles/
 │   │   └── CyclesPage.tsx            ← Gestion de ciclos (admin: abrir/cerrar inscripcion)
 │   └── students/
-│       └── StudentsListPage.tsx      ← Listado de estudiantes (admin)
+│       └── StudentsListPage.tsx      ← Listado de estudiantes (admin/administrativo)
 │
 ├── types/
 │   └── index.ts                      ← Todas las interfaces TypeScript del proyecto
@@ -300,64 +368,66 @@ frontend/src/
 │ updated_at       │   │
 └──────────────────┘   │
                        │
-┌──────────────────┐   │   ┌──────────────────┐
-│     cycles       │   │   │    subjects      │
-├──────────────────┤   │   ├──────────────────┤
-│ id (UUID, PK)    │   │   │ id (UUID, PK)    │
-│ name             │   │   │ code (UNIQUE)    │
-│ year             │   │   │ name             │
-│ semester         │   │   │ credits          │
-│ start_date       │   │   │ career           │
-│ end_date         │   │   │ year             │
+┌──────────────────┐   │   ┌──────────────────┐    ┌──────────────────┐
+│     cycles       │   │   │    subjects      │    │   teachers      │
+├──────────────────┤   │   ├──────────────────┤    ├──────────────────┤
+│ id (UUID, PK)    │   │   │ id (UUID, PK)    │    │ id (UUID, PK)    │
+│ name             │   │   │ code (UNIQUE)    │    │ first_name       │
+│ year             │   │   │ name             │    │ last_name        │
+│ semester         │   │   │ credits          │    │ specialty        │
+│ start_date       │   │   │ career           │    │ is_active        │
+│ end_date         │   │   │ year             │    └──────────────────┘
 │ tuition_amount   │   │   │ semester         │
-│ monthly_amount   │   │   │ is_active        │
-│ monthly_count    │   │   └──────────────────┘
-│ is_active        │   │
-│ enrollment_open  │   │
-└──────────────────┘   │
-                       │
-┌──────────────────┐   │   ┌──────────────────┐
-│  enrollments     │   │   │ enrollment_      │
-├──────────────────┤   │   │   subjects       │
-│ id (UUID, PK)    │◄──┤   ├──────────────────┤
-│ student_id (FK)  │──►│   │ id (UUID, PK)    │
-│ cycle_id (FK)    │──►│   │ enrollment_id FK │──► enrollments.id
-│ status           │   │   │ subject_id (FK)  │──► subjects.id
-│ enrolled_at      │   │   │ schedule_id (FK) │──► schedules.id
-│ tuition_paid     │   │   │ status           │
-└──────────────────┘   │   │ reserved_at      │
-                       │   └──────────────────┘
-┌──────────────────┐   │
-│   schedules      │   │   ┌──────────────────┐
-├──────────────────┤   │   │   prerequisites  │
-│ id (UUID, PK)    │   │   ├──────────────────┤
-│ subject_id (FK)  │──►│   │ id (UUID, PK)    │
-│ cycle_id (FK)    │──►│   │ subject_id (FK)  │──► subjects.id
-│ day_of_week      │   │   │ prerequisite_    │
-│ start_time       │   │   │   subject_id(FK) │──► subjects.id
-│ end_time         │   │   └──────────────────┘
-│ classroom        │   │
-│ capacity         │   │
-│ enrolled_count   │   │
-└──────────────────┘   │
-                       │
-┌──────────────────┐   │
-│    payments      │   │
+│ monthly_amount   │   │   │ is_active        │    ┌──────────────────┐
+│ monthly_count    │   │   └──────────────────┘    │  classrooms      │
+│ is_active        │   │                           ├──────────────────┤
+│ enrollment_open  │   │   ┌──────────────────┐    │ id (UUID, PK)    │
+└──────────────────┘   │   │  subject_groups  │    │ name             │
+                       │   ├──────────────────┤    │ capacity         │
+┌──────────────────┐   │   │ id (UUID, PK)    │    │ is_active        │
+│  enrollments     │   │   │ subject_id (FK)  │──► │└──────────────────┘
+├──────────────────┤   │   │ cycle_id (FK)    │──► │
+│ id (UUID, PK)    │◄──┤   │ teacher_id (FK)  │──► │
+│ student_id (FK)  │──►│   │ classroom_id (FK)│──► │
+│ cycle_id (FK)    │──►│   │ group_number     │    ┌──────────────────┐
+│ status           │   │   │ capacity         │    │   schedules      │
+│ enrolled_at      │   │   │ enrolled_count   │    ├──────────────────┤
+│ tuition_paid     │   │   │ is_active        │    │ id (UUID, PK)    │
+└──────────────────┘   │   └──────────────────┘    │ subject_group FK │──► subject_groups.id
+                       │                           │ day_of_week      │
+┌──────────────────┐   │                           │ start_time       │
+│ enrollment_      │   │                           │ end_time         │
+│   subjects       │   │                           └──────────────────┘
 ├──────────────────┤   │
-│ id (UUID, PK)    │   │
-│ student_id (FK)  │──►│
-│ cycle_id (FK)    │──►│
-│ amount           │   │
-│ payment_date     │   │
-│ payment_method   │   │
+│ id (UUID, PK)    │   │   ┌──────────────────┐
+│ enrollment_id FK │──►│   │  prerequisites   │
+│ subject_id (FK)  │──►│   ├──────────────────┤
+│ schedule_id (FK) │──►│   │ id (UUID, PK)    │
+│ status           │   │   │ subject_id (FK)  │──► subjects.id
+│ reserved_at      │   │   │ prerequisite_    │
+└──────────────────┘   │   │   subject_id(FK) │──► subjects.id
+                       │   └──────────────────┘
+┌──────────────────┐   │   ┌──────────────────────────┐
+│    payments      │   │   │    system_settings       │
+├──────────────────┤   │   ├──────────────────────────┤
+│ id (UUID, PK)    │   │   │ id (PK, CHECK=1)         │
+│ student_id (FK)  │──►│   │ logo_url                 │
+│ cycle_id (FK)    │──►│   │ primary_color            │
+│ amount           │   │   │ institution_name         │
+│ payment_date     │   │   │ updated_at               │
+│ payment_method   │   │   └──────────────────────────┘
 │ wompi_txn_id     │   │
-│ status           │   │
-│ type             │   │
-│ month            │   │
-│ description      │   │
-│ reference        │   │
-│ created_at       │   │
-└──────────────────┘   │
+│ status           │   │   ┌──────────────────┐
+│ type             │   │   │     careers      │
+│ month            │   │   ├──────────────────┤
+│ description      │   │   │ id (UUID, PK)    │
+│ reference        │   │   │ code (UNIQUE)    │
+│ created_at       │   │   │ name (UNIQUE)    │
+└──────────────────┘   │   │ description      │
+                        │   │ years            │
+                        │   │ semesters_per_yr │
+                        │   │ is_active        │
+                        │   └──────────────────┘
 ```
 
 ---
@@ -378,19 +448,16 @@ git clone <url-del-repositorio>
 cd registro-academico-upam
 
 # Levantar todos los servicios
-docker-compose up -d
-
-# Verificar que esten corriendo
-docker-compose ps
-
-# Ejecutar el seed de datos de prueba
-docker-compose exec backend npm run seed
+docker compose up -d --build
 ```
 
+> **Nota**: La base de datos se crea automaticamente con el esquema completo y datos de prueba desde `database/init.sql` en el primer arranque. Para reiniciar desde cero: `docker compose down -v && docker compose up -d --build`.
+
 Los servicios estaran disponibles en:
-- **Frontend**: http://localhost:80
+- **Frontend**: http://localhost
 - **Backend API**: http://localhost:3000/api
-- **PostgreSQL**: localhost:5432
+- **Swagger docs**: http://localhost:3000/api/docs
+- **PostgreSQL**: localhost:5433
 
 ### Opcion 2: Desarrollo local
 
@@ -405,14 +472,11 @@ npm install
 # Copiar archivo de variables de entorno
 cp .env.example .env
 
-# Crear la base de datos en PostgreSQL
-# (crear manualmente una base de datos llamada "upam_academico")
+# Cargar el esquema de la base de datos en PostgreSQL
+psql -U postgres upam_academico < database/init.sql
 
 # Ejecutar el servidor en modo desarrollo
 npm run start:dev
-
-# Ejecutar el seed de datos de prueba (en otra terminal)
-npm run seed
 ```
 
 #### Frontend
@@ -457,6 +521,7 @@ npm run lint               # Linting
 | Estudiante | `estudiante@upam.edu.sv` | `estudiante123` | Josue Rauda - Ing. en Sistemas |
 | Colector | `colector@upam.edu.sv` | `colector123` | Consulta de pagos y recaudacion |
 | Administrativo | `administrativo@upam.edu.sv` | `adminstaff123` | Gestion de estudiantes e inscripciones |
+| Docente | docente@upam.edu.sv | docente123 | Catedratico con acceso para registrar notas |
 
 > **Nota**: Estas cuentas se crean al ejecutar `npm run seed` o al levantar Docker por primera vez.
 
@@ -498,9 +563,65 @@ Todas las rutas estan prefijadas con `/api`.
 | GET | `/api/subjects/:id/schedules` | Horarios de una materia en un ciclo | Si |
 | GET | `/api/subjects/:id/prerequisites` | Prerrequisitos de una materia | Si |
 | GET | `/api/subjects/schedules/cycle/:cycleId` | Todos los horarios de un ciclo | Si |
-| POST | `/api/subjects` | Crear materia | Admin |
-| PUT | `/api/subjects/:id` | Actualizar materia | Admin |
-| POST | `/api/subjects/schedules` | Crear horario | Admin |
+| POST | `/api/subjects` | Crear materia | Admin, Administrativo |
+| PUT | `/api/subjects/:id` | Actualizar materia | Admin, Administrativo |
+| DELETE | `/api/subjects/:id` | Desactivar materia (baja logica) | Admin, Administrativo |
+
+### Grupos, docentes y salones
+
+| Metodo | Ruta | Descripcion | Auth |
+|--------|------|-------------|------|
+| GET | `/api/subject-groups` | Listar grupos (filtro por ciclo) | Si |
+| GET | `/api/subject-groups/:id` | Obtener grupo con horarios | Si |
+| POST | `/api/subject-groups` | Crear grupo de materia con horarios | Admin, Administrativo |
+| PUT | `/api/subject-groups/:id` | Actualizar grupo (docente, salon, capacidad) | Admin, Administrativo |
+| DELETE | `/api/subject-groups/:id` | Cancelar grupo (decrementa cupos) | Admin, Administrativo |
+| POST | `/api/subject-groups/:id/schedules` | Agregar horario a un grupo | Admin, Administrativo |
+| DELETE | `/api/subject-groups/:id/schedules/:scheduleId` | Eliminar un horario del grupo | Admin, Administrativo |
+| GET | `/api/teachers` | Listar docentes | Si |
+| GET | `/api/grades/my` | Mis notas y CUM del estudiante | Estudiante |
+| GET | `/api/grades/teacher/groups` | Grupos del docente autenticado | Docente |
+| GET | `/api/grades/teacher/groups/:groupId` | Roster de estudiantes y notas de un grupo | Docente, Admin, Administrativo |
+| PUT | `/api/grades/teacher/groups/:groupId` | Guardar notas del grupo (bloqueado si el ciclo finalizo) | Docente |
+| GET | `/api/grades/teacher/groups/:groupId/export` | Exportar notas del grupo a Excel | Docente, Admin, Administrativo |
+| POST/PUT/DELETE | `/api/teachers/:id` | CRUD de docentes | Admin, Administrativo |
+| GET | `/api/classrooms` | Listar salones | Si |
+| POST/PUT/DELETE | `/api/classrooms/:id` | CRUD de salones | Admin, Administrativo |
+
+### Usuarios
+
+| Metodo | Ruta | Descripcion | Auth |
+|--------|------|-------------|------|
+| GET | `/api/users` | Listar usuarios (filtro por rol) | Admin |
+| GET | `/api/users/:id` | Obtener usuario por ID | Admin |
+| POST | `/api/users` | Crear usuario (crea perfil de estudiante o docente segun el rol) | Admin |
+| PUT | `/api/users/:id` | Actualizar usuario (nombre, rol, estado, contrasena) | Admin |
+| DELETE | `/api/users/:id` | Desactivar cuenta (no permite desactivar administradores) | Admin |
+
+### Configuracion del sistema
+
+| Metodo | Ruta | Descripcion | Auth |
+|--------|------|-------------|------|
+| GET | `/api/settings/public` | Obtener configuracion publica (logo, color, nombre) | No |
+| GET | `/api/settings` | Obtener configuracion completa | Admin |
+| PUT | `/api/settings` | Actualizar logo, color principal y nombre de la institucion | Admin |
+
+### Pensum
+
+| Metodo | Ruta | Descripcion | Auth |
+|--------|------|-------------|------|
+| GET | `/api/pensum` | Pensum estructurado por ano y semestre. **Estudiante**: retorna su carrera con el estado de cada materia (`cursada`/`inscrita`/`pendiente`) y el historial de ciclos en que curso o se inscribio. **Admin/Administrativo**: requiere `?career=` y retorna ademas las materias inactivas para gestionar el plan de estudios. La estructura (cantidad de anos/semestres) proviene de la carrera e incluye `careerConfig` | Estudiante, Admin, Administrativo |
+
+### Carreras
+
+| Metodo | Ruta | Descripcion | Auth |
+|--------|------|-------------|------|
+| GET | `/api/careers` | Listar carreras (con `all=true` incluye inactivas) | Autenticados |
+| GET | `/api/careers/:id` | Obtener carrera por ID | Autenticados |
+| POST | `/api/careers` | Crear carrera (codigo, nombre, descripcion, anos y semestres por ano del pensum) | Admin, Administrativo |
+| PUT | `/api/careers/:id` | Actualizar carrera y estructura del pensum | Admin, Administrativo |
+| DELETE | `/api/careers/:id` | Desactivar carrera (bloqueado si tiene materias activas asignadas) | Admin, Administrativo |
+| PUT | `/api/careers/:id/reactivate` | Reactivar carrera | Admin, Administrativo |
 
 ### Inscripciones
 
@@ -555,6 +676,7 @@ Todas las rutas estan prefijadas con `/api`.
 - Reservar cupo en materias (asiento temporal)
 - Cancelar reserva de materias
 - Confirmar inscripcion completa
+- Ver horario semanal con aulas, docentes y grupos
 - Pagar mensualidades mes a mes (hasta 4 meses)
 - Ver resumen de pagos por ciclo (pagado/pendiente)
 - Ver historial de inscripciones
@@ -566,6 +688,10 @@ Todas las rutas estan prefijadas con `/api`.
 - Gestionar ciclos academicos (crear, editar)
 - Abrir/cerrar inscripcion de materias por ciclo
 - Gestionar estudiantes (ver listado, datos)
+- Gestionar materias, docentes y salones
+- Planificar grupos y horarios por ciclo (asignar docente, salon y capacidad)
+- Gestionar usuarios del sistema (crear, editar, desactivar cuentas)
+- Configurar el sistema (logo institucional, color principal, nombre)
 - Ver todas las inscripciones del sistema
 - Ver estadisticas de inscripcion por ciclo
 - Descargar todos los reportes (inscripciones, recaudacion, lista de estudiantes)
@@ -581,9 +707,23 @@ Todas las rutas estan prefijadas con `/api`.
 ### Administrativo
 
 - Gestionar estudiantes (ver listado, datos)
+- Gestionar materias, docentes y salones
+- Planificar grupos y horarios por ciclo
 - Ver todas las inscripciones del sistema
 - Descargar reporte de inscripciones (Excel)
 - Descargar lista de estudiantes (Excel)
+
+---
+
+## Configuracion del sistema
+
+El modulo de configuracion (solo administradores) permite personalizar la identidad visual de la aplicacion en tiempo real:
+
+- **Logo institucional**: imagen (JPG, PNG o SVG de hasta 2MB) que se muestra en el login, la barra lateral y las vistas publicas.
+- **Color principal**: selector de color hexadecimal que se aplica a la barra lateral, la cabecera y los acentos del sistema. Los tonos secundarios se derivan automaticamente.
+- **Nombre de la institucion**: se muestra en el login, la barra lateral y la cabecera.
+
+La configuracion se almacena en la tabla `system_settings` (una sola fila) y se sirve publicamente a traves de `GET /api/settings/public`, de modo que la interfaz aplica el branding sin requerir autenticacion previa. El frontend guarda una copia en el navegador (localStorage) para mostrarla de inmediato.
 
 ---
 
@@ -597,6 +737,7 @@ Todas las rutas estan prefijadas con `/api`.
 | **Reporte de Inscripciones** | Carnet, nombre, carrera, materias inscritas, total creditos, estado, fecha | Admin, Administrativo |
 | **Reporte de Recaudacion** | Fecha, referencia, estudiante, tipo, monto, estado + totales recaudado/pendiente | Admin, Colector |
 | **Lista de Estudiantes** | Carnet, codigo, nombre, carrera, email, telefono | Admin, Administrativo |
+| **Notas por Grupo** | Carnet, codigo, estudiante, materia, nota, estado | Docente, Admin, Administrativo |
 
 ### PDF
 
@@ -639,7 +780,7 @@ El archivo `docker-compose.yml` define 3 servicios:
 
 ```yaml
 services:
-  db:           # PostgreSQL 16 Alpine
+  db:           # PostgreSQL 16 Alpine (esquema y seed desde database/init.sql)
   backend:      # NestJS app (puerto 3000)
   frontend:     # React app via Nginx (puerto 80)
 ```
@@ -648,20 +789,17 @@ services:
 
 ```bash
 # Levantar todo
-docker-compose up -d
+docker compose up -d --build
 
 # Ver logs
-docker-compose logs -f backend
-docker-compose logs -f frontend
-
-# Ejecutar seed en el contenedor
-docker-compose exec backend npm run seed
+docker compose logs -f backend
+docker compose logs -f frontend
 
 # Detener todo
-docker-compose down
+docker compose down
 
-# Detener y eliminar volumenes (limpiar base de datos)
-docker-compose down -v
+# Detener y eliminar volumenes (reinicia base de datos desde init.sql)
+docker compose down -v && docker compose up -d --build
 ```
 
 ### Dockerfile Backend (multi-stage)
@@ -740,3 +878,9 @@ CMD ["nginx", "-g", "daemon off;"]
 ## Licencia
 
 Este es un proyecto ficticio desarrollado con fines academicos.
+
+
+
+
+
+

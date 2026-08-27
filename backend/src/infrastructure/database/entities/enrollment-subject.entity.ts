@@ -3,12 +3,14 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
 import { Enrollment } from './enrollment.entity';
 import { Subject } from './subject.entity';
 import { Schedule } from './schedule.entity';
+import { Grade } from './grade.entity';
 import { EnrollmentSubjectStatus } from '../../../domain/enums/enrollment-status.enum';
 
 @Entity('enrollment_subjects')
@@ -42,4 +44,7 @@ export class EnrollmentSubject {
 
   @CreateDateColumn({ name: 'reserved_at' })
   reservedAt: Date;
+
+  @OneToMany(() => Grade, (grade) => grade.enrollmentSubject)
+  grades: Grade[];
 }
