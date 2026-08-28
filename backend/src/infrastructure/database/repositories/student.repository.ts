@@ -22,6 +22,10 @@ export class StudentRepository {
     return this.repo.findOne({ where: { studentCode }, relations: ['user'] });
   }
 
+  async findByCarnet(carnet: string): Promise<StudentEntity | null> {
+    return this.repo.findOne({ where: { carnet }, relations: ['user'] });
+  }
+
   async create(data: Partial<StudentEntity>): Promise<StudentEntity> {
     const student = this.repo.create(data);
     return this.repo.save(student);

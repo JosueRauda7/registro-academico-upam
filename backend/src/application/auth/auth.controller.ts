@@ -44,6 +44,16 @@ export class AuthController {
     return this.authService.resetPassword(dto);
   }
 
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt-auth')
+  @ApiOperation({ summary: 'Solicitar cambio de contrasena', description: 'Para usuarios autenticados. Envia un enlace de verificacion al correo del usuario para confirmar el cambio de contrasena.' })
+  @ApiResponse({ status: 200, description: 'Correo de verificacion enviado' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  changePassword(@CurrentUser('sub') userId: string) {
+    return this.authService.changePassword(userId);
+  }
+
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('jwt-auth')

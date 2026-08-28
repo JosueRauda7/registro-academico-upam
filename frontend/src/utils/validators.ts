@@ -15,6 +15,7 @@ export function getStatusColor(status: string): string {
     refunded: 'bg-purple-100 text-purple-800',
     reserved: 'bg-orange-100 text-orange-800',
     confirmed: 'bg-green-100 text-green-800',
+    approved: 'bg-green-100 text-green-800',
   };
   return colors[status] || 'bg-gray-100 text-gray-800';
 }

@@ -8,6 +8,7 @@ import { TeacherRepository } from '../../infrastructure/database/repositories/te
 import { SubjectGroupRepository } from '../../infrastructure/database/repositories/subject-group.repository';
 import { EnrollmentSubjectRepository } from '../../infrastructure/database/repositories/enrollment-subject.repository';
 import { GradeRepository } from '../../infrastructure/database/repositories/grade.repository';
+import { LegacyCompletedSubjectRepository } from '../../infrastructure/database/repositories/legacy-completed-subject.repository';
 import { StudentRepository } from '../../infrastructure/database/repositories/student.repository';
 import { UserRole } from '../../domain/enums/role.enum';
 import * as ExcelJS from 'exceljs';
@@ -22,6 +23,7 @@ export class GradesService {
     private readonly enrollmentSubjectRepository: EnrollmentSubjectRepository,
     private readonly gradeRepository: GradeRepository,
     private readonly studentRepository: StudentRepository,
+    private readonly legacyRepository: LegacyCompletedSubjectRepository,
   ) {}
 
   async getStudentByUserId(userId: string) {
@@ -192,7 +194,7 @@ export class GradesService {
   async getMyGrades(studentId: string) {
     const grades = await this.gradeRepository.findByStudent(studentId);
 
-    const records = grades.map((grade) => {
+    const records: any[] = grades.map((grade) => {
       const es = grade.enrollmentSubject;
       return {
         enrollmentSubjectId: es?.id,
@@ -207,8 +209,28 @@ export class GradesService {
         cycleName: es?.enrollment?.cycle?.name,
         cycleYear: es?.enrollment?.cycle?.year,
         cycleSemester: es?.enrollment?.cycle?.semester,
+        isLegacy: false,
       };
     });
+
+    const legacyRecords = await this.legacyRepository.findByStudent(studentId);
+    for (const legacy of legacyRecords) {
+      records.push({
+        enrollmentSubjectId: legacy.id,
+        subjectId: legacy.subjectId,
+        code: legacy.subject?.code,
+        name: legacy.subject?.name,
+        credits: legacy.subject?.credits,
+        career: legacy.subject?.career,
+        score: Number(legacy.score),
+        status: Number(legacy.score) >= PASSING_SCORE ? 'approved' : 'failed',
+        gradedAt: legacy.createdAt,
+        cycleName: 'Previo al sistema',
+        cycleYear: legacy.year ?? null,
+        cycleSemester: legacy.semester ?? null,
+        isLegacy: true,
+      });
+    }
 
     let cum: number | null = null;
     let approvedCredits = 0;

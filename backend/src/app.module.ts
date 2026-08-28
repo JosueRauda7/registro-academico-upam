@@ -37,6 +37,7 @@ import { LegacySubjectsModule } from './application/legacy-subjects/legacy-subje
     PensumModule,
     CareersModule,
     GradesModule,
+    LegacySubjectsModule,
   ],
 })
 export class AppModule {}

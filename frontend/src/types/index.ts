@@ -80,6 +80,31 @@ export interface Student {
   user: User;
 }
 
+export interface CreateStudentData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  career?: string;
+  phone?: string;
+  address?: string;
+  dateOfBirth?: string;
+  enrollmentYear?: number;
+}
+
+export interface UpdateStudentData {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  isActive?: boolean;
+  password?: string;
+  career?: string;
+  phone?: string;
+  address?: string;
+  dateOfBirth?: string;
+  enrollmentYear?: number;
+}
+
 export interface Cycle {
   id: string;
   name: string;
@@ -221,6 +246,7 @@ export interface GradeRecord {
   cycleName: string;
   cycleYear: number;
   cycleSemester: number;
+  isLegacy?: boolean;
 }
 
 export interface GradesSummary {
@@ -235,6 +261,36 @@ export interface GradesSummary {
 export interface MyGrades {
   records: GradeRecord[];
   summary: GradesSummary;
+}
+
+export interface LegacyCompletedSubject {
+  id: string;
+  student: {
+    id: string;
+    carnet: string;
+    studentCode: string;
+    career: string;
+    name: string;
+  } | null;
+  subjectId: string;
+  code: string;
+  subjectName: string;
+  credits: number;
+  year: number | null;
+  semester: number | null;
+  score: number;
+  status: 'approved' | 'failed';
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface LegacySubjectInput {
+  studentId: string;
+  subjectId: string;
+  score: number;
+  year?: number | null;
+  semester?: number | null;
+  notes?: string | null;
 }
 
 export interface GroupRosterStudent {

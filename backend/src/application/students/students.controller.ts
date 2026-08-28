@@ -1,5 +1,5 @@
-import { Controller, Get, Put, Param, Body, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Put, Param, Body, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { StudentsService } from './students.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -39,12 +39,38 @@ export class StudentsController {
     return this.studentsService.findById(id);
   }
 
+  @Post()
+  @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
+  @ApiOperation({ summary: 'Crear estudiante', description: 'Crea la cuenta de usuario y el perfil academico de un estudiante. Solo administradores y administrativos.' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['email', 'password', 'firstName', 'lastName'],
+      properties: {
+        email: { type: 'string', example: 'estudiante2@upam.edu.sv' },
+        password: { type: 'string', example: 'segura123' },
+        firstName: { type: 'string', example: 'Maria' },
+        lastName: { type: 'string', example: 'Lopez' },
+        career: { type: 'string', example: 'Ingenieria en Sistemas' },
+        phone: { type: 'string', example: '7000-0000' },
+        address: { type: 'string' },
+        dateOfBirth: { type: 'string', format: 'date' },
+        enrollmentYear: { type: 'number', example: 2026 },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Estudiante creado' })
+  @ApiResponse({ status: 409, description: 'Correo ya registrado' })
+  create(@Body() body: any) {
+    return this.studentsService.create(body);
+  }
+
   @Put(':id')
-  @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Actualizar estudiante', description: 'Solo administradores pueden actualizar datos de un estudiante.' })
+  @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
+  @ApiOperation({ summary: 'Actualizar estudiante', description: 'Actualiza datos de la cuenta y del perfil academico de un estudiante (incluye activar/desactivar). Solo administradores y administrativos.' })
   @ApiParam({ name: 'id', description: 'UUID del estudiante' })
   @ApiResponse({ status: 200, description: 'Estudiante actualizado' })
-  @ApiResponse({ status: 403, description: 'Sin permisos de administrador' })
+  @ApiResponse({ status: 403, description: 'Sin permisos de administrador o administrativo' })
   update(@Param('id') id: string, @Body() body: any) {
     return this.studentsService.update(id, body);
   }

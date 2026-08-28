@@ -182,8 +182,8 @@ backend/src/
 │   │   ├── payments.controller.ts  ← Rutas: /payments/*
 │   │   └── payments.module.ts
 │   ├── students/
-│   │   ├── students.service.ts     ← CRUD estudiantes
-│   │   ├── students.controller.ts  ← Rutas: /students/*
+│   │   ├── students.service.ts     ← CRUD estudiantes (crea cuenta + perfil, gestiona estado)
+│   │   ├── students.controller.ts  ← Rutas: /students/* (crear/editar admin y administrativo)
 │   │   └── students.module.ts
 │   ├── users/
 │   │   ├── users.service.ts        ← CRUD de cuentas de usuario (solo admin)
@@ -201,6 +201,14 @@ backend/src/
 │   │   ├── careers.service.ts      ← Mantenimiento de carreras (estructura del pensum: anos/semestres)
 │   │   ├── careers.controller.ts   ← Rutas: /careers/* (lectura todos, escritura admin/administrativo)
 │   │   └── careers.module.ts
+│   ├── grades/
+│   │   ├── grades.service.ts       ← Notas por grupo (docente), CUM e historial de notas del estudiante
+│   │   ├── grades.controller.ts    ← Rutas: /grades/* (docente, estudiante, admin/administrativo)
+│   │   └── grades.module.ts
+│   ├── legacy-subjects/
+│   │   ├── legacy-subjects.service.ts ← Materias cursadas previas al sistema (carga historica)
+│   │   ├── legacy-subjects.controller.ts ← Rutas: /legacy-subjects/* (admin/administrativo)
+│   │   └── legacy-subjects.module.ts
 │   └── reports/
 │       ├── reports.service.ts      ← Generacion de Excel (ExcelJS) y PDF (PDFKit)
 │       ├── reports.controller.ts   ← Rutas: /reports/*
@@ -223,6 +231,8 @@ backend/src/
 │   │   │   ├── enrollment-subject.entity.ts
 │   │   │   ├── system-setting.entity.ts
 │   │   │   ├── career.entity.ts
+│   │   │   ├── grade.entity.ts
+│   │   │   ├── legacy-completed-subject.entity.ts
 │   │   │   └── payment.entity.ts
 │   │   ├── repositories/           ← Repositorios TypeORM con metodos de acceso a datos
 │   │   │   ├── user.repository.ts
@@ -237,7 +247,9 @@ backend/src/
 │   │   │   ├── enrollment-subject.repository.ts
 │   │   │   ├── payment.repository.ts
 │   │   │   ├── system-setting.repository.ts
-│   │   │   └── career.repository.ts
+│   │   │   ├── career.repository.ts
+│   │   │   ├── grade.repository.ts
+│   │   │   └── legacy-completed-subject.repository.ts
 │   │   └── seeds/
 │   │       └── seed.ts             ← Script de semilla con datos de prueba
 │   ├── payment/
@@ -281,6 +293,8 @@ frontend/src/
 │   ├── users.api.ts                  ← Gestion de usuarios (admin)
 │   ├── settings.api.ts               ← Configuracion del sistema (logo, color)
 │   ├── pensum.api.ts                 ← Pensum del estudiante y de carreras
+│   ├── grades.api.ts                 ← Notas y CUM del estudiante, grupos y notas del docente
+│   ├── legacySubjects.api.ts         ← Materias cursadas previas al sistema (admin/administrativo)
 │   └── careers.api.ts                ← Mantenimiento de carreras
 │
 ├── components/
@@ -306,6 +320,7 @@ frontend/src/
 │   │   ├── LoginPage.tsx             ← Formulario de inicio de sesion con credenciales de prueba
 │   │   ├── ForgotPasswordPage.tsx    ← Solicitar recuperacion de contrasena
 │   │   └── ResetPasswordPage.tsx     ← Establecer nueva contrasena con token
+│   │   └── ChangePasswordPage.tsx    ← Cambiar contrasena (verificacion por correo)
 │   ├── dashboard/
 │   │   └── DashboardPage.tsx         ← Panel principal con ciclo actual y acciones rapidas
 │   ├── enrollments/
@@ -329,15 +344,17 @@ frontend/src/
 │   │   └── PensumPage.tsx            ← Gestion del pensum por carrera (admin/administrativo)
 │   ├── careers/
 │   │   └── CareersPage.tsx           ← Mantenimiento de carreras: CRUD y estructura del pensum (anos/semestres)
-   grades/
-      TeacherGroupsPage.tsx   Lista de grupos del docente
-      GradeEntryPage.tsx     Registro y export de notas del grupo
+│   ├── grades/
+│   │   ├── TeacherGroupsPage.tsx     ← Lista de grupos del docente
+│   │   └── GradeEntryPage.tsx        ← Registro y export de notas del grupo (bloqueado si el ciclo finalizo)
+│   ├── legacy-subjects/
+│   │   └── LegacySubjectsPage.tsx    ← Materias previas al sistema que afectan el CUM (admin/administrativo)
 │   ├── reports/
 │   │   └── ReportsPage.tsx           ← Descarga de reportes Excel/PDF
 │   ├── cycles/
 │   │   └── CyclesPage.tsx            ← Gestion de ciclos (admin: abrir/cerrar inscripcion)
 │   └── students/
-│       └── StudentsListPage.tsx      ← Listado de estudiantes (admin/administrativo)
+│       └── StudentsListPage.tsx      ← Gestion de estudiantes: crear, editar y activar/desactivar (admin/administrativo)
 │
 ├── types/
 │   └── index.ts                      ← Todas las interfaces TypeScript del proyecto
@@ -429,6 +446,13 @@ frontend/src/
                         │   │ is_active        │
                         │   └──────────────────┘
 ```
+
+#### Tablas de notas y materias previas al sistema
+
+| Tabla | Columnas | Notas |
+|---|---|---|
+| `grades` | `id`, `student_id (FK)`, `subject_id (FK)`, `cycle_id (FK)`, `group_id (FK)`, `score`, `is_approved`, `created_at` | Notas de un grupo cargadas por el docente en un ciclo |
+| `legacy_completed_subjects` | `id`, `student_id (FK)`, `subject_id (FK)`, `score (0-100)`, `year`, `semester`, `notes`, `registered_by (FK → users)`, `created_at`, `updated_at` | Materias cursadas previas al sistema (carga historica). `UNIQUE(student_id, subject_id)`; las notas se incluyen en el calculo del CUM |
 
 ---
 
@@ -539,7 +563,10 @@ Todas las rutas estan prefijadas con `/api`.
 | POST | `/api/auth/login` | Iniciar sesion | No |
 | POST | `/api/auth/forgot-password` | Solicitar recuperacion de contrasena | No |
 | POST | `/api/auth/reset-password` | Restablecer contrasena con token | No |
+| POST | `/api/auth/change-password` | Solicitar cambio de contrasena (envia enlace de verificacion al correo del usuario autenticado) | Si |
 | GET | `/api/auth/profile` | Obtener perfil del usuario autenticado | Si |
+
+> **Cambio de contrasena con verificacion por correo**: un usuario autenticado inicia el cambio desde "Cambiar contrasena" (cabecera). El backend envía un enlace de verificacion por correo (token JWT de 1 hora, de un solo uso) que lleva a `/reset-password`, donde el usuario define su nueva contrasena. El flujo es identico al de "olvidar contrasena" y aplica a todos los roles. El envio real de correos depende de la variable `RESEND_API_KEY`.
 
 ### Ciclos
 
@@ -584,6 +611,10 @@ Todas las rutas estan prefijadas con `/api`.
 | GET | `/api/grades/teacher/groups/:groupId` | Roster de estudiantes y notas de un grupo | Docente, Admin, Administrativo |
 | PUT | `/api/grades/teacher/groups/:groupId` | Guardar notas del grupo (bloqueado si el ciclo finalizo) | Docente |
 | GET | `/api/grades/teacher/groups/:groupId/export` | Exportar notas del grupo a Excel | Docente, Admin, Administrativo |
+| GET | `/api/legacy-subjects?studentId=` | Listar materias previas al sistema de un estudiante (incluye datos del estudiante y la materia) | Admin, Administrativo |
+| POST | `/api/legacy-subjects` | Registrar materia cursada previa al sistema (afecta el CUM; no permite duplicar materia por estudiante) | Admin, Administrativo |
+| PUT | `/api/legacy-subjects/:id` | Editar la nota, ano, semestre u observaciones de una materia previa | Admin, Administrativo |
+| DELETE | `/api/legacy-subjects/:id` | Eliminar una materia previa registrada | Admin, Administrativo |
 | POST/PUT/DELETE | `/api/teachers/:id` | CRUD de docentes | Admin, Administrativo |
 | GET | `/api/classrooms` | Listar salones | Si |
 | POST/PUT/DELETE | `/api/classrooms/:id` | CRUD de salones | Admin, Administrativo |
@@ -597,6 +628,25 @@ Todas las rutas estan prefijadas con `/api`.
 | POST | `/api/users` | Crear usuario (crea perfil de estudiante o docente segun el rol) | Admin |
 | PUT | `/api/users/:id` | Actualizar usuario (nombre, rol, estado, contrasena) | Admin |
 | DELETE | `/api/users/:id` | Desactivar cuenta (no permite desactivar administradores) | Admin |
+
+### Estudiantes
+
+| Metodo | Ruta | Descripcion | Auth |
+|--------|------|-------------|------|
+| GET | `/api/students` | Listar todos los estudiantes (con datos de la cuenta) | Admin, Administrativo, Colector |
+| GET | `/api/students/me` | Perfil de estudiante del usuario autenticado | Estudiante |
+| GET | `/api/students/:id` | Obtener estudiante por ID | Autenticados |
+| POST | `/api/students` | Crear estudiante (cuenta + perfil academico; carnet y codigo autogenerados) | Admin, Administrativo |
+| PUT | `/api/students/:id` | Actualizar estudiante (datos de cuenta, contrasena y perfil; incluye activar/desactivar) | Admin, Administrativo |
+
+**Reglas de validacion en crear/editar estudiante:**
+
+- El carnet y el codigo se **autogeneran** al crear (`C####` y `UPAM-AAAA-####`) y son inmutables (solo lectura en edicion).
+- El **correo** debe pertenecer al dominio `@upam.edu.sv` (caso se normaliza a minusculas).
+- El **telefono** debe tener **8 digitos** y se normaliza al formato `XXXX-XXXX` (opcional).
+- La **fecha de nacimiento** no puede ser futura y el estudiante debe ser **mayor de 18 anos** (opcional).
+- El **carnet** es unico: se valida que no exista otro estudiante con el mismo (evita duplicados).
+- La **contrasena** debe tener minimo 6 caracteres y el correo no puede repetirse (409).
 
 ### Configuracion del sistema
 
@@ -680,6 +730,7 @@ Todas las rutas estan prefijadas con `/api`.
 - Pagar mensualidades mes a mes (hasta 4 meses)
 - Ver resumen de pagos por ciclo (pagado/pendiente)
 - Ver historial de inscripciones
+- Ver sus notas y CUM (incluye materias previas al sistema registradas por administracion, marcadas como historicas)
 - Descargar reporte de pagos propios (Excel)
 
 ### Administrador
@@ -687,13 +738,14 @@ Todas las rutas estan prefijadas con `/api`.
 - Todo lo del estudiante, ademas:
 - Gestionar ciclos academicos (crear, editar)
 - Abrir/cerrar inscripcion de materias por ciclo
-- Gestionar estudiantes (ver listado, datos)
+- Gestionar estudiantes (crear, editar datos, activar/desactivar cuentas)
 - Gestionar materias, docentes y salones
 - Planificar grupos y horarios por ciclo (asignar docente, salon y capacidad)
 - Gestionar usuarios del sistema (crear, editar, desactivar cuentas)
 - Configurar el sistema (logo institucional, color principal, nombre)
 - Ver todas las inscripciones del sistema
 - Ver estadisticas de inscripcion por ciclo
+- Gestionar materias previas al sistema (registrar, editar y eliminar notas historicas que afectan el CUM del estudiante)
 - Descargar todos los reportes (inscripciones, recaudacion, lista de estudiantes)
 
 ### Colector
@@ -704,12 +756,20 @@ Todas las rutas estan prefijadas con `/api`.
 - Descargar reporte de pagos de estudiantes (Excel)
 - Descargar comprobantes de pago (PDF)
 
+### Docente
+
+- Ver los grupos de materias asignados en el ciclo actual
+- Ver el roster de estudiantes de cada grupo
+- Registrar y editar las notas de sus grupos (bloqueado si el ciclo ya finalizo)
+- Exportar las notas de un grupo a Excel
+
 ### Administrativo
 
-- Gestionar estudiantes (ver listado, datos)
+- Gestionar estudiantes (crear, editar datos, activar/desactivar cuentas)
 - Gestionar materias, docentes y salones
 - Planificar grupos y horarios por ciclo
 - Ver todas las inscripciones del sistema
+- Gestionar materias previas al sistema (registrar, editar y eliminar notas historicas que afectan el CUM del estudiante)
 - Descargar reporte de inscripciones (Excel)
 - Descargar lista de estudiantes (Excel)
 
@@ -757,6 +817,9 @@ El sistema esta integrado con la API de **Wompi** en modo sandbox para procesar 
 WOMPI_PUBLIC_KEY=pk_test_abc123      # Clave publica (sandbox)
 WOMPI_PRIVATE_KEY=sk_test_abc123     # Clave privada (sandbox)
 WOMPI_BASE_URL=https://sandbox.wompi.co/v1
+RESEND_API_KEY=re_xxx                # Clave de Resend para envio de correos (recuperacion de contrasena, pagos, inscripciones)
+RESEND_FROM_EMAIL=UPAM <no-reply@upam.edu.sv>
+FRONTEND_URL=http://localhost         # URL publica del frontend usada en los enlaces de los correos
 ```
 
 ### Flujo de pago

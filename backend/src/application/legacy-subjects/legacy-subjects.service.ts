@@ -42,6 +42,7 @@ export class LegacySubjectsService {
               : '',
           }
         : null,
+      subjectId: r.subject?.id,
       code: r.subject?.code,
       subjectName: r.subject?.name,
       credits: r.subject?.credits,
@@ -87,7 +88,7 @@ export class LegacySubjectsService {
       );
     }
 
-    const record = await this.legacyRepository.create({
+    const created = await this.legacyRepository.create({
       studentId: data.studentId,
       subjectId: data.subjectId,
       score: Math.round(score * 100) / 100,
@@ -97,7 +98,8 @@ export class LegacySubjectsService {
       registeredById,
     });
 
-    return this.toDto(record);
+    const withRelations = await this.legacyRepository.findById(created.id);
+    return this.toDto(withRelations);
   }
 
   async update(
@@ -158,6 +160,7 @@ export class LegacySubjectsService {
               : '',
           }
         : null,
+      subjectId: r.subject?.id,
       code: r.subject?.code,
       subjectName: r.subject?.name,
       credits: r.subject?.credits,

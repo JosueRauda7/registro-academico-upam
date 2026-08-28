@@ -138,6 +138,23 @@ export class AuthService {
       return { message: 'Si el correo existe, se ha enviado un enlace de recuperación' };
     }
 
+    await this.issueResetToken(user);
+
+    return { message: 'Si el correo existe, se ha enviado un enlace de recuperación' };
+  }
+
+  async changePassword(userId: string) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    await this.issueResetToken(user);
+
+    return { message: 'Se ha enviado un enlace de verificacion a tu correo electronico' };
+  }
+
+  private async issueResetToken(user: any) {
     const resetToken = this.jwtService.sign(
       { sub: user.id, purpose: 'password-reset' },
       { expiresIn: '1h' },
@@ -149,8 +166,6 @@ export class AuthService {
     });
 
     await this.emailService.sendPasswordResetEmail(user.email, resetToken);
-
-    return { message: 'Si el correo existe, se ha enviado un enlace de recuperación' };
   }
 
   async resetPassword(dto: ResetPasswordDto) {

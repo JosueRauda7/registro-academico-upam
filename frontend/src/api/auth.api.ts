@@ -22,6 +22,11 @@ export const authApi = {
     return res.data.data;
   },
 
+  changePassword: async () => {
+    const res = await api.post('/auth/change-password');
+    return res.data.data;
+  },
+
   getProfile: async () => {
     const res = await api.get('/auth/profile');
     return res.data.data;

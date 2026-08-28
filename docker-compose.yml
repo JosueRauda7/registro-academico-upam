@@ -39,7 +39,7 @@ services:
       WOMPI_BASE_URL: https://sandbox.wompi.co/v1
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-UPAM <no-reply@upam.edu.sv>}
-      FRONTEND_URL: http://localhost:5173
+      FRONTEND_URL: http://localhost
       PORT: 3000
     depends_on:
       db:

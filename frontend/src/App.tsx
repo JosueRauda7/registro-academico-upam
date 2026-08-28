@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
+import { ChangePasswordPage } from '@/pages/auth/ChangePasswordPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { EnrollmentPage } from '@/pages/enrollments/EnrollmentPage';
 import { EnrollmentHistoryPage } from '@/pages/enrollments/EnrollmentHistoryPage';
@@ -25,6 +26,7 @@ import { MyPensumPage } from '@/pages/pensum/MyPensumPage';
 import { CareersPage } from '@/pages/careers/CareersPage';
 import { TeacherGroupsPage } from '@/pages/grades/TeacherGroupsPage';
 import { GradeEntryPage } from '@/pages/grades/GradeEntryPage';
+import { LegacySubjectsPage } from '@/pages/legacy-subjects/LegacySubjectsPage';
 
 function App() {
   return (
@@ -36,6 +38,14 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route
+            path="/cambiar-contrasena"
+            element={
+              <ProtectedRoute>
+                <ChangePasswordPage />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/dashboard"
@@ -104,8 +114,16 @@ function App() {
           <Route
             path="/estudiantes"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={[UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE]}>
                 <StudentsListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/materias-previas"
+            element={
+              <ProtectedRoute roles={[UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE]}>
+                <LegacySubjectsPage />
               </ProtectedRoute>
             }
           />

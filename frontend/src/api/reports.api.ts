@@ -40,15 +40,3 @@ export const reportsApi = {
     return res.data;
   },
 };
-
-export const studentsApi = {
-  findAll: async () => {
-    const res = await api.get('/students');
-    return res.data.data;
-  },
-
-  getMe: async () => {
-    const res = await api.get('/students/me');
-    return res.data.data;
-  },
-};

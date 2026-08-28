@@ -18,6 +18,7 @@ import {
   Library,
   BookMarked,
   ClipboardList,
+  BookOpenCheck,
   X,
 } from 'lucide-react';
 
@@ -43,6 +44,7 @@ const navItems: NavItem[] = [
   { to: '/pensum', icon: BookMarked, label: 'Pensum', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/carreras', icon: GraduationCap, label: 'Carreras', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/estudiantes', icon: Users, label: 'Estudiantes', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
+  { to: '/materias-previas', icon: BookOpenCheck, label: 'Materias Previas', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/ciclos', icon: Calendar, label: 'Ciclos', roles: [UserRole.ADMINISTRATOR] },
   { to: '/usuarios', icon: Users, label: 'Usuarios', roles: [UserRole.ADMINISTRATOR] },
   { to: '/configuracion', icon: Settings, label: 'Configuracion', roles: [UserRole.ADMINISTRATOR] },
