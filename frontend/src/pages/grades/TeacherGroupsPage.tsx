@@ -98,7 +98,7 @@ export function TeacherGroupsPage() {
             <AlertTriangle size={18} className="mt-0.5 text-yellow-500" />
             <p>
               Cuando el ciclo academico haya finalizado ya no se podran modificar las notas.
-              Las notas son calificaciones de 0 a 100; se considera aprobada una materia con 60 o mas.
+              Las notas son calificaciones de 0 a 10; se considera aprobada una materia con 6 o mas.
             </p>
           </div>
         </Card>

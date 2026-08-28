@@ -60,10 +60,10 @@ export function GradeEntryPage() {
     });
 
     const invalid = entries.find(
-      (e) => e.score !== null && (Number.isNaN(e.score) || e.score! < 0 || e.score! > 100),
+      (e) => e.score !== null && (Number.isNaN(e.score) || e.score! < 0 || e.score! > 10),
     );
     if (invalid) {
-      toast.error('Todas las notas deben ser numeros entre 0 y 100');
+      toast.error('Todas las notas deben ser numeros entre 0 y 10');
       return;
     }
 
@@ -148,7 +148,7 @@ export function GradeEntryPage() {
                     <th className="px-4 py-3">Carnet</th>
                     <th className="px-4 py-3">Codigo</th>
                     <th className="px-4 py-3">Estudiante</th>
-                    <th className="px-4 py-3">Nota (0-100)</th>
+                    <th className="px-4 py-3">Nota (0-10)</th>
                     <th className="px-4 py-3">Estado</th>
                   </tr>
                 </thead>
@@ -167,7 +167,7 @@ export function GradeEntryPage() {
                           <input
                             type="number"
                             min={0}
-                            max={100}
+                            max={10}
                             step="0.01"
                             disabled={cycleEnded}
                             value={scores[s.enrollmentSubjectId] ?? ''}

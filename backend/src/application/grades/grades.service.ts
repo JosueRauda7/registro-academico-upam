@@ -13,7 +13,7 @@ import { StudentRepository } from '../../infrastructure/database/repositories/st
 import { UserRole } from '../../domain/enums/role.enum';
 import * as ExcelJS from 'exceljs';
 
-export const PASSING_SCORE = 60;
+export const PASSING_SCORE = 6;
 
 @Injectable()
 export class GradesService {
@@ -173,9 +173,9 @@ export class GradesService {
         );
       }
       const score = Number(entry.score);
-      if (Number.isNaN(score) || score < 0 || score > 100) {
+      if (Number.isNaN(score) || score < 0 || score > 10) {
         throw new BadRequestException(
-          'La nota debe ser un numero entre 0 y 100',
+          'La nota debe ser un numero entre 0 y 10',
         );
       }
       const status = score >= PASSING_SCORE ? 'approved' : 'failed';

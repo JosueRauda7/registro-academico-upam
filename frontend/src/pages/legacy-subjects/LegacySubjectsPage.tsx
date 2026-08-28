@@ -87,8 +87,8 @@ export function LegacySubjectsPage() {
       toast.error('Selecciona una materia');
       return;
     }
-    if (Number.isNaN(score) || score < 0 || score > 100) {
-      toast.error('La nota debe ser un numero entre 0 y 100');
+    if (Number.isNaN(score) || score < 0 || score > 10) {
+      toast.error('La nota debe ser un numero entre 0 y 10');
       return;
     }
     setSaving(true);
@@ -126,8 +126,8 @@ export function LegacySubjectsPage() {
     e.preventDefault();
     if (!editing) return;
     const score = Number(editForm.score);
-    if (Number.isNaN(score) || score < 0 || score > 100) {
-      toast.error('La nota debe ser un numero entre 0 y 100');
+    if (Number.isNaN(score) || score < 0 || score > 10) {
+      toast.error('La nota debe ser un numero entre 0 y 10');
       return;
     }
     setSaving(true);
@@ -218,9 +218,9 @@ export function LegacySubjectsPage() {
                   <Input
                     type="number"
                     min={0}
-                    max={100}
+                    max={10}
                     step="0.01"
-                    placeholder="0 - 100"
+                    placeholder="0 - 10"
                     value={form.score}
                     onChange={(e) => setForm({ ...form, score: e.target.value })}
                   />
@@ -339,7 +339,7 @@ export function LegacySubjectsPage() {
             label="Nota *"
             type="number"
             min={0}
-            max={100}
+            max={10}
             step="0.01"
             value={editForm.score}
             onChange={(e) => setEditForm({ ...editForm, score: e.target.value })}

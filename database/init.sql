@@ -234,7 +234,7 @@ CREATE TYPE grade_status AS ENUM ('approved', 'failed');
 CREATE TABLE grades (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     enrollment_subject_id UUID NOT NULL UNIQUE REFERENCES enrollment_subjects(id) ON DELETE CASCADE,
-    score DECIMAL(5,2) NOT NULL CHECK (score >= 0 AND score <= 100),
+    score DECIMAL(5,2) NOT NULL CHECK (score >= 0 AND score <= 10),
     status grade_status NOT NULL,
     graded_by UUID REFERENCES teachers(id),
     graded_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -255,7 +255,7 @@ CREATE TABLE legacy_completed_subjects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     subject_id UUID NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
-    score DECIMAL(5,2) NOT NULL CHECK (score >= 0 AND score <= 100),
+    score DECIMAL(5,2) NOT NULL CHECK (score >= 0 AND score <= 10),
     year INTEGER,
     semester INTEGER,
     notes TEXT,

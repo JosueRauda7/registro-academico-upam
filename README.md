@@ -452,7 +452,7 @@ frontend/src/
 | Tabla | Columnas | Notas |
 |---|---|---|
 | `grades` | `id`, `student_id (FK)`, `subject_id (FK)`, `cycle_id (FK)`, `group_id (FK)`, `score`, `is_approved`, `created_at` | Notas de un grupo cargadas por el docente en un ciclo |
-| `legacy_completed_subjects` | `id`, `student_id (FK)`, `subject_id (FK)`, `score (0-100)`, `year`, `semester`, `notes`, `registered_by (FK → users)`, `created_at`, `updated_at` | Materias cursadas previas al sistema (carga historica). `UNIQUE(student_id, subject_id)`; las notas se incluyen en el calculo del CUM |
+| `legacy_completed_subjects` | `id`, `student_id (FK)`, `subject_id (FK)`, `score (0-10)`, `year`, `semester`, `notes`, `registered_by (FK → users)`, `created_at`, `updated_at` | Materias cursadas previas al sistema (carga historica). `UNIQUE(student_id, subject_id)`; las notas se incluyen en el calculo del CUM |
 
 ---
 
