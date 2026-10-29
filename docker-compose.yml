@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD en .env}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Configure DATABASE_PASSWORD en .env}
     ports:
-      - '127.0.0.1:5433:5432'
+      - '127.0.0.1:5434:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -28,7 +28,7 @@ services:
     container_name: upam_backend
     restart: unless-stopped
     ports:
-      - '127.0.0.1:3000:3000'
+      - '127.0.0.1:3002:3000'
     volumes:
       - uploads:/app/uploads
     environment:
@@ -46,7 +46,7 @@ services:
       WOMPI_BASE_URL: https://sandbox.wompi.co/v1
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-UPAM <no-reply@upam.edu.sv>}
-      FRONTEND_URL: http://localhost
+      FRONTEND_URL: ${FRONTEND_URL:-http://192.168.0.151:8082}
       PORT: 3000
     depends_on:
       db:
@@ -59,7 +59,7 @@ services:
     container_name: upam_frontend
     restart: unless-stopped
     ports:
-      - '127.0.0.1:80:80'
+      - '0.0.0.0:8082:80'
     depends_on:
       - backend
 
