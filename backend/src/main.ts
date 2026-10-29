@@ -16,7 +16,16 @@ async function bootstrap() {
 
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
-  app.use(helmet());
+  // HTTP development hosts cannot serve assets upgraded to HTTPS by the browser.
+  const frontendUsesHttps = configService.get<string>('FRONTEND_URL', '').startsWith('https://');
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        upgradeInsecureRequests: frontendUsesHttps ? [] : null,
+      },
+    },
+    strictTransportSecurity: frontendUsesHttps ? undefined : false,
+  }));
   app.enableCors({
     origin: configService.get<string>('FRONTEND_URL', 'http://localhost:5173'),
     credentials: true,
