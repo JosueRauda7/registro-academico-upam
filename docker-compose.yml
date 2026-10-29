@@ -6,12 +6,15 @@ services:
     environment:
       POSTGRES_DB: upam_academico
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD en .env}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Configure DATABASE_PASSWORD en .env}
     ports:
-      - '5433:5432'
+      - '127.0.0.1:5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/init-app-role.sh:/docker-entrypoint-initdb.d/zz-app-role.sh:ro
+      - ./database/security-role.sql:/opt/upam/security-role.sql:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
@@ -25,17 +28,21 @@ services:
     container_name: upam_backend
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
+    volumes:
+      - uploads:/app/uploads
     environment:
       DATABASE_HOST: db
       DATABASE_PORT: 5432
       DATABASE_NAME: upam_academico
-      DATABASE_USER: postgres
-      DATABASE_PASSWORD: postgres
-      JWT_SECRET: upam-secret-key-2026-academico
+      DATABASE_USER: upam_app
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Configure DATABASE_PASSWORD en .env}
+      JWT_SECRET: ${JWT_SECRET:?Configure JWT_SECRET en .env}
+      NODE_ENV: production
       JWT_EXPIRATION: 24h
-      WOMPI_PUBLIC_KEY: pk_test_abc123
-      WOMPI_PRIVATE_KEY: sk_test_abc123
+      WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-}
+      WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY:-}
+      WOMPI_EVENTS_SECRET: ${WOMPI_EVENTS_SECRET:-}
       WOMPI_BASE_URL: https://sandbox.wompi.co/v1
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-UPAM <no-reply@upam.edu.sv>}
@@ -52,9 +59,10 @@ services:
     container_name: upam_frontend
     restart: unless-stopped
     ports:
-      - '80:80'
+      - '127.0.0.1:80:80'
     depends_on:
       - backend
 
 volumes:
   pgdata:
+  uploads:

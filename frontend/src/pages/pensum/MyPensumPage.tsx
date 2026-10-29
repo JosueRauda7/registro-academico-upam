@@ -68,7 +68,7 @@ export function MyPensumPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Mi Pensum</h1>
           <p className="text-gray-500">
-            Plan de estudios de <strong>{pensum.career}</strong> - total {pensum.totalSubjects} materias, {pensum.totalCredits} creditos
+            Plan de estudios de <strong>{pensum.career}</strong> - total {pensum.totalSubjects} materias, {pensum.totalCredits} créditos
           </p>
         </div>
 
@@ -135,7 +135,7 @@ export function MyPensumPage() {
         <div className="space-y-8">
           {pensum.years.map((yr) => (
             <div key={yr.year}>
-              <h2 className="mb-3 text-lg font-bold text-gray-800">Ano {yr.year}</h2>
+              <h2 className="mb-3 text-lg font-bold text-gray-800">Año {yr.year}</h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {yr.semesters.map((sem) => (
                   <Card key={sem.semester} title={`Semestre ${sem.semester}`}>
@@ -152,7 +152,7 @@ export function MyPensumPage() {
                             <p className="font-medium">
                               <span className="text-upam-primary">{s.code}</span> - {s.name}
                             </p>
-                            <p className="text-xs text-gray-500">{s.credits} creditos</p>
+                            <p className="text-xs text-gray-500">{s.credits} créditos</p>
                             {s.state && s.state !== 'pending' && stateSummary(s) && (
                               <p className="mt-1 text-xs text-gray-400">
                                 {s.state === 'completed' ? 'Cursada en' : 'Inscrita en'} {stateSummary(s)}

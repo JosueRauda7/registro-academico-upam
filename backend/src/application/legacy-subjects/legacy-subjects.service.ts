@@ -78,7 +78,7 @@ export class LegacySubjectsService {
 
     const score = Number(data.score);
     if (Number.isNaN(score) || score < 0 || score > 10) {
-      throw new BadRequestException('La nota debe ser un numero entre 0 y 10');
+      throw new BadRequestException('La nota debe ser un número entre 0 y 10');
     }
 
     const existing = await this.legacyRepository.findByStudent(data.studentId);
@@ -119,7 +119,7 @@ export class LegacySubjectsService {
     if (data.score !== undefined) {
       const score = Number(data.score);
       if (Number.isNaN(score) || score < 0 || score > 10) {
-        throw new BadRequestException('La nota debe ser un numero entre 0 y 10');
+        throw new BadRequestException('La nota debe ser un número entre 0 y 10');
       }
       record.score = Math.round(score * 100) / 100;
     }

@@ -92,11 +92,11 @@ export function SchedulePage() {
           {currentCycle && (
             <Badge
               status={currentCycle.enrollmentOpen ? 'pending' : 'active'}
-              label={currentCycle.enrollmentOpen ? 'Pendiente de confirmacion' : 'Confirmado'}
+              label={currentCycle.enrollmentOpen ? 'Pendiente de confirmación' : 'Confirmado'}
             />
           )}
           <span className="text-sm text-gray-500">
-            {activeSubjects.length} materias · {totalCredits} creditos
+            {activeSubjects.length} materias · {totalCredits} créditos
           </span>
         </div>
 
@@ -194,7 +194,7 @@ export function SchedulePage() {
                         )}
                       </p>
                       <span className="text-sm font-medium text-upam-primary">
-                        {es.subject?.credits} creditos
+                        {es.subject?.credits} créditos
                       </span>
                     </div>
                     <div className="mt-2 space-y-1 text-sm text-gray-600">
@@ -204,7 +204,7 @@ export function SchedulePage() {
                       </p>
                       <p className="flex items-center gap-2">
                         <DoorOpen size={14} className="text-gray-400" />
-                        Salon: {es.schedule?.group?.classroom?.name || '-'}
+                        Salón: {es.schedule?.group?.classroom?.name || '-'}
                       </p>
                       <p className="flex items-center gap-2">
                         <Users size={14} className="text-gray-400" />

@@ -30,7 +30,7 @@ export function getStatusLabel(status: string): string {
     refunded: 'Reembolsado',
     reserved: 'Reservado',
     confirmed: 'Confirmado',
-    tuition: 'Matricula',
+    tuition: 'Matrícula',
     monthly: 'Mensualidad',
   };
   return labels[status] || status;

@@ -16,10 +16,10 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STUDENT)
   @ApiBearerAuth('jwt-auth')
-  @ApiOperation({ summary: 'Pagar matricula', description: 'Crea un pago de matricula para el ciclo indicado. Redirige a Wompi para completar el pago.' })
+  @ApiOperation({ summary: 'Pagar matrícula', description: 'Crea un pago de matrícula para el ciclo indicado. Redirige a Wompi para completar el pago.' })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
-  @ApiResponse({ status: 201, description: 'Pago de matricula creado, retorna URL de Wompi' })
-  @ApiResponse({ status: 400, description: 'Ya existe pago de matricula para este ciclo' })
+  @ApiResponse({ status: 201, description: 'Pago de matrícula creado, retorna URL de Wompi' })
+  @ApiResponse({ status: 400, description: 'Ya existe pago de matrícula para este ciclo' })
   @ApiResponse({ status: 403, description: 'Solo estudiantes pueden pagar' })
   createTuitionPayment(
     @CurrentUser('sub') userId: string,
@@ -32,9 +32,9 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STUDENT)
   @ApiBearerAuth('jwt-auth')
-  @ApiOperation({ summary: 'Pagar mensualidad', description: 'Crea un pago mensual para el ciclo indicado. Se especifica el numero de mes a pagar.' })
+  @ApiOperation({ summary: 'Pagar mensualidad', description: 'Crea un pago mensual para el ciclo indicado. Se específica el número de mes a pagar.' })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
-  @ApiBody({ schema: { type: 'object', properties: { month: { type: 'number', example: 1, description: 'Numero del mes (1-6)' } }, required: ['month'] } })
+  @ApiBody({ schema: { type: 'object', properties: { month: { type: 'number', example: 1, description: 'Número del mes (1-6)' } }, required: ['month'] } })
   @ApiResponse({ status: 201, description: 'Pago mensual creado, retorna URL de Wompi' })
   @ApiResponse({ status: 400, description: 'Mes ya pagado o fuera de rango' })
   @ApiResponse({ status: 403, description: 'Solo estudiantes pueden pagar' })
@@ -51,8 +51,8 @@ export class PaymentsController {
   @Roles(UserRole.COLLECTOR, UserRole.ADMINISTRATOR)
   @ApiBearerAuth('jwt-auth')
   @ApiOperation({
-    summary: 'Registrar pago manual en efectivo',
-    description: 'Permite al colector o administrador registrar un pago recibido en efectivo directamente en el sistema.',
+    summary: 'Registrar pago manual',
+    description: 'Permite al colector o administrador registrar un pago recibido en efectivo o por transacción bancaria directamente en el sistema. El monto debe coincidir con el valor del ciclo.',
   })
   @ApiBody({
     schema: {
@@ -61,10 +61,14 @@ export class PaymentsController {
       properties: {
         studentId: { type: 'string', description: 'UUID del estudiante', example: 'uuid-estudiante' },
         cycleId: { type: 'string', description: 'UUID del ciclo', example: 'uuid-ciclo' },
-        amount: { type: 'number', description: 'Monto en USD', example: 150.00 },
+        amount: { type: 'number', description: 'Monto en USD (debe ser exactamente el valor del ciclo)', example: 150.00 },
         type: { type: 'string', enum: ['tuition', 'monthly'], description: 'Tipo de pago', example: 'tuition' },
-        month: { type: 'number', description: 'Numero del mes (si es mensualidad, 1-6)', example: 1 },
-        description: { type: 'string', description: 'Observaciones del pago', example: 'Pago en efectivo recibido en ventanilla' },
+        month: { type: 'number', description: 'Número del mes (si es mensualidad, 1-6)', example: 1 },
+        description: { type: 'string', description: 'Observaciones del pago', example: 'Pago recibido en ventanilla' },
+        paymentMethod: { type: 'string', enum: ['cash', 'bank'], description: 'Método de pago', example: 'cash' },
+        bankName: { type: 'string', description: 'Banco (requerido si paymentMethod=bank)', example: 'Banco Agrícola' },
+        bankTransactionCode: { type: 'string', description: 'Código de transacción bancaria (requerido si paymentMethod=bank)', example: 'TRX-2026-000123' },
+        receiptImageUrl: { type: 'string', description: 'URL del comprobante subido a /uploads (opcional)', example: '/uploads/uuid.webp' },
       },
     },
   })
@@ -80,6 +84,10 @@ export class PaymentsController {
       type: 'tuition' | 'monthly';
       month?: number;
       description?: string;
+      paymentMethod?: 'cash' | 'bank';
+      bankName?: string;
+      bankTransactionCode?: string;
+      receiptImageUrl?: string;
     },
   ) {
     return this.paymentsService.createManualPayment(collectorId, body);
@@ -88,7 +96,7 @@ export class PaymentsController {
   @Post('webhook')
   @ApiOperation({
     summary: 'Webhook de Wompi',
-    description: 'Endpoint para recibir notificaciones de estado de pago de Wompi. No requiere autenticacion (verificacion por signature header).',
+    description: 'Evento transaction.updated de Wompi.co. Requiere checksum válido en signature, ID firmado y cotejo con la transacción remota vinculada al pago.',
   })
   @ApiResponse({ status: 200, description: 'Webhook procesado' })
   handleWebhook(@Req() req: any) {
@@ -109,7 +117,7 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STUDENT)
   @ApiBearerAuth('jwt-auth')
-  @ApiOperation({ summary: 'Mis pagos en un ciclo', description: 'Retorna los pagos del estudiante para un ciclo especifico.' })
+  @ApiOperation({ summary: 'Mis pagos en un ciclo', description: 'Retorna los pagos del estudiante para un ciclo específico.' })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
   @ApiResponse({ status: 200, description: 'Pagos del ciclo' })
   getMyPaymentsByCycle(
@@ -162,7 +170,7 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMINISTRATOR, UserRole.COLLECTOR)
   @ApiBearerAuth('jwt-auth')
-  @ApiOperation({ summary: 'Estadisticas de pagos del ciclo', description: 'Retorna estadisticas de recaudacion para un ciclo (total, matriculas, mensualidades).' })
+  @ApiOperation({ summary: 'Estadisticas de pagos del ciclo', description: 'Retorna estadisticas de recaudación para un ciclo (total, matrículas, mensualidades).' })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
   @ApiResponse({ status: 200, description: 'Estadisticas de pagos' })
   getPaymentStats(@Param('cycleId') cycleId: string) {
@@ -176,7 +184,7 @@ export class PaymentsController {
   @ApiParam({ name: 'id', description: 'UUID del pago' })
   @ApiResponse({ status: 200, description: 'Pago encontrado' })
   @ApiResponse({ status: 404, description: 'Pago no encontrado' })
-  getPaymentById(@Param('id') id: string) {
-    return this.paymentsService.getPaymentById(id);
+  getPaymentById(@Param('id') id: string, @CurrentUser() actor: { sub: string; role: UserRole }) {
+    return this.paymentsService.getPaymentById(id, actor);
   }
 }

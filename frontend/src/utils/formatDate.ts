@@ -33,10 +33,10 @@ export function getDayName(day: string): string {
   const days: Record<string, string> = {
     monday: 'Lunes',
     tuesday: 'Martes',
-    wednesday: 'Miercoles',
+    wednesday: 'Miércoles',
     thursday: 'Jueves',
     friday: 'Viernes',
-    saturday: 'Sabado',
+    saturday: 'Sábado',
   };
   return days[day] || day;
 }

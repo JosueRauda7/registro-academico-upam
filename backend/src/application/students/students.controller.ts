@@ -41,7 +41,7 @@ export class StudentsController {
 
   @Post()
   @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
-  @ApiOperation({ summary: 'Crear estudiante', description: 'Crea la cuenta de usuario y el perfil academico de un estudiante. Solo administradores y administrativos.' })
+  @ApiOperation({ summary: 'Crear estudiante', description: 'Crea la cuenta de usuario y el perfil académico de un estudiante. Solo administradores y administrativos.' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -50,8 +50,8 @@ export class StudentsController {
         email: { type: 'string', example: 'estudiante2@upam.edu.sv' },
         password: { type: 'string', example: 'segura123' },
         firstName: { type: 'string', example: 'Maria' },
-        lastName: { type: 'string', example: 'Lopez' },
-        career: { type: 'string', example: 'Ingenieria en Sistemas' },
+        lastName: { type: 'string', example: 'López' },
+        career: { type: 'string', example: 'Ingeniería en Sistemas' },
         phone: { type: 'string', example: '7000-0000' },
         address: { type: 'string' },
         dateOfBirth: { type: 'string', format: 'date' },
@@ -67,7 +67,7 @@ export class StudentsController {
 
   @Put(':id')
   @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
-  @ApiOperation({ summary: 'Actualizar estudiante', description: 'Actualiza datos de la cuenta y del perfil academico de un estudiante (incluye activar/desactivar). Solo administradores y administrativos.' })
+  @ApiOperation({ summary: 'Actualizar estudiante', description: 'Actualiza datos de la cuenta y del perfil académico de un estudiante (incluye activar/desactivar). Solo administradores y administrativos.' })
   @ApiParam({ name: 'id', description: 'UUID del estudiante' })
   @ApiResponse({ status: 200, description: 'Estudiante actualizado' })
   @ApiResponse({ status: 403, description: 'Sin permisos de administrador o administrativo' })

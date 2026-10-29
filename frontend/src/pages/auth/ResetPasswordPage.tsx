@@ -16,16 +16,16 @@ export function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      toast.error('Las contrasenas no coinciden');
+      toast.error('Las contraseñas no coinciden');
       return;
     }
     setLoading(true);
     try {
       await authApi.resetPassword(token, newPassword);
-      toast.success('Contrasena actualizada exitosamente');
+      toast.success('Contraseña actualizada exitosamente');
       navigate('/login');
     } catch (error: any) {
-      toast.error('Token invalido o expirado');
+      toast.error('Token inválido o expirado');
     } finally {
       setLoading(false);
     }
@@ -36,11 +36,11 @@ export function ResetPasswordPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-upam-primary">UPAM</h1>
-          <h2 className="mt-4 text-2xl font-bold text-gray-900">Nueva Contrasena</h2>
+          <h2 className="mt-4 text-2xl font-bold text-gray-900">Nueva Contraseña</h2>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Nueva contrasena"
+            label="Nueva contraseña"
             type="password"
             placeholder="••••••••"
             value={newPassword}
@@ -49,7 +49,7 @@ export function ResetPasswordPage() {
             minLength={8}
           />
           <Input
-            label="Confirmar contrasena"
+            label="Confirmar contraseña"
             type="password"
             placeholder="••••••••"
             value={confirmPassword}
@@ -57,7 +57,7 @@ export function ResetPasswordPage() {
             required
           />
           <Button type="submit" loading={loading} className="w-full">
-            Restablecer contrasena
+            Restablecer contraseña
           </Button>
           <Link
             to="/login"

@@ -3,14 +3,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ResetPasswordDto {
   @ApiProperty({
-    description: 'Token de recuperacion de contrasena',
+    description: 'Token de recuperación de contraseña',
     example: 'abc123def456',
   })
   @IsString()
   token: string;
 
   @ApiProperty({
-    description: 'Nueva contrasena (minimo 8 caracteres)',
+    description: 'Nueva contraseña (mínimo 8 caracteres)',
     example: 'NuevaPassword123!',
     minLength: 8,
   })

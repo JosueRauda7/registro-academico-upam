@@ -170,7 +170,7 @@ export function PensumPage() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Pensum de Carreras</h1>
-            <p className="text-gray-500">Organice el plan de estudios por ano y semestre</p>
+            <p className="text-gray-500">Organice el plan de estudios por año y semestre</p>
           </div>
           {selectedCareer && (
             <div className="flex flex-wrap items-end gap-3">
@@ -197,7 +197,7 @@ export function PensumPage() {
                 }
               >
                 <Layers size={16} className="mr-2" />
-                Estructura ({selectedCareer.years} anos x {selectedCareer.semestersPerYear} sem)
+                Estructura ({selectedCareer.years} años x {selectedCareer.semestersPerYear} sem)
               </Button>
             </div>
           )}
@@ -211,13 +211,13 @@ export function PensumPage() {
           <>
             {pensum && (
               <p className="text-sm text-gray-500">
-                Total: {pensum.totalSubjects} materias / {pensum.totalCredits} creditos
+                Total: {pensum.totalSubjects} materias / {pensum.totalCredits} créditos
               </p>
             )}
             <div className="space-y-8">
               {pensum?.years.map((yr) => (
                 <div key={yr.year}>
-                  <h2 className="mb-3 text-lg font-bold text-gray-800">Ano {yr.year}</h2>
+                  <h2 className="mb-3 text-lg font-bold text-gray-800">Año {yr.year}</h2>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {yr.semesters.map((sem) => (
                       <Card key={sem.semester} title={`Semestre ${sem.semester}`}>
@@ -236,10 +236,10 @@ export function PensumPage() {
                                 <p className="font-medium">
                                   <span className="text-upam-primary">{s.code}</span> - {s.name}
                                 </p>
-                                <p className="text-xs text-gray-500">{s.credits} creditos</p>
+                                <p className="text-xs text-gray-500">{s.credits} créditos</p>
                               </div>
                               <div className="flex shrink-0 items-center gap-1">
-                                <Button size="sm" variant="secondary" onClick={() => openEdit(s)} title="Mover de ano/semestre">
+                                <Button size="sm" variant="secondary" onClick={() => openEdit(s)} title="Mover de año/semestre">
                                   <Pencil size={14} />
                                 </Button>
                                 {s.isActive ? (
@@ -277,11 +277,11 @@ export function PensumPage() {
         {editForm && (
           <form onSubmit={handleEditSubmit} className="space-y-4">
             <p className="text-sm text-gray-600">
-              {editForm.subject.code} - {editForm.subject.name} ({editForm.subject.credits} creditos)
+              {editForm.subject.code} - {editForm.subject.name} ({editForm.subject.credits} créditos)
             </p>
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Ano *"
+                label="Año *"
                 type="number"
                 min="1"
                 max="5"
@@ -316,11 +316,11 @@ export function PensumPage() {
         {selectedCareer && (
           <form onSubmit={handleStructureSubmit} className="space-y-4">
             <p className="text-sm text-gray-600">
-              Define cuantos anos y semestres tiene el pensum. Las materias fuera del rango no se muestran.
+              Define cuántos años y semestres tiene el pensum. Las materias fuera del rango no se muestran.
             </p>
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Total de anos *"
+                label="Total de años *"
                 type="number"
                 min="1"
                 max="10"
@@ -329,7 +329,7 @@ export function PensumPage() {
                 required
               />
               <Input
-                label="Semestres por ano *"
+                label="Semestres por año *"
                 type="number"
                 min="1"
                 max="4"
@@ -350,19 +350,19 @@ export function PensumPage() {
       <Modal
         isOpen={createForm.open}
         onClose={() => setCreateForm({ ...createForm, open: false })}
-        title={`Nueva materia - Ano ${createForm.year}, Semestre ${createForm.semester}`}
+        title={`Nueva materia - Año ${createForm.year}, Semestre ${createForm.semester}`}
       >
         <form onSubmit={handleCreateSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
-              label="Codigo *"
+              label="Código *"
               value={createForm.code}
               onChange={(e) => setCreateForm({ ...createForm, code: e.target.value })}
               placeholder="Ej. MAT102"
               required
             />
             <Input
-              label="Creditos *"
+              label="Créditos *"
               type="number"
               min="1"
               max="10"
@@ -380,7 +380,7 @@ export function PensumPage() {
           />
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Ano *"
+              label="Año *"
               type="number"
               min="1"
               max="5"

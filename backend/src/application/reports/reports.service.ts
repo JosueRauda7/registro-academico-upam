@@ -41,7 +41,7 @@ export class ReportsService {
       { header: 'Mes', key: 'month', width: 10 },
       { header: 'Monto', key: 'amount', width: 12 },
       { header: 'Estado', key: 'status', width: 15 },
-      { header: 'Descripcion', key: 'description', width: 30 },
+      { header: 'Descripción', key: 'description', width: 30 },
     ];
 
     sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
@@ -55,7 +55,7 @@ export class ReportsService {
       sheet.addRow({
         date: p.createdAt?.toLocaleDateString() || '',
         reference: p.reference,
-        type: p.type === PaymentType.TUITION ? 'Matricula' : 'Mensualidad',
+        type: p.type === PaymentType.TUITION ? 'Matrícula' : 'Mensualidad',
         month: p.month || '-',
         amount: `$${Number(p.amount).toFixed(2)}`,
         status: this.translateStatus(p.status),
@@ -77,9 +77,9 @@ export class ReportsService {
       { header: 'Estudiante', key: 'student', width: 30 },
       { header: 'Carrera', key: 'career', width: 25 },
       { header: 'Materias', key: 'subjects', width: 40 },
-      { header: 'Total Creditos', key: 'credits', width: 15 },
+      { header: 'Total Créditos', key: 'credits', width: 15 },
       { header: 'Estado', key: 'status', width: 15 },
-      { header: 'Fecha Inscripcion', key: 'date', width: 18 },
+      { header: 'Fecha Inscripción', key: 'date', width: 18 },
     ];
 
     sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
@@ -109,7 +109,7 @@ export class ReportsService {
     const payments = await this.paymentRepository.findByCycle(cycleId);
 
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Recaudacion');
+    const sheet = workbook.addWorksheet('Recaudación');
 
     sheet.columns = [
       { header: 'Fecha', key: 'date', width: 15 },
@@ -139,7 +139,7 @@ export class ReportsService {
         date: p.createdAt?.toLocaleDateString() || '',
         reference: p.reference,
         student: p.student?.user ? `${p.student.user.firstName} ${p.student.user.lastName}` : '',
-        type: p.type === PaymentType.TUITION ? 'Matricula' : `Mensualidad ${p.month || ''}`,
+        type: p.type === PaymentType.TUITION ? 'Matrícula' : `Mensualidad ${p.month || ''}`,
         amount: `$${amount.toFixed(2)}`,
         status: this.translateStatus(p.status),
       });
@@ -160,11 +160,11 @@ export class ReportsService {
 
     sheet.columns = [
       { header: 'Carnet', key: 'carnet', width: 15 },
-      { header: 'Codigo', key: 'code', width: 18 },
+      { header: 'Código', key: 'code', width: 18 },
       { header: 'Nombre', key: 'name', width: 30 },
       { header: 'Carrera', key: 'career', width: 25 },
       { header: 'Email', key: 'email', width: 25 },
-      { header: 'Telefono', key: 'phone', width: 15 },
+      { header: 'Teléfono', key: 'phone', width: 15 },
     ];
 
     sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
@@ -210,13 +210,13 @@ export class ReportsService {
     doc.fontSize(11);
     doc.text(`Referencia: ${payment.reference}`);
     doc.text(`Fecha: ${payment.createdAt?.toLocaleDateString() || ''}`);
-    doc.text(`Tipo: ${payment.type === PaymentType.TUITION ? 'Matricula' : `Mensualidad ${payment.month}`}`);
-    doc.text(`Descripcion: ${payment.description}`);
+    doc.text(`Tipo: ${payment.type === PaymentType.TUITION ? 'Matrícula' : `Mensualidad ${payment.month}`}`);
+    doc.text(`Descripción: ${payment.description}`);
     doc.moveDown();
     doc.fontSize(14).text(`Monto: $${Number(payment.amount).toFixed(2)}`);
     doc.moveDown();
     doc.fontSize(11).text(`Estado: ${this.translateStatus(payment.status)}`);
-    doc.text(`Metodo de pago: ${payment.paymentMethod}`);
+    doc.text(`Método de pago: ${payment.paymentMethod}`);
 
     return new Promise<Buffer>((resolve, reject) => {
       doc.on('end', () => resolve(Buffer.concat(chunks)));

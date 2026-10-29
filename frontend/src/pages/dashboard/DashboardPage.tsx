@@ -74,7 +74,7 @@ export function DashboardPage() {
               <div>
                 <h3 className="text-lg font-semibold">{currentCycle.name}</h3>
                 <p className="text-blue-200">
-                  {currentCycle.startDate} - {currentCycle.endDate} | Inscripcion{' '}
+                  {currentCycle.startDate} - {currentCycle.endDate} | Inscripción{' '}
                   {currentCycle.enrollmentOpen ? 'Abierta' : 'Cerrada'}
                 </p>
               </div>
@@ -90,7 +90,7 @@ export function DashboardPage() {
                   <CreditCard className="text-blue-600" size={24} />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Codigo</p>
+                  <p className="text-sm text-gray-500">Código</p>
                   <p className="font-semibold">{student?.studentCode}</p>
                 </div>
               </Card>
@@ -152,7 +152,7 @@ export function DashboardPage() {
                   <DollarSign className="text-yellow-600" size={24} />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Matricula Ciclo</p>
+                  <p className="text-sm text-gray-500">Matrícula Ciclo</p>
                   <p className="font-semibold">
                     {currentCycle ? formatCurrency(currentCycle.tuitionAmount) : '-'}
                   </p>
@@ -202,7 +202,7 @@ export function DashboardPage() {
                   >
                     <p className="font-medium">Realizar Pagos</p>
                     <p className="text-sm text-gray-500">
-                      Paga matricula o mensualidades del ciclo
+                      Paga matrícula o mensualidades del ciclo
                     </p>
                   </a>
                 </>
@@ -269,7 +269,7 @@ export function DashboardPage() {
                 >
                   <p className="font-medium">Ver Pagos</p>
                   <p className="text-sm text-gray-500">
-                    Consultar pagos y recaudacion
+                    Consultar pagos y recaudación
                   </p>
                 </a>
               )}

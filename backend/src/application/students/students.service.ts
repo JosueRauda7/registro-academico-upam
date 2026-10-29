@@ -64,7 +64,7 @@ export class StudentsService {
     }
     const digits = String(phone).replace(/\D/g, '');
     if (digits.length !== 8) {
-      throw new BadRequestException('El telefono debe tener 8 digitos (formato XXXX-XXXX)');
+      throw new BadRequestException('El teléfono debe tener 8 digitos (formato XXXX-XXXX)');
     }
     return `${digits.slice(0, 4)}-${digits.slice(4)}`;
   }
@@ -75,7 +75,7 @@ export class StudentsService {
     }
     const date = new Date(dob);
     if (Number.isNaN(date.getTime())) {
-      throw new BadRequestException('Fecha de nacimiento invalida');
+      throw new BadRequestException('Fecha de nacimiento inválida');
     }
     const now = new Date();
     if (date > now) {
@@ -86,23 +86,23 @@ export class StudentsService {
       now.getMonth() > date.getMonth() ||
       (now.getMonth() === date.getMonth() && now.getDate() >= date.getDate());
     if (age < 18 || (age === 18 && !hasHadBirthday)) {
-      throw new BadRequestException('El estudiante debe ser mayor de 18 anos');
+      throw new BadRequestException('El estudiante debe ser mayor de 18 años');
     }
     return date;
   }
 
   async create(data: CreateStudentData) {
     if (!data.email || !data.password || !data.firstName || !data.lastName) {
-      throw new BadRequestException('El correo, la contrasena, el nombre y el apellido son obligatorios');
+      throw new BadRequestException('El correo, la contraseña, el nombre y el apellido son obligatorios');
     }
     if (data.password.length < 6) {
-      throw new BadRequestException('La contrasena debe tener al menos 6 caracteres');
+      throw new BadRequestException('La contraseña debe tener al menos 6 caracteres');
     }
 
     const email = this.validateEmail(data.email);
     const existing = await this.userRepository.findByEmail(email);
     if (existing) {
-      throw new ConflictException('Ya existe una cuenta con este correo electronico');
+      throw new ConflictException('Ya existe una cuenta con este correo electrónico');
     }
 
     const phone = this.validatePhone(data.phone);
@@ -128,7 +128,7 @@ export class StudentsService {
       userId: user.id,
       studentCode,
       carnet,
-      career: data.career || 'Ingenieria en Sistemas',
+      career: data.career || 'Ingeniería en Sistemas',
       enrollmentYear: data.enrollmentYear || new Date().getFullYear(),
     };
     if (phone) studentData.phone = phone;
@@ -165,13 +165,13 @@ export class StudentsService {
       const email = this.validateEmail(data.email);
       const existing = await this.userRepository.findByEmail(email);
       if (existing && existing.id !== user.id) {
-        throw new ConflictException('Ya existe una cuenta con este correo electronico');
+        throw new ConflictException('Ya existe una cuenta con este correo electrónico');
       }
       userData.email = email;
     }
     if (data.password) {
       if (data.password.length < 6) {
-        throw new BadRequestException('La contrasena debe tener al menos 6 caracteres');
+        throw new BadRequestException('La contraseña debe tener al menos 6 caracteres');
       }
       userData.passwordHash = await bcrypt.hash(data.password, 10);
     }

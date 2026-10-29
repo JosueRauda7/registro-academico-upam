@@ -1,4 +1,5 @@
 import api from './axios';
+import { uploadsApi } from './uploads.api';
 import { Payment, PaymentSummary } from '@/types';
 
 export const paymentsApi = {
@@ -19,9 +20,27 @@ export const paymentsApi = {
     type: 'tuition' | 'monthly';
     month?: number;
     description?: string;
+    paymentMethod?: 'cash' | 'bank';
+    bankName?: string;
+    bankTransactionCode?: string;
+    receiptImageUrl?: string;
   }) => {
     const res = await api.post('/payments/manual', data);
     return res.data.data;
+  },
+
+  uploadReceipt: uploadsApi.uploadImage,
+
+  openReceipt: async (url: string): Promise<void> => {
+    const filename = url.split('/').pop();
+    if (!filename || !/^[a-f0-9-]+\.webp$/i.test(filename)) throw new Error('Comprobante inválido');
+    const response = await api.get(`/uploads/receipts/${filename}`, { responseType: 'blob' });
+    const objectUrl = URL.createObjectURL(new Blob([response.data], { type: 'image/webp' }));
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = `comprobante-${filename}`;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
   },
 
   getMyPayments: async (): Promise<Payment[]> => {

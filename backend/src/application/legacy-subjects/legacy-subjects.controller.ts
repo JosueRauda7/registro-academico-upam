@@ -36,7 +36,7 @@ export class LegacySubjectsController {
   @ApiOperation({
     summary: 'Listar materias cursadas previas al sistema',
     description:
-      'Retorna los registros de materias cursadas antes de la creacion del sistema. Opcionalmente filtradas por estudiante.',
+      'Retorna los registros de materias cursadas antes de la creación del sistema. Opcionalmente filtradas por estudiante.',
   })
   @ApiQuery({ name: 'studentId', required: false, description: 'UUID del estudiante' })
   @ApiResponse({ status: 200, description: 'Lista de registros' })
@@ -70,7 +70,7 @@ export class LegacySubjectsController {
   @Put(':id')
   @ApiOperation({
     summary: 'Actualizar registro de materia cursada previa',
-    description: 'Actualiza la nota, ano, semestre o notas de un registro.',
+    description: 'Actualiza la nota, año, semestre o notas de un registro.',
   })
   @ApiParam({ name: 'id', description: 'UUID del registro' })
   @ApiResponse({ status: 200, description: 'Registro actualizado' })

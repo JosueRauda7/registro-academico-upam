@@ -101,7 +101,7 @@ export class GradesController {
   @Roles(UserRole.STUDENT)
   @ApiOperation({
     summary: 'Mis notas y CUM',
-    description: 'Retorna los registros de calificaciones y el CUM (indice academico) del estudiante.',
+    description: 'Retorna los registros de calificaciones y el CUM (indice académico) del estudiante.',
   })
   @ApiResponse({ status: 200, description: 'Notas y CUM del estudiante' })
   async getMyGrades(@CurrentUser('sub') userId: string) {

@@ -1,10 +1,10 @@
-import { IsEmail, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
+import { IsEmail, IsString, MinLength, Equals, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../../domain/enums/role.enum';
 
 export class RegisterDto {
   @ApiProperty({
-    description: 'Correo electronico del nuevo usuario',
+    description: 'Correo electrónico del nuevo usuario',
     example: 'nuevo@upam.edu.sv',
     format: 'email',
   })
@@ -12,7 +12,7 @@ export class RegisterDto {
   email: string;
 
   @ApiProperty({
-    description: 'Contrasena (minimo 8 caracteres)',
+    description: 'Contraseña (mínimo 8 caracteres)',
     example: 'Password123!',
     minLength: 8,
   })
@@ -29,19 +29,19 @@ export class RegisterDto {
 
   @ApiProperty({
     description: 'Apellido del usuario',
-    example: 'Perez',
+    example: 'Pérez',
   })
   @IsString()
   lastName: string;
 
   @ApiPropertyOptional({
     description: 'Rol del usuario',
-    enum: UserRole,
+    enum: [UserRole.STUDENT],
     example: UserRole.STUDENT,
     default: UserRole.STUDENT,
   })
   @IsOptional()
-  @IsEnum(UserRole)
+  @Equals(UserRole.STUDENT)
   role?: UserRole;
 
   @ApiPropertyOptional({
@@ -54,21 +54,21 @@ export class RegisterDto {
 
   @ApiPropertyOptional({
     description: 'Carrera del estudiante',
-    example: 'Ingenieria en Sistemas',
+    example: 'Ingeniería en Sistemas',
   })
   @IsOptional()
   @IsString()
   career?: string;
 
   @ApiPropertyOptional({
-    description: 'Numero de telefono',
+    description: 'Número de teléfono',
     example: '70123456',
   })
   @IsOptional()
   phone?: string;
 
   @ApiPropertyOptional({
-    description: 'Direccion de residencia',
+    description: 'Dirección de residencia',
     example: 'San Salvador, El Salvador',
   })
   @IsOptional()

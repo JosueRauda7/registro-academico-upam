@@ -154,12 +154,12 @@ export class GradesService {
 
     if (group.cycle && this.isCycleEnded(group.cycle.endDate)) {
       throw new ForbiddenException(
-        'El ciclo academico ha finalizado, ya no se pueden modificar las notas',
+        'El ciclo académico ha finalizado, ya no se pueden modificar las notas',
       );
     }
 
     if (!Array.isArray(grades) || grades.length === 0) {
-      throw new BadRequestException('Debe enviar al menos una calificacion');
+      throw new BadRequestException('Debe enviar al menos una calificación');
     }
 
     const entries = await this.enrollmentSubjectRepository.findByGroup(groupId);
@@ -175,7 +175,7 @@ export class GradesService {
       const score = Number(entry.score);
       if (Number.isNaN(score) || score < 0 || score > 10) {
         throw new BadRequestException(
-          'La nota debe ser un numero entre 0 y 10',
+          'La nota debe ser un número entre 0 y 10',
         );
       }
       const status = score >= PASSING_SCORE ? 'approved' : 'failed';
@@ -271,7 +271,7 @@ export class GradesService {
 
     sheet.columns = [
       { header: 'Carnet', key: 'carnet', width: 15 },
-      { header: 'Codigo', key: 'code', width: 18 },
+      { header: 'Código', key: 'code', width: 18 },
       { header: 'Estudiante', key: 'student', width: 30 },
       { header: 'Materia', key: 'subject', width: 30 },
       { header: 'Nota', key: 'score', width: 10 },

@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { settingsApi } from '@/api/settings.api';
+import { uploadsApi } from '@/api/uploads.api';
 import { useSettings } from '@/context/SettingsContext';
 import toast from 'react-hot-toast';
 import { ImageIcon, Palette, Save } from 'lucide-react';
@@ -11,6 +12,8 @@ import { ImageIcon, Palette, Save } from 'lucide-react';
 export function SettingsPage() {
   const { refresh } = useSettings();
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [primaryColor, setPrimaryColor] = useState('#1B4F72');
   const [institutionName, setInstitutionName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -28,38 +31,53 @@ export function SettingsPage() {
       setPrimaryColor(data.primaryColor || '#1B4F72');
       setInstitutionName(data.institutionName || '');
     } catch {
-      toast.error('Error al cargar la configuracion');
+      toast.error('Error al cargar la configuración');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogoFile = (file: File) => {
+  const handleLogoFile = (file?: File | null) => {
     if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('El archivo debe ser una imagen');
+      return;
+    }
     if (file.size > 2 * 1024 * 1024) {
       toast.error('La imagen no puede superar los 2MB');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setLogoUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
+  const removeLogo = () => {
+    setLogoUrl(null);
+    setLogoFile(null);
+    setLogoPreview(null);
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
+      let finalLogoUrl = logoUrl;
+      if (logoFile) {
+        const upload = await uploadsApi.uploadImage(logoFile, 'logos');
+        finalLogoUrl = upload.url;
+      }
       await settingsApi.update({
-        logoUrl,
+        logoUrl: finalLogoUrl,
         primaryColor,
         institutionName,
       });
+      setLogoUrl(finalLogoUrl);
+      setLogoFile(null);
+      setLogoPreview(null);
       await refresh();
-      toast.success('Configuracion del sistema actualizada');
+      toast.success('Configuración del sistema actualizada');
     } catch (err: any) {
-      toast.error(err.response?.data?.message?.[0] || 'Error al guardar configuracion');
+      toast.error(err.response?.data?.message?.[0] || 'Error al guardar configuración');
     } finally {
       setSaving(false);
     }
@@ -79,7 +97,7 @@ export function SettingsPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Configuracion del Sistema</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Configuración del Sistema</h1>
           <p className="text-gray-500">Personalice el logo institucional y el color principal</p>
         </div>
 
@@ -89,8 +107,8 @@ export function SettingsPage() {
             <Card title="Logo institucional">
               <div className="flex flex-col items-center gap-4 sm:flex-row">
                 <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-gray-300 bg-gray-50">
-                  {logoUrl ? (
-                    <img src={logoUrl} alt="Logo" className="h-full w-full object-contain p-2" />
+                  {(logoPreview || logoUrl) ? (
+                    <img src={logoPreview || logoUrl || ''} alt="Logo" className="h-full w-full object-contain p-2" />
                   ) : (
                     <div className="flex flex-col items-center text-gray-400">
                       <ImageIcon size={28} />
@@ -100,7 +118,7 @@ export function SettingsPage() {
                 </div>
                 <div className="flex-1">
                   <p className="mb-2 text-sm text-gray-500">
-                    Suba una imagen (JPG, PNG o SVG) de maximo 2MB. Se muestra en el lado izquierdo del sistema.
+                    Suba una imagen (JPG, PNG o SVG) de máximo 2MB. Se optimiza a WebP calidad 80 y se muestra en el lado izquierdo del sistema.
                   </p>
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-upam-primary px-4 py-2 text-sm font-medium text-upam-primary hover:bg-upam-primary hover:text-white">
                     <ImageIcon size={16} />
@@ -109,14 +127,14 @@ export function SettingsPage() {
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => handleLogoFile(e.target.files?.[0]!)}
+                      onChange={(e) => handleLogoFile(e.target.files?.[0])}
                     />
                   </label>
-                  {logoUrl && (
+                  {(logoPreview || logoUrl) && (
                     <div className="mt-2">
                       <button
                         type="button"
-                        onClick={() => setLogoUrl(null)}
+                        onClick={removeLogo}
                         className="text-sm text-red-500 hover:text-red-700"
                       >
                         Quitar logo
@@ -127,7 +145,7 @@ export function SettingsPage() {
               </div>
             </Card>
 
-            <Card title="Nombre de la institucion">
+            <Card title="Nombre de la institución">
               <Input
                 value={institutionName}
                 onChange={(e) => setInstitutionName(e.target.value)}
@@ -168,11 +186,11 @@ export function SettingsPage() {
             <Card title="Vista previa">
               <div className="space-y-3">
                 <div className="flex h-16 items-center rounded-xl px-4 text-white" style={{ backgroundColor: primaryColor }}>
-                  <span className="text-lg font-semibold">{institutionName || 'Institucion'}</span>
+                  <span className="text-lg font-semibold">{institutionName || 'Institución'}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-lg px-4 py-2 text-sm text-white" style={{ backgroundColor: primaryColor }}>
-                    {institutionName || 'Institucion'}
+                    {institutionName || 'Institución'}
                   </span>
                   <span className="rounded-lg border border-transparent px-4 py-2 text-sm text-upam-primary" style={{ borderColor: primaryColor, color: primaryColor }}>
                     Visita nuestra web
@@ -184,7 +202,7 @@ export function SettingsPage() {
 
           <div className="flex justify-end lg:col-span-2">
             <Button type="submit" loading={saving}>
-              <Save size={16} className="mr-2" /> Guardar Configuracion
+              <Save size={16} className="mr-2" /> Guardar Configuración
             </Button>
           </div>
         </form>

@@ -76,7 +76,7 @@ export function PaymentsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Pagos</h1>
-          <p className="text-gray-500">Gestiona tus pagos de matricula y mensualidades</p>
+          <p className="text-gray-500">Gestiona tus pagos de matrícula y mensualidades</p>
         </div>
 
         {/* Cycle Selector */}
@@ -100,7 +100,7 @@ export function PaymentsPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Card>
               <div className="text-center">
-                <p className="text-sm text-gray-500">Matricula</p>
+                <p className="text-sm text-gray-500">Matrícula</p>
                 <p className="text-2xl font-bold text-upam-primary">
                   {formatCurrency(summary.tuitionAmount)}
                 </p>
@@ -191,7 +191,7 @@ export function PaymentsPage() {
                       <td className="py-3 font-mono text-xs">{p.reference}</td>
                       <td className="py-3">
                         {p.type === 'tuition'
-                          ? 'Matricula'
+                          ? 'Matrícula'
                           : `Mensualidad ${p.month || ''}`}
                       </td>
                       <td className="py-3 font-semibold">

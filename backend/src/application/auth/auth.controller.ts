@@ -14,15 +14,15 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @ApiOperation({ summary: 'Registrar nuevo usuario', description: 'Crea una cuenta nueva. Si se registra como estudiante, tambien se crea su perfil de estudiante.' })
+  @ApiOperation({ summary: 'Registrar nuevo usuario', description: 'Crea una cuenta nueva. Si se registra como estudiante, también se crea su perfil de estudiante.' })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })
-  @ApiResponse({ status: 409, description: 'El correo ya esta registrado' })
+  @ApiResponse({ status: 409, description: 'El correo ya está registrado' })
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Iniciar sesion', description: 'Autentica al usuario y retorna un token JWT.' })
+  @ApiOperation({ summary: 'Iniciar sesión', description: 'Autentica al usuario y retorna un token JWT.' })
   @ApiResponse({ status: 200, description: 'Login exitoso, retorna token JWT y datos del usuario' })
   @ApiResponse({ status: 401, description: 'Credenciales invalidas' })
   login(@Body() dto: LoginDto) {
@@ -30,16 +30,16 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-  @ApiOperation({ summary: 'Solicitar recuperacion de contrasena', description: 'Envia un correo electronico con el token para restablecer la contrasena.' })
+  @ApiOperation({ summary: 'Solicitar recuperación de contraseña', description: 'Envia un correo electrónico con el token para restablecer la contraseña.' })
   @ApiResponse({ status: 200, description: 'Correo enviado (si el email existe)' })
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);
   }
 
   @Post('reset-password')
-  @ApiOperation({ summary: 'Restablecer contrasena', description: 'Cambia la contrasena usando el token recibido por correo.' })
-  @ApiResponse({ status: 200, description: 'Contrasena actualizada exitosamente' })
-  @ApiResponse({ status: 400, description: 'Token invalido o expirado' })
+  @ApiOperation({ summary: 'Restablecer contraseña', description: 'Cambia la contraseña usando el token recibido por correo.' })
+  @ApiResponse({ status: 200, description: 'Contraseña actualizada exitosamente' })
+  @ApiResponse({ status: 400, description: 'Token inválido o expirado' })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
   }
@@ -47,8 +47,8 @@ export class AuthController {
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('jwt-auth')
-  @ApiOperation({ summary: 'Solicitar cambio de contrasena', description: 'Para usuarios autenticados. Envia un enlace de verificacion al correo del usuario para confirmar el cambio de contrasena.' })
-  @ApiResponse({ status: 200, description: 'Correo de verificacion enviado' })
+  @ApiOperation({ summary: 'Solicitar cambio de contraseña', description: 'Para usuarios autenticados. Envia un enlace de verificación al correo del usuario para confirmar el cambio de contraseña.' })
+  @ApiResponse({ status: 200, description: 'Correo de verificación enviado' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   changePassword(@CurrentUser('sub') userId: string) {
     return this.authService.changePassword(userId);

@@ -16,7 +16,7 @@ export function ForgotPasswordPage() {
     try {
       await authApi.forgotPassword(email);
       setSent(true);
-      toast.success('Si el correo existe, se ha enviado un enlace de recuperacion');
+      toast.success('Si el correo existe, se ha enviado un enlace de recuperación');
     } catch (error: any) {
       toast.error('Error al enviar el correo');
     } finally {
@@ -29,15 +29,15 @@ export function ForgotPasswordPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-upam-primary">UPAM</h1>
-          <h2 className="mt-4 text-2xl font-bold text-gray-900">Recuperar Contrasena</h2>
+          <h2 className="mt-4 text-2xl font-bold text-gray-900">Recuperar Contraseña</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Ingresa tu correo electronico y te enviaremos un enlace para restablecer tu contrasena
+            Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña
           </p>
         </div>
         {sent ? (
           <div className="rounded-lg bg-green-50 p-6 text-center">
             <p className="text-green-800">
-              Si el correo electronico esta registrado, recibira un enlace para restablecer su contrasena.
+              Si el correo electrónico está registrado, recibirá un enlace para restablecer su contraseña.
             </p>
             <Link
               to="/login"
@@ -49,7 +49,7 @@ export function ForgotPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Correo electronico"
+              label="Correo electrónico"
               type="email"
               placeholder="tu@upam.edu.sv"
               value={email}
@@ -57,7 +57,7 @@ export function ForgotPasswordPage() {
               required
             />
             <Button type="submit" loading={loading} className="w-full">
-              Enviar enlace de recuperacion
+              Enviar enlace de recuperación
             </Button>
             <Link
               to="/login"

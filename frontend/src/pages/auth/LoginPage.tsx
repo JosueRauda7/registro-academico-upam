@@ -45,7 +45,7 @@ export function LoginPage() {
           )}
           <div>
             <h1 className="text-lg font-bold tracking-wide">{branding.institutionName || 'UPAM'}</h1>
-            <p className="text-xs text-blue-200">Registro Academico</p>
+            <p className="text-xs text-blue-200">Registro Académico</p>
           </div>
         </div>
 
@@ -53,10 +53,10 @@ export function LoginPage() {
           <h2 className="text-4xl font-bold leading-tight">
             Gestiona todo el proceso
             <br />
-            <span className="text-blue-200">academico de la universidad</span>
+            <span className="text-blue-200">académico de la universidad</span>
           </h2>
           <p className="mt-4 max-w-md text-blue-100">
-            Matricula, inscripcion de materias, pagos, notas y reportes en un solo sistema.
+            Matrícula, inscripción de materias, pagos, notas y reportes en un solo sistema.
           </p>
           <div className="mt-10 space-y-4">
             <div className="flex items-center gap-3">
@@ -64,8 +64,8 @@ export function LoginPage() {
                 <GraduationCap size={20} />
               </div>
               <div>
-                <p className="font-medium">Inscripcion de materias</p>
-                <p className="text-sm text-blue-200">Validacion de prerrequisitos y cupos</p>
+                <p className="font-medium">Inscripción de materias</p>
+                <p className="text-sm text-blue-200">Validación de prerrequisitos y cupos</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -83,7 +83,7 @@ export function LoginPage() {
               </div>
               <div>
                 <p className="font-medium">Reportes en Excel y PDF</p>
-                <p className="text-sm text-blue-200">Para administracion y docencia</p>
+                <p className="text-sm text-blue-200">Para administración y docencia</p>
               </div>
             </div>
           </div>
@@ -109,12 +109,12 @@ export function LoginPage() {
               )}
               <h1 className="text-2xl font-bold text-upam-primary">{branding.institutionName || 'UPAM'}</h1>
             </div>
-            <p className="text-sm text-gray-500">Registro Academico</p>
+            <p className="text-sm text-gray-500">Registro Académico</p>
           </div>
 
           <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Iniciar Sesion</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Iniciar Sesión</h2>
               <p className="mt-1 text-sm text-gray-500">
                 Ingresa tus credenciales para acceder al sistema
               </p>
@@ -136,7 +136,7 @@ export function LoginPage() {
                 <Lock size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="password"
-                  placeholder="Contrasena"
+                  placeholder="Contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full rounded-xl border border-gray-300 py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 transition focus:border-upam-primary focus:outline-none focus:ring-2 focus:ring-upam-primary/20"
@@ -149,7 +149,7 @@ export function LoginPage() {
                   to="/forgot-password"
                   className="text-sm text-upam-secondary transition hover:text-upam-primary"
                 >
-                  Olvidaste tu contrasena?
+                  Olvidaste tu contraseña?
                 </Link>
               </div>
 
@@ -175,7 +175,7 @@ export function LoginPage() {
           </div>
 
           <p className="text-center text-xs text-gray-400">
-            {branding.institutionName || 'Universidad Panamericana de El Salvador'} - Sistema de Registro Academico
+            {branding.institutionName || 'Universidad Panamericana de El Salvador'} - Sistema de Registro Académico
           </p>
         </div>
       </div>

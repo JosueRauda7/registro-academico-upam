@@ -34,7 +34,7 @@ export class TeachersController {
 
   @Post()
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Crear docente', description: 'Registra un nuevo catedratico.' })
+  @ApiOperation({ summary: 'Crear docente', description: 'Registra un nuevo catedrático.' })
   @ApiResponse({ status: 201, description: 'Docente creado exitosamente' })
   create(@Body() body: any) {
     return this.teachersService.create(body);

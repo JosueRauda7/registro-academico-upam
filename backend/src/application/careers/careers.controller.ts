@@ -32,7 +32,7 @@ export class CareersController {
 
   @Post()
   @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
-  @ApiOperation({ summary: 'Crear carrera', description: 'Crea una nueva carrera. Los anos y semestres por ano definen la estructura del pensum.' })
+  @ApiOperation({ summary: 'Crear carrera', description: 'Crea una nueva carrera. Los años y semestres por año definen la estructura del pensum.' })
   @ApiResponse({ status: 201, description: 'Carrera creada exitosamente' })
   create(@Body() body: any) {
     return this.careersService.create(body);
@@ -40,7 +40,7 @@ export class CareersController {
 
   @Put(':id')
   @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
-  @ApiOperation({ summary: 'Actualizar carrera', description: 'Actualiza nombre, codigo, descripcion y estructura del pensum (anos/semestres).' })
+  @ApiOperation({ summary: 'Actualizar carrera', description: 'Actualiza nombre, código, descripción y estructura del pensum (años/semestres).' })
   @ApiParam({ name: 'id', description: 'UUID de la carrera' })
   @ApiResponse({ status: 200, description: 'Carrera actualizada' })
   update(@Param('id') id: string, @Body() body: any) {

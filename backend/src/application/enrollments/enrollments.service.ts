@@ -11,6 +11,7 @@ import { SubjectRepository } from '../../infrastructure/database/repositories/su
 import { PaymentRepository } from '../../infrastructure/database/repositories/payment.repository';
 import { StudentRepository } from '../../infrastructure/database/repositories/student.repository';
 import { CycleRepository } from '../../infrastructure/database/repositories/cycle.repository';
+import { LegacyCompletedSubjectRepository } from '../../infrastructure/database/repositories/legacy-completed-subject.repository';
 import { EmailService } from '../../infrastructure/email/email.service';
 import { EnrollmentStatus, EnrollmentSubjectStatus } from '../../domain/enums/enrollment-status.enum';
 
@@ -24,8 +25,14 @@ export class EnrollmentsService {
     private readonly paymentRepository: PaymentRepository,
     private readonly studentRepository: StudentRepository,
     private readonly cycleRepository: CycleRepository,
+    private readonly legacyRepository: LegacyCompletedSubjectRepository,
     private readonly emailService: EmailService,
   ) {}
+
+  private async hasLegacyCompleted(studentId: string, subjectId: string): Promise<boolean> {
+    const legacy = await this.legacyRepository.findByStudent(studentId);
+    return legacy.some((r) => r.subjectId === subjectId && Number(r.score) >= 6);
+  }
 
   private async resolveStudentId(userId: string): Promise<string> {
     const student = await this.studentRepository.findByUserId(userId);
@@ -106,10 +113,12 @@ export class EnrollmentsService {
       throw new NotFoundException('Materia no encontrada');
     }
 
-    // Verify prerequisites
+    // Verify prerequisites (regular grade approved OR legacy completed >= passing)
     const prerequisites = await this.subjectRepository.findPrerequisites(subjectId);
     for (const prereq of prerequisites) {
-      const completed = await this.enrollmentSubjectRepository.hasCompletedSubject(studentId, prereq.id);
+      const completed =
+        (await this.enrollmentSubjectRepository.hasCompletedSubject(studentId, prereq.id)) ||
+        (await this.hasLegacyCompleted(studentId, prereq.id));
       if (!completed) {
         throw new BadRequestException(
           `No cumple con el requisito previo: ${prereq.name} (${prereq.code})`,

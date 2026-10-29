@@ -89,7 +89,7 @@ export function EnrollmentHistoryPage() {
                       ))}
                     </div>
                     <p className="mt-2 text-sm text-gray-500">
-                      Total creditos:{' '}
+                      Total créditos:{' '}
                       {enrollment.subjects.reduce(
                         (sum, es) => sum + (es.subject?.credits || 0),
                         0,

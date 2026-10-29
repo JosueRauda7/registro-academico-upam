@@ -50,7 +50,7 @@ export class UsersController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Crear usuario', description: 'Crea un usuario del sistema. Si el rol es estudiante, tambien crea su perfil academico.' })
+  @ApiOperation({ summary: 'Crear usuario', description: 'Crea un usuario del sistema. Si el rol es estudiante, también crea su perfil académico.' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -59,9 +59,9 @@ export class UsersController {
         email: { type: 'string', example: 'nuevo@upam.edu.sv' },
         password: { type: 'string', example: 'segura123' },
         firstName: { type: 'string', example: 'Juan' },
-        lastName: { type: 'string', example: 'Perez' },
+        lastName: { type: 'string', example: 'Pérez' },
         role: { type: 'string', enum: ['student', 'administrator', 'collector', 'administrative', 'teacher'] },
-        career: { type: 'string', example: 'Ingenieria en Sistemas' },
+        career: { type: 'string', example: 'Ingeniería en Sistemas' },
         carnet: { type: 'string', example: 'LR021502' },
       },
     },
@@ -73,7 +73,7 @@ export class UsersController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Actualizar usuario', description: 'Actualiza nombre, rol, estado o contrasena de un usuario.' })
+  @ApiOperation({ summary: 'Actualizar usuario', description: 'Actualiza nombre, rol, estado o contraseña de un usuario.' })
   @ApiParam({ name: 'id', description: 'UUID del usuario' })
   @ApiResponse({ status: 200, description: 'Usuario actualizado' })
   update(@Param('id') id: string, @Body() body: any) {
@@ -81,7 +81,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Desactivar usuario', description: 'Desactiva (eliminacion logica) una cuenta de usuario. No se puede desactivar administradores.' })
+  @ApiOperation({ summary: 'Desactivar usuario', description: 'Desactiva (eliminación logica) una cuenta de usuario. No se puede desactivar administradores.' })
   @ApiParam({ name: 'id', description: 'UUID del usuario' })
   @ApiResponse({ status: 200, description: 'Usuario desactivado' })
   remove(@Param('id') id: string) {

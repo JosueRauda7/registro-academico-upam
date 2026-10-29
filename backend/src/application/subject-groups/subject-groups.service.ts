@@ -61,7 +61,7 @@ export class SubjectGroupsService {
     }
     const classroom = await this.classroomRepository.findById(data.classroomId);
     if (!classroom) {
-      throw new NotFoundException('Salon no encontrado');
+      throw new NotFoundException('Salón no encontrado');
     }
 
     // Check max group_number for this subject+cycle
@@ -83,7 +83,7 @@ export class SubjectGroupsService {
     }
     if (data.capacity > classroom.capacity) {
       throw new BadRequestException(
-        `La capacidad del grupo no puede exceder la del salon (${classroom.capacity})`,
+        `La capacidad del grupo no puede exceder la del salón (${classroom.capacity})`,
       );
     }
 
@@ -121,13 +121,13 @@ export class SubjectGroupsService {
 
     if (data.classroomId && data.classroomId !== group.classroomId) {
       const classroom = await this.classroomRepository.findById(data.classroomId);
-      if (!classroom) throw new NotFoundException('Salon no encontrado');
+      if (!classroom) throw new NotFoundException('Salón no encontrado');
       const capacity = data.capacity || group.capacity;
       if (capacity > classroom.capacity) {
         throw new BadRequestException(
           `La capacidad del grupo (${
             capacity
-          }) excede la capacidad del salon (${classroom.capacity})`,
+          }) excede la capacidad del salón (${classroom.capacity})`,
         );
       }
       // Reassign group to different classroom
@@ -144,7 +144,7 @@ export class SubjectGroupsService {
         data.capacity > classroom.capacity
       ) {
         throw new BadRequestException(
-          `La capacidad no puede exceder ${classroom.capacity} (capacidad del salon ${classroom.name})`,
+          `La capacidad no puede exceder ${classroom.capacity} (capacidad del salón ${classroom.name})`,
         );
       }
       if (data.capacity < group.enrolledCount) {
@@ -205,10 +205,10 @@ export class SubjectGroupsService {
   async changeClassroom(id: string, classroomId: string) {
     const group = await this.findById(id);
     const classroom = await this.classroomRepository.findById(classroomId);
-    if (!classroom) throw new NotFoundException('Salon no encontrado');
+    if (!classroom) throw new NotFoundException('Salón no encontrado');
     if (group.enrolledCount > classroom.capacity) {
       throw new BadRequestException(
-        `El salon ${classroom.name} tiene capacidad ${classroom.capacity}, pero el grupo ya tiene ${group.enrolledCount} inscritos`,
+        `El salón ${classroom.name} tiene capacidad ${classroom.capacity}, pero el grupo ya tiene ${group.enrolledCount} inscritos`,
       );
     }
     return this.subjectGroupRepository.update(id, { classroomId });

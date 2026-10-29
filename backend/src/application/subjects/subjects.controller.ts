@@ -14,8 +14,8 @@ export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar materias', description: 'Retorna todas las materias, opcionalmente filtradas por carrera. Con all=true retorna tambien las inactivas.' })
-  @ApiQuery({ name: 'career', required: false, description: 'Filtrar por carrera', example: 'Ingenieria en Sistemas' })
+  @ApiOperation({ summary: 'Listar materias', description: 'Retorna todas las materias, opcionalmente filtradas por carrera. Con all=true retorna también las inactivas.' })
+  @ApiQuery({ name: 'career', required: false, description: 'Filtrar por carrera', example: 'Ingeniería en Sistemas' })
   @ApiQuery({ name: 'all', required: false, description: 'Incluir materias inactivas', example: 'true' })
   @ApiResponse({ status: 200, description: 'Lista de materias' })
   findAll(@Query('career') career?: string, @Query('all') all?: string) {
@@ -32,7 +32,7 @@ export class SubjectsController {
   }
 
   @Get(':id/schedules')
-  @ApiOperation({ summary: 'Obtener horarios de una materia', description: 'Retorna los horarios disponibles para una materia en un ciclo especifico.' })
+  @ApiOperation({ summary: 'Obtener horarios de una materia', description: 'Retorna los horarios disponibles para una materia en un ciclo específico.' })
   @ApiParam({ name: 'id', description: 'UUID de la materia' })
   @ApiQuery({ name: 'cycleId', required: true, description: 'UUID del ciclo' })
   @ApiResponse({ status: 200, description: 'Horarios disponibles' })
@@ -69,7 +69,7 @@ export class SubjectsController {
 
   @Delete(':id')
   @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
-  @ApiOperation({ summary: 'Desactivar materia', description: 'Desactiva (eliminacion logica) una materia. No se eliminan inscripciones existentes.' })
+  @ApiOperation({ summary: 'Desactivar materia', description: 'Desactiva (eliminación logica) una materia. No se eliminan inscripciones existentes.' })
   @ApiParam({ name: 'id', description: 'UUID de la materia' })
   @ApiResponse({ status: 200, description: 'Materia desactivada' })
   @ApiResponse({ status: 404, description: 'Materia no encontrada' })
@@ -87,7 +87,7 @@ export class SubjectsController {
   }
 
   @Get('schedules/cycle/:cycleId')
-  @ApiOperation({ summary: 'Obtener todos los horarios del ciclo', description: 'Retorna todos los horarios de todas las materias para un ciclo especifico.' })
+  @ApiOperation({ summary: 'Obtener todos los horarios del ciclo', description: 'Retorna todos los horarios de todas las materias para un ciclo específico.' })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
   @ApiResponse({ status: 200, description: 'Lista de horarios del ciclo' })
   findSchedulesByCycle(@Param('cycleId') cycleId: string) {

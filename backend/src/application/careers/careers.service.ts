@@ -42,7 +42,7 @@ export class CareersService {
       const years = data.years ?? career.years;
       const semestersPerYear = data.semestersPerYear ?? career.semestersPerYear;
       if (years < 1 || semestersPerYear < 1) {
-        throw new ConflictException('Los anos y semestres deben ser al menos 1');
+        throw new ConflictException('Los años y semestres deben ser al menos 1');
       }
     }
     return this.careerRepository.update(id, data);
@@ -69,17 +69,17 @@ export class CareersService {
       throw new ConflictException('El nombre de la carrera es requerido');
     }
     if (!data.code || !String(data.code).trim()) {
-      throw new ConflictException('El codigo de la carrera es requerido');
+      throw new ConflictException('El código de la carrera es requerido');
     }
     if (data.years !== undefined && Number(data.years) < 1) {
-      throw new ConflictException('La cantidad de anos debe ser al menos 1');
+      throw new ConflictException('La cantidad de años debe ser al menos 1');
     }
     if (
       data.semestersPerYear !== undefined &&
       Number(data.semestersPerYear) < 1
     ) {
       throw new ConflictException(
-        'La cantidad de semestres por ano debe ser al menos 1',
+        'La cantidad de semestres por año debe ser al menos 1',
       );
     }
   }
@@ -91,7 +91,7 @@ export class CareersService {
     }
     const byCode = await this.careerRepository.findByCode(code);
     if (byCode && byCode.id !== excludeId) {
-      throw new ConflictException('Ya existe una carrera con ese codigo');
+      throw new ConflictException('Ya existe una carrera con ese código');
     }
   }
 }

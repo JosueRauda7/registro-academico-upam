@@ -32,20 +32,20 @@ export function CyclesPage() {
   const handleOpenEnrollment = async (id: string) => {
     try {
       await cyclesApi.openEnrollment(id);
-      toast.success('Inscripcion abierta');
+      toast.success('Inscripción abierta');
       loadCycles();
     } catch (err) {
-      toast.error('Error al abrir inscripcion');
+      toast.error('Error al abrir inscripción');
     }
   };
 
   const handleCloseEnrollment = async (id: string) => {
     try {
       await cyclesApi.closeEnrollment(id);
-      toast.success('Inscripcion cerrada');
+      toast.success('Inscripción cerrada');
       loadCycles();
     } catch (err) {
-      toast.error('Error al cerrar inscripcion');
+      toast.error('Error al cerrar inscripción');
     }
   };
 
@@ -53,8 +53,8 @@ export function CyclesPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion de Ciclos</h1>
-          <p className="text-gray-500">Administra los ciclos academicos</p>
+          <h1 className="text-2xl font-bold text-gray-900">Gestión de Ciclos</h1>
+          <p className="text-gray-500">Administra los ciclos académicos</p>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
@@ -74,7 +74,7 @@ export function CyclesPage() {
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-right">
-                    <p className="text-sm text-gray-500">Matricula</p>
+                    <p className="text-sm text-gray-500">Matrícula</p>
                     <p className="font-semibold">{formatCurrency(cycle.tuitionAmount)}</p>
                   </div>
                   <div className="text-right">
@@ -94,14 +94,14 @@ export function CyclesPage() {
                         size="sm"
                         onClick={() => handleCloseEnrollment(cycle.id)}
                       >
-                        Cerrar Inscripcion
+                        Cerrar Inscripción
                       </Button>
                     ) : (
                       <Button
                         size="sm"
                         onClick={() => handleOpenEnrollment(cycle.id)}
                       >
-                        Abrir Inscripcion
+                        Abrir Inscripción
                       </Button>
                     )}
                   </div>

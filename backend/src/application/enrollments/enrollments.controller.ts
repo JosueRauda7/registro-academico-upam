@@ -22,10 +22,10 @@ export class EnrollmentsController {
   }
 
   @Get('my/:cycleId')
-  @ApiOperation({ summary: 'Mi inscripcion en un ciclo', description: 'Retorna la inscripcion del estudiante en un ciclo especifico con sus materias.' })
+  @ApiOperation({ summary: 'Mi inscripción en un ciclo', description: 'Retorna la inscripción del estudiante en un ciclo específico con sus materias.' })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
-  @ApiResponse({ status: 200, description: 'Inscripcion con materias' })
-  @ApiResponse({ status: 404, description: 'Inscripcion no encontrada' })
+  @ApiResponse({ status: 200, description: 'Inscripción con materias' })
+  @ApiResponse({ status: 404, description: 'Inscripción no encontrada' })
   getMyEnrollment(
     @CurrentUser('sub') userId: string,
     @Param('cycleId') cycleId: string,
@@ -34,10 +34,10 @@ export class EnrollmentsController {
   }
 
   @Post('cycle/:cycleId')
-  @ApiOperation({ summary: 'Inscribirse en un ciclo', description: 'Crea una inscripcion para el estudiante en el ciclo indicado. Requiere pago de matricula previo.' })
+  @ApiOperation({ summary: 'Inscribirse en un ciclo', description: 'Crea una inscripción para el estudiante en el ciclo indicado. Requiere pago de matrícula previo.' })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
-  @ApiResponse({ status: 201, description: 'Inscripcion creada exitosamente' })
-  @ApiResponse({ status: 400, description: 'Ya existe inscripcion en este ciclo o no hay pago de matricula' })
+  @ApiResponse({ status: 201, description: 'Inscripción creada exitosamente' })
+  @ApiResponse({ status: 400, description: 'Ya existe inscripción en este ciclo o no hay pago de matrícula' })
   enrollInCycle(
     @CurrentUser('sub') userId: string,
     @Param('cycleId') cycleId: string,
@@ -48,7 +48,7 @@ export class EnrollmentsController {
   @Post('subject')
   @ApiOperation({
     summary: 'Inscribir materia',
-    description: 'Inscribe una materia en la inscripcion del estudiante. Valida prerequisitos, disponibilidad de cupos y conflictos de horario.',
+    description: 'Inscribe una materia en la inscripción del estudiante. Valida prerequisitos, disponibilidad de cupos y conflictos de horario.',
   })
   @ApiBody({
     schema: {
@@ -63,7 +63,7 @@ export class EnrollmentsController {
   })
   @ApiResponse({ status: 201, description: 'Materia inscrita exitosamente (estado: reserved)' })
   @ApiResponse({ status: 400, description: 'Prerequisito faltante, sin cupos o conflicto de horario' })
-  @ApiResponse({ status: 404, description: 'Inscripcion no encontrada' })
+  @ApiResponse({ status: 404, description: 'Inscripción no encontrada' })
   enrollSubject(
     @CurrentUser('sub') userId: string,
     @Body() body: { cycleId: string; subjectId: string; scheduleId: string },
@@ -78,7 +78,7 @@ export class EnrollmentsController {
 
   @Put('subject/:id/cancel')
   @ApiOperation({ summary: 'Cancelar materia inscrita', description: 'Cancela una materia previamente inscrita y libera el cupo.' })
-  @ApiParam({ name: 'id', description: 'UUID de la inscripcion-materia' })
+  @ApiParam({ name: 'id', description: 'UUID de la inscripción-materia' })
   @ApiResponse({ status: 200, description: 'Materia cancelada y cupo liberado' })
   @ApiResponse({ status: 400, description: 'La materia ya fue confirmada' })
   cancelSubject(
@@ -90,11 +90,11 @@ export class EnrollmentsController {
 
   @Post('confirm/:cycleId')
   @ApiOperation({
-    summary: 'Confirmar inscripcion',
-    description: 'Confirma todas las materias reservadas en la inscripcion del ciclo. Cambia el estado de "reserved" a "confirmed".',
+    summary: 'Confirmar inscripción',
+    description: 'Confirma todas las materias reservadas en la inscripción del ciclo. Cambia el estado de "reserved" a "confirmed".',
   })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
-  @ApiResponse({ status: 200, description: 'Inscripcion confirmada' })
+  @ApiResponse({ status: 200, description: 'Inscripción confirmada' })
   @ApiResponse({ status: 400, description: 'No hay materias reservadas para confirmar' })
   confirmEnrollment(
     @CurrentUser('sub') userId: string,
@@ -114,7 +114,7 @@ export class EnrollmentsController {
 
   @Get('stats/:cycleId')
   @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
-  @ApiOperation({ summary: 'Estadisticas de inscripcion', description: 'Retorna estadisticas de inscripciones para un ciclo (total inscritos, materias, etc).' })
+  @ApiOperation({ summary: 'Estadisticas de inscripción', description: 'Retorna estadisticas de inscripciones para un ciclo (total inscritos, materias, etc).' })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
   @ApiResponse({ status: 200, description: 'Estadisticas del ciclo' })
   getEnrollmentStats(@Param('cycleId') cycleId: string) {

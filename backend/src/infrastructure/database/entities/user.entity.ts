@@ -17,7 +17,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ name: 'password_hash' })
+  @Column({ name: 'password_hash', select: false })
   passwordHash: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.STUDENT })
@@ -32,10 +32,10 @@ export class User {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @Column({ name: 'reset_token', type: 'varchar', nullable: true })
+  @Column({ name: 'reset_token', type: 'varchar', nullable: true, select: false })
   resetToken: string | null;
 
-  @Column({ name: 'reset_token_expires', type: 'timestamp', nullable: true })
+  @Column({ name: 'reset_token_expires', type: 'timestamp', nullable: true, select: false })
   resetTokenExpires: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })

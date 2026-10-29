@@ -9,7 +9,30 @@ import { studentsApi } from '@/api/students.api';
 import { Payment, Cycle, Student } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/formatDate';
 import toast from 'react-hot-toast';
-import { Banknote, Search, User } from 'lucide-react';
+import { Banknote, ImagePlus, Landmark, Search, Trash2, User } from 'lucide-react';
+
+const MAX_RECEIPT_SIZE = 5 * 1024 * 1024;
+
+const BANK_OPTIONS = [
+  'Banco Agrícola',
+  'Banco Cuscatlán',
+  'Banco Davivienda Salvadoreño',
+  'Banco G&T Continental',
+  'Banco Promerica',
+  'Banco Azul',
+  'Banco Hipotecario',
+  'Banco de Fomento Agropecuario',
+  'BANCOVIMA',
+];
+
+const emptyForm = {
+  type: 'tuition' as 'tuition' | 'monthly',
+  month: '',
+  description: '',
+  paymentMethod: 'cash' as 'cash' | 'bank',
+  bankName: '',
+  bankTransactionCode: '',
+};
 
 export function ColecturiaPage() {
   const [cycles, setCycles] = useState<Cycle[]>([]);
@@ -21,12 +44,10 @@ export function ColecturiaPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const [form, setForm] = useState({
-    type: 'tuition' as 'tuition' | 'monthly',
-    amount: '',
-    month: '',
-    description: '',
-  });
+  const [form, setForm] = useState(emptyForm);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -63,29 +84,82 @@ export function ColecturiaPage() {
     }
   };
 
+  const handleReceiptFile = (file?: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('El comprobante debe ser una imagen');
+      return;
+    }
+    if (file.size > MAX_RECEIPT_SIZE) {
+      toast.error('El comprobante no puede superar los 5MB');
+      return;
+    }
+    setReceiptFile(file);
+    setReceiptPreview(URL.createObjectURL(file));
+  };
+
+  const clearReceipt = () => {
+    setReceiptFile(null);
+    setReceiptPreview(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedStudent || !selectedCycle || !form.amount) {
-      toast.error('Complete todos los campos obligatorios');
+    const amount =
+      form.type === 'monthly'
+        ? selectedCycleData?.monthlyAmount
+        : selectedCycleData?.tuitionAmount;
+
+    if (!selectedStudent || !selectedCycle || !amount) {
+      toast.error('Complete los campos obligatorios');
+      return;
+    }
+    if (form.type === 'monthly' && !form.month) {
+      toast.error('Seleccione el mes');
+      return;
+    }
+    if (form.paymentMethod === 'bank' && !form.bankName.trim()) {
+      toast.error('Indique el banco de la transacción');
+      return;
+    }
+    if (form.paymentMethod === 'bank' && !form.bankTransactionCode.trim()) {
+      toast.error('Indique el código de la transacción bancaria');
       return;
     }
 
     setSubmitting(true);
     try {
+      let receiptImageUrl: string | undefined;
+      if (receiptFile) {
+        const upload = await paymentsApi.uploadReceipt(receiptFile);
+        receiptImageUrl = upload.url;
+      }
+
       await paymentsApi.createManualPayment({
         studentId: selectedStudent,
         cycleId: selectedCycle,
-        amount: parseFloat(form.amount),
+        amount,
         type: form.type,
         month: form.type === 'monthly' ? parseInt(form.month) : undefined,
         description: form.description || undefined,
+        paymentMethod: form.paymentMethod,
+        bankName: form.paymentMethod === 'bank' ? form.bankName : undefined,
+        bankTransactionCode:
+          form.paymentMethod === 'bank' ? form.bankTransactionCode : undefined,
+        receiptImageUrl,
       });
       toast.success('Pago registrado exitosamente');
-      setForm({ type: 'tuition', amount: '', month: '', description: '' });
+      setForm(emptyForm);
+      clearReceipt();
       setSelectedStudent('');
+      setSearchTerm('');
       loadPayments();
     } catch (err: any) {
-      toast.error(err.response?.data?.message?.[0] || err.response?.data?.message || 'Error al registrar pago');
+      toast.error(
+        err.response?.data?.message?.[0] ||
+          err.response?.data?.message ||
+          'Error al registrar pago',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -104,13 +178,30 @@ export function ColecturiaPage() {
   });
 
   const selectedCycleData = cycles.find((c) => c.id === selectedCycle);
+  const fixedAmount =
+    form.type === 'monthly'
+      ? selectedCycleData?.monthlyAmount
+      : selectedCycleData?.tuitionAmount;
+
+  const methodLabel = (p: Payment) =>
+    p.paymentMethod === 'bank' ? 'Banco' : p.paymentMethod === 'cash' ? 'Efectivo' : 'Wompi';
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex h-64 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-upam-primary border-t-transparent" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Colecturia</h1>
-          <p className="text-gray-500">Registro de pagos manuales en efectivo</p>
+          <h1 className="text-2xl font-bold text-gray-900">Colecturía</h1>
+          <p className="text-gray-500">Registro de pagos en efectivo y transacciones bancarias</p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -120,7 +211,7 @@ export function ColecturiaPage() {
               {/* Cycle */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Ciclo Academico *
+                  Ciclo Académico *
                 </label>
                 <select
                   value={selectedCycle}
@@ -185,7 +276,7 @@ export function ColecturiaPage() {
                         : 'border-gray-300 text-gray-600 hover:border-gray-400'
                     }`}
                   >
-                    Matricula
+                    Matrícula
                   </button>
                   <button
                     type="button"
@@ -221,29 +312,161 @@ export function ColecturiaPage() {
                 </div>
               )}
 
-              {/* Amount */}
+              {/* Amount (fixed to cycle value) */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">
                   Monto (USD) *
                 </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={form.amount}
-                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-upam-primary focus:outline-none focus:ring-1 focus:ring-upam-primary"
-                  required
-                />
-                {selectedCycleData && (
-                  <p className="mt-1 text-xs text-gray-500">
-                    {form.type === 'tuition'
-                      ? `Matricula: ${formatCurrency(selectedCycleData.tuitionAmount)}`
-                      : `Mensualidad: ${formatCurrency(selectedCycleData.monthlyAmount)}`}
-                  </p>
-                )}
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={fixedAmount ?? ''}
+                    readOnly
+                    tabIndex={-1}
+                    className="w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-600"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                    Fijo
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  {selectedCycleData
+                    ? form.type === 'tuition'
+                      ? `Matrícula: ${formatCurrency(selectedCycleData.tuitionAmount)}`
+                      : `Mensualidad: ${formatCurrency(selectedCycleData.monthlyAmount)}`
+                    : 'Seleccione un ciclo para ver el monto'}
+                </p>
               </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Método de Pago *
+                </label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, paymentMethod: 'cash' })}
+                    className={`flex-1 rounded-lg border-2 px-4 py-2 text-sm font-medium transition-colors ${
+                      form.paymentMethod === 'cash'
+                        ? 'border-upam-primary bg-upam-primary text-white'
+                        : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    <Banknote size={15} className="mr-1.5 inline" />
+                    Efectivo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, paymentMethod: 'bank' })}
+                    className={`flex-1 rounded-lg border-2 px-4 py-2 text-sm font-medium transition-colors ${
+                      form.paymentMethod === 'bank'
+                        ? 'border-upam-primary bg-upam-primary text-white'
+                        : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    <Landmark size={15} className="mr-1.5 inline" />
+                    Transacción Bancaria
+                  </button>
+                </div>
+              </div>
+
+              {/* Bank Fields */}
+              {form.paymentMethod === 'bank' && (
+                <>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Banco *
+                    </label>
+                    <input
+                      type="text"
+                      list="bank-options"
+                      placeholder="Seleccione o escriba el banco"
+                      value={form.bankName}
+                      onChange={(e) => setForm({ ...form, bankName: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-upam-primary focus:outline-none focus:ring-1 focus:ring-upam-primary"
+                      required
+                    />
+                    <datalist id="bank-options">
+                      {BANK_OPTIONS.map((b) => (
+                        <option key={b} value={b} />
+                      ))}
+                    </datalist>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Código de Transacción Bancaria *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej. TRX-2026-000123"
+                      value={form.bankTransactionCode}
+                      onChange={(e) => setForm({ ...form, bankTransactionCode: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-upam-primary focus:outline-none focus:ring-1 focus:ring-upam-primary"
+                      required
+                    />
+                  </div>
+
+                  {/* Receipt Image */}
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Comprobante de Pago (opcional)
+                    </label>
+                    {receiptPreview ? (
+                      <div className="relative">
+                        <img
+                          src={receiptPreview}
+                          alt="Comprobante"
+                          className="h-40 w-full rounded-lg border border-gray-200 bg-gray-50 object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={clearReceipt}
+                          className="absolute right-2 top-2 rounded-full bg-red-500 p-1.5 text-white transition-colors hover:bg-red-600"
+                          title="Quitar comprobante"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setDragging(true);
+                        }}
+                        onDragLeave={() => setDragging(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setDragging(false);
+                          handleReceiptFile(e.dataTransfer.files?.[0]);
+                        }}
+                        className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-6 text-center text-sm transition-colors ${
+                          dragging
+                            ? 'border-upam-primary bg-upam-primary/5'
+                            : 'border-gray-300 text-gray-500 hover:border-upam-primary hover:text-upam-primary'
+                        }`}
+                      >
+                        <ImagePlus size={26} className="mb-2 text-gray-400" />
+                        <span>
+                          Arrastre el comprobante aquí o{' '}
+                          <span className="font-medium text-upam-primary">seleccione un archivo</span>
+                        </span>
+                        <span className="mt-1 text-xs text-gray-400">
+                          JPG, PNG o WEBP, máximo 5MB
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleReceiptFile(e.target.files?.[0]!)}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </>
+              )}
 
               {/* Description */}
               <div>
@@ -261,7 +484,7 @@ export function ColecturiaPage() {
 
               <Button type="submit" className="w-full" loading={submitting}>
                 <Banknote size={16} className="mr-2" />
-                Registrar Pago en Efectivo
+                Registrar Pago
               </Button>
             </form>
           </Card>
@@ -271,7 +494,7 @@ export function ColecturiaPage() {
             {payments.length === 0 ? (
               <p className="py-8 text-center text-gray-500">No hay pagos registrados para este ciclo</p>
             ) : (
-              <div className="max-h-[600px] overflow-y-auto">
+              <div className="max-h-[600px] overflow-x-auto overflow-y-auto">
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-gray-500">
@@ -280,6 +503,7 @@ export function ColecturiaPage() {
                       <th className="pb-3 font-medium">Tipo</th>
                       <th className="pb-3 font-medium">Monto</th>
                       <th className="pb-3 font-medium">Ref</th>
+                      <th className="pb-3 font-medium">Método</th>
                       <th className="pb-3 font-medium">Estado</th>
                     </tr>
                   </thead>
@@ -294,10 +518,42 @@ export function ColecturiaPage() {
                           </div>
                         </td>
                         <td className="py-3 text-xs">
-                          {p.type === 'tuition' ? 'Matricula' : `Mes ${p.month}`}
+                          {p.type === 'tuition' ? 'Matrícula' : `Mes ${p.month}`}
                         </td>
                         <td className="py-3 font-semibold text-xs">{formatCurrency(p.amount)}</td>
                         <td className="py-3 font-mono text-xs">{p.reference}</td>
+                        <td className="py-3 text-xs">
+                          <div>
+                            <span className={`rounded px-2 py-1 text-xs font-medium ${
+                              p.paymentMethod === 'bank'
+                                ? 'bg-blue-50 text-blue-700'
+                                : p.paymentMethod === 'cash'
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {methodLabel(p)}
+                            </span>
+                            {p.paymentMethod === 'bank' && (
+                              <p className="mt-1 max-w-[160px] text-xs text-gray-500">
+                                {p.bankName}
+                                {p.bankTransactionCode && (
+                                  <span className="block font-mono text-[11px]">
+                                    {p.bankTransactionCode}
+                                  </span>
+                                )}
+                                {p.receiptImageUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={() => paymentsApi.openReceipt(p.receiptImageUrl!).catch(() => toast.error('No se pudo descargar el comprobante'))}
+                                    className="mt-0.5 inline-block font-medium text-upam-primary hover:underline"
+                                  >
+                                    Ver comprobante
+                                  </button>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-3">
                           <Badge status={p.status} />
                         </td>

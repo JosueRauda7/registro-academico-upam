@@ -69,7 +69,7 @@ export class ReportsController {
 
   @Get('collection/:cycleId')
   @Roles(UserRole.ADMINISTRATOR, UserRole.COLLECTOR)
-  @ApiOperation({ summary: 'Reporte de recaudacion', description: 'Genera un reporte Excel de recaudacion por ciclo (matriculas y mensualidades).' })
+  @ApiOperation({ summary: 'Reporte de recaudación', description: 'Genera un reporte Excel de recaudación por ciclo (matrículas y mensualidades).' })
   @ApiParam({ name: 'cycleId', description: 'UUID del ciclo' })
   @ApiProduces('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   @ApiResponse({ status: 200, description: 'Archivo Excel generado' })

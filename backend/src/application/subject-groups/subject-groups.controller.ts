@@ -44,7 +44,7 @@ export class SubjectGroupsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener grupo por ID', description: 'Retorna un grupo con sus horarios, docente, salon y materia.' })
+  @ApiOperation({ summary: 'Obtener grupo por ID', description: 'Retorna un grupo con sus horarios, docente, salón y materia.' })
   @ApiParam({ name: 'id', description: 'UUID del grupo' })
   @ApiResponse({ status: 200, description: 'Grupo encontrado' })
   @ApiResponse({ status: 404, description: 'Grupo no encontrado' })
@@ -56,7 +56,7 @@ export class SubjectGroupsController {
   @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
   @ApiOperation({
     summary: 'Crear grupo',
-    description: 'Crea un grupo de materia en un ciclo con docente, salon y horarios.',
+    description: 'Crea un grupo de materia en un ciclo con docente, salón y horarios.',
   })
   @ApiBody({
     schema: {
@@ -66,7 +66,7 @@ export class SubjectGroupsController {
         subjectId: { type: 'string', example: 'uuid-materia' },
         cycleId: { type: 'string', example: 'uuid-ciclo' },
         teacherId: { type: 'string', example: 'uuid-docente' },
-        classroomId: { type: 'string', example: 'uuid-salon' },
+        classroomId: { type: 'string', example: 'uuid-salón' },
         groupNumber: { type: 'number', example: 1 },
         capacity: { type: 'number', example: 40 },
         schedules: {
@@ -93,7 +93,7 @@ export class SubjectGroupsController {
   @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
   @ApiOperation({
     summary: 'Actualizar grupo',
-    description: 'Actualiza docente, salon o capacidad del grupo. Permite cambiar la materia de salon.',
+    description: 'Actualiza docente, salón o capacidad del grupo. Permite cambiar la materia de salón.',
   })
   @ApiParam({ name: 'id', description: 'UUID del grupo' })
   @ApiResponse({ status: 200, description: 'Grupo actualizado' })

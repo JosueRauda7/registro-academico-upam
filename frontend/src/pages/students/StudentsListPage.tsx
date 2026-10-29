@@ -18,7 +18,7 @@ const emptyForm = {
   password: '',
   firstName: '',
   lastName: '',
-  career: 'Ingenieria en Sistemas',
+  career: 'Ingeniería en Sistemas',
   phone: '',
   address: '',
   dateOfBirth: '',
@@ -48,7 +48,7 @@ function validatePhone(phone: string): string | null {
   if (!phone.trim()) return null;
   const digits = phone.replace(/\D/g, '');
   if (digits.length !== 8) {
-    return 'El telefono debe tener 8 digitos (formato XXXX-XXXX)';
+    return 'El teléfono debe tener 8 digitos (formato XXXX-XXXX)';
   }
   return null;
 }
@@ -56,14 +56,14 @@ function validatePhone(phone: string): string | null {
 function validateDateOfBirth(dob: string): string | null {
   if (!dob) return null;
   const date = new Date(dob);
-  if (Number.isNaN(date.getTime())) return 'Fecha de nacimiento invalida';
+  if (Number.isNaN(date.getTime())) return 'Fecha de nacimiento inválida';
   const now = new Date();
   if (date > now) return 'La fecha de nacimiento no puede ser futura';
   const age = now.getFullYear() - date.getFullYear();
   const hasHadBirthday =
     now.getMonth() > date.getMonth() ||
     (now.getMonth() === date.getMonth() && now.getDate() >= date.getDate());
-  if (age < 18 || (age === 18 && !hasHadBirthday)) return 'El estudiante debe ser mayor de 18 anos';
+  if (age < 18 || (age === 18 && !hasHadBirthday)) return 'El estudiante debe ser mayor de 18 años';
   return null;
 }
 
@@ -76,7 +76,7 @@ function validateForm(opts: {
   const emailErr = validateEmail(opts.email);
   if (emailErr) return emailErr;
   if (opts.password !== undefined && opts.password.length > 0 && opts.password.length < 6) {
-    return 'La contrasena debe tener al menos 6 caracteres';
+    return 'La contraseña debe tener al menos 6 caracteres';
   }
   const phoneErr = validatePhone(opts.phone);
   if (phoneErr) return phoneErr;
@@ -231,7 +231,7 @@ export function StudentsListPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestion de Estudiantes</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Gestión de Estudiantes</h1>
             <p className="text-gray-500">Crear, editar y gestionar estudiantes</p>
           </div>
           <Button onClick={() => setShowCreateModal(true)}>
@@ -244,7 +244,7 @@ export function StudentsListPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por carnet, codigo, nombre, carrera o correo..."
+            placeholder="Buscar por carnet, código, nombre, carrera o correo..."
             className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-upam-primary focus:outline-none"
           />
         </div>
@@ -265,7 +265,7 @@ export function StudentsListPage() {
                 <thead>
                   <tr className="border-b text-left text-gray-500">
                     <th className="pb-3 font-medium">Carnet</th>
-                    <th className="pb-3 font-medium">Codigo</th>
+                    <th className="pb-3 font-medium">Código</th>
                     <th className="pb-3 font-medium">Nombre</th>
                     <th className="pb-3 font-medium">Carrera</th>
                     <th className="pb-3 font-medium">Email</th>
@@ -332,7 +332,7 @@ export function StudentsListPage() {
             />
           </div>
           <Input
-            label="Correo electronico *"
+            label="Correo electrónico *"
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -340,22 +340,22 @@ export function StudentsListPage() {
             required
           />
           <Input
-            label="Contrasena *"
+            label="Contraseña *"
             type="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            placeholder="Minimo 6 caracteres"
+            placeholder="Mínimo 6 caracteres"
             required
           />
           <Input
             label="Carrera"
             value={form.career}
             onChange={(e) => setForm({ ...form, career: e.target.value })}
-            placeholder="Ingenieria en Sistemas"
+            placeholder="Ingeniería en Sistemas"
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
-              label="Telefono (8 digitos)"
+              label="Teléfono (8 digitos)"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="7000-0000"
@@ -369,19 +369,19 @@ export function StudentsListPage() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
-              label="Ano de ingreso"
+              label="Año de ingreso"
               type="number"
               value={form.enrollmentYear}
               onChange={(e) => setForm({ ...form, enrollmentYear: e.target.value })}
             />
             <Input
-              label="Direccion"
+              label="Dirección"
               value={form.address}
               onChange={(e) => setForm({ ...form, address: e.target.value })}
               placeholder="Opcional"
             />
           </div>
-          <p className="text-xs text-gray-500">El carnet y el codigo se generan automaticamente al crear el estudiante.</p>
+          <p className="text-xs text-gray-500">El carnet y el código se generan automaticamente al crear el estudiante.</p>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setShowCreateModal(false)}>Cancelar</Button>
             <Button type="submit" loading={saving}>Crear Estudiante</Button>
@@ -398,7 +398,7 @@ export function StudentsListPage() {
               <span className="font-mono text-sm text-gray-800">{editingStudent?.carnet}</span>
             </div>
             <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-              <span className="block text-xs font-medium text-gray-500">Codigo</span>
+              <span className="block text-xs font-medium text-gray-500">Código</span>
               <span className="font-mono text-sm text-gray-800">{editingStudent?.studentCode}</span>
             </div>
           </div>
@@ -417,7 +417,7 @@ export function StudentsListPage() {
             />
           </div>
           <Input
-            label="Correo electronico *"
+            label="Correo electrónico *"
             type="email"
             value={editForm.email}
             onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
@@ -430,7 +430,7 @@ export function StudentsListPage() {
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
-              label="Telefono (8 digitos)"
+              label="Teléfono (8 digitos)"
               value={editForm.phone}
               onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
               placeholder="7000-0000"
@@ -444,23 +444,23 @@ export function StudentsListPage() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
-              label="Ano de ingreso"
+              label="Año de ingreso"
               type="number"
               value={editForm.enrollmentYear}
               onChange={(e) => setEditForm({ ...editForm, enrollmentYear: e.target.value })}
             />
             <Input
-              label="Direccion"
+              label="Dirección"
               value={editForm.address}
               onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
             />
           </div>
           <Input
-            label="Nueva contrasena (dejar vacio para no cambiar)"
+            label="Nueva contraseña (dejar vacio para no cambiar)"
             type="password"
             value={editForm.password}
             onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-            placeholder="Minimo 6 caracteres"
+            placeholder="Mínimo 6 caracteres"
           />
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancelar</Button>

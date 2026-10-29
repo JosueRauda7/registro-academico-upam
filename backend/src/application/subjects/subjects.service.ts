@@ -3,6 +3,7 @@ import { SubjectRepository } from '../../infrastructure/database/repositories/su
 import { ScheduleRepository } from '../../infrastructure/database/repositories/schedule.repository';
 import { SubjectGroupRepository } from '../../infrastructure/database/repositories/subject-group.repository';
 import { CareerRepository } from '../../infrastructure/database/repositories/career.repository';
+import { PrerequisiteRepository } from '../../infrastructure/database/repositories/prerequisite.repository';
 
 @Injectable()
 export class SubjectsService {
@@ -11,6 +12,7 @@ export class SubjectsService {
     private readonly scheduleRepository: ScheduleRepository,
     private readonly subjectGroupRepository: SubjectGroupRepository,
     private readonly careerRepository: CareerRepository,
+    private readonly prerequisiteRepository: PrerequisiteRepository,
   ) {}
 
   async findAll(career?: string, all = false) {
@@ -49,7 +51,13 @@ export class SubjectsService {
 
   async create(data: any) {
     await this.validateCareer(data.career);
-    return this.subjectRepository.create(data);
+    const { prerequisiteSubjectId, ...subjectData } = data;
+    const subject = await this.subjectRepository.create(subjectData);
+    if (prerequisiteSubjectId) {
+      await this.prerequisiteRepository.removeAllForSubject(subject.id);
+      await this.prerequisiteRepository.addPrerequisite(subject.id, prerequisiteSubjectId);
+    }
+    return this.subjectRepository.findById(subject.id);
   }
 
   async update(id: string, data: any) {
@@ -57,14 +65,24 @@ export class SubjectsService {
     if (data.career !== undefined) {
       await this.validateCareer(data.career);
     }
-    return this.subjectRepository.update(id, data);
+    const { prerequisiteSubjectId, ...subjectData } = data;
+    if (Object.keys(subjectData).length > 0) {
+      await this.subjectRepository.update(id, subjectData);
+    }
+    if (prerequisiteSubjectId !== undefined) {
+      await this.prerequisiteRepository.removeAllForSubject(id);
+      if (prerequisiteSubjectId) {
+        await this.prerequisiteRepository.addPrerequisite(id, prerequisiteSubjectId);
+      }
+    }
+    return this.subjectRepository.findById(id);
   }
 
   private async validateCareer(career?: string) {
     if (!career) return;
     const found = await this.careerRepository.findActiveByName(career);
     if (!found) {
-      throw new ConflictException('La carrera especificada no existe o esta inactiva');
+      throw new ConflictException('La carrera especificada no existe o está inactiva');
     }
   }
 

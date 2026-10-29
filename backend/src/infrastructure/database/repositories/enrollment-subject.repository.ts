@@ -91,9 +91,11 @@ export class EnrollmentSubjectRepository {
       .createQueryBuilder('es')
       .innerJoin('es.enrollment', 'enrollment')
       .innerJoin('enrollment.cycle', 'cycle')
+      .innerJoin('es.grades', 'grade')
       .where('enrollment.studentId = :studentId', { studentId })
       .andWhere('es.subjectId = :subjectId', { subjectId })
-      .andWhere('cycle.year < :currentYear', { currentYear: new Date().getFullYear() })
+      .andWhere('es.status != :cancelled', { cancelled: 'cancelled' })
+      .andWhere('grade.status = :approved', { approved: 'approved' })
       .getCount();
     return count > 0;
   }

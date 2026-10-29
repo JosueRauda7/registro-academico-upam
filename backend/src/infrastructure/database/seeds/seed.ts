@@ -50,7 +50,7 @@ async function seed() {
     email: 'colector@upam.edu.sv',
     passwordHash: collectorPassword,
     firstName: 'Maria',
-    lastName: 'Gonzalez',
+    lastName: 'González',
     role: UserRole.COLLECTOR,
     isActive: true,
   });
@@ -61,7 +61,7 @@ async function seed() {
     email: 'administrativo@upam.edu.sv',
     passwordHash: adminStaffPassword,
     firstName: 'Carlos',
-    lastName: 'Ramirez',
+    lastName: 'Ramírez',
     role: UserRole.ADMINISTRATIVE,
     isActive: true,
   });
@@ -71,7 +71,7 @@ async function seed() {
   const studentUser = await userRepo.save({
     email: 'estudiante@upam.edu.sv',
     passwordHash: studentPassword,
-    firstName: 'Josue',
+    firstName: 'Josué',
     lastName: 'Rauda',
     role: UserRole.STUDENT,
     isActive: true,
@@ -81,7 +81,7 @@ async function seed() {
     userId: studentUser.id,
     studentCode: 'UPAM-2026-0001',
     carnet: 'LR021501',
-    career: 'Ingenieria en Sistemas',
+    career: 'Ingeniería en Sistemas',
     enrollmentYear: 2026,
     phone: '7012-3456',
     address: 'San Salvador, El Salvador',
@@ -104,17 +104,17 @@ async function seed() {
   });
   console.log('Cycle created');
 
-  // Create subjects for Ingenieria en Sistemas
+  // Create subjects for Ingeniería en Sistemas
   const subjects = [
-    { code: 'MAT101', name: 'Matematica I', credits: 4, year: 1, semester: 1 },
-    { code: 'INF101', name: 'Introduccion a la Programacion', credits: 4, year: 1, semester: 1 },
-    { code: 'FIS101', name: 'Fisica I', credits: 4, year: 1, semester: 1 },
-    { code: 'ING101', name: 'Ingles I', credits: 3, year: 1, semester: 1 },
-    { code: 'MAT102', name: 'Matematica II', credits: 4, year: 1, semester: 2 },
-    { code: 'INF102', name: 'Programacion II', credits: 4, year: 1, semester: 2 },
-    { code: 'FIS102', name: 'Fisica II', credits: 4, year: 1, semester: 2 },
-    { code: 'ING102', name: 'Ingles II', credits: 3, year: 1, semester: 2 },
-    { code: 'MAT201', name: 'Matematica III', credits: 4, year: 2, semester: 1 },
+    { code: 'MAT101', name: 'Matemática I', credits: 4, year: 1, semester: 1 },
+    { code: 'INF101', name: 'Introducción a la Programación', credits: 4, year: 1, semester: 1 },
+    { code: 'FIS101', name: 'Física I', credits: 4, year: 1, semester: 1 },
+    { code: 'ING101', name: 'Inglés I', credits: 3, year: 1, semester: 1 },
+    { code: 'MAT102', name: 'Matemática II', credits: 4, year: 1, semester: 2 },
+    { code: 'INF102', name: 'Programación II', credits: 4, year: 1, semester: 2 },
+    { code: 'FIS102', name: 'Física II', credits: 4, year: 1, semester: 2 },
+    { code: 'ING102', name: 'Inglés II', credits: 3, year: 1, semester: 2 },
+    { code: 'MAT201', name: 'Matemática III', credits: 4, year: 2, semester: 1 },
     { code: 'INF201', name: 'Estructuras de Datos', credits: 4, year: 2, semester: 1 },
     { code: 'INF202', name: 'Base de Datos', credits: 4, year: 2, semester: 2 },
     { code: 'INF203', name: 'Redes de Computadoras', credits: 3, year: 2, semester: 2 },
@@ -124,7 +124,7 @@ async function seed() {
   for (const s of subjects) {
     const subject = await subjectRepo.save({
       ...s,
-      career: 'Ingenieria en Sistemas',
+      career: 'Ingeniería en Sistemas',
       isActive: true,
     });
     createdSubjects.push(subject);

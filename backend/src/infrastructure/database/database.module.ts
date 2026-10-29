@@ -32,6 +32,7 @@ import { SystemSettingRepository } from './repositories/system-setting.repositor
 import { CareerRepository } from './repositories/career.repository';
 import { GradeRepository } from './repositories/grade.repository';
 import { LegacyCompletedSubjectRepository } from './repositories/legacy-completed-subject.repository';
+import { PrerequisiteRepository } from './repositories/prerequisite.repository';
 
 const entities = [
   User,
@@ -68,6 +69,7 @@ const repositories = [
   CareerRepository,
   GradeRepository,
   LegacyCompletedSubjectRepository,
+  PrerequisiteRepository,
 ];
 
 @Module({

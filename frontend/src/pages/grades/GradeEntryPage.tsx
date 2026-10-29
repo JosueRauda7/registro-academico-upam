@@ -63,7 +63,7 @@ export function GradeEntryPage() {
       (e) => e.score !== null && (Number.isNaN(e.score) || e.score! < 0 || e.score! > 10),
     );
     if (invalid) {
-      toast.error('Todas las notas deben ser numeros entre 0 y 10');
+      toast.error('Todas las notas deben ser números entre 0 y 10');
       return;
     }
 
@@ -106,7 +106,7 @@ export function GradeEntryPage() {
               </h1>
               <p className="text-gray-500">
                 {roster?.group.cycleName} | Grupo {roster?.group.groupNumber} |{' '}
-                {roster?.group.credits} creditos
+                {roster?.group.credits} créditos
               </p>
             </div>
           </div>
@@ -125,7 +125,7 @@ export function GradeEntryPage() {
         {cycleEnded && (
           <div className="flex items-center gap-3 rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800">
             <Lock size={18} />
-            El ciclo academico ha finalizado. Las notas estan bloqueadas y no pueden modificarse.
+            El ciclo académico ha finalizado. Las notas están bloqueadas y no pueden modificarse.
           </div>
         )}
 
@@ -146,7 +146,7 @@ export function GradeEntryPage() {
                 <thead>
                   <tr className="border-b border-gray-200 text-left text-xs font-semibold uppercase text-gray-500">
                     <th className="px-4 py-3">Carnet</th>
-                    <th className="px-4 py-3">Codigo</th>
+                    <th className="px-4 py-3">Código</th>
                     <th className="px-4 py-3">Estudiante</th>
                     <th className="px-4 py-3">Nota (0-10)</th>
                     <th className="px-4 py-3">Estado</th>

@@ -88,7 +88,7 @@ export function LegacySubjectsPage() {
       return;
     }
     if (Number.isNaN(score) || score < 0 || score > 10) {
-      toast.error('La nota debe ser un numero entre 0 y 10');
+      toast.error('La nota debe ser un número entre 0 y 10');
       return;
     }
     setSaving(true);
@@ -127,7 +127,7 @@ export function LegacySubjectsPage() {
     if (!editing) return;
     const score = Number(editForm.score);
     if (Number.isNaN(score) || score < 0 || score > 10) {
-      toast.error('La nota debe ser un numero entre 0 y 10');
+      toast.error('La nota debe ser un número entre 0 y 10');
       return;
     }
     setSaving(true);
@@ -168,7 +168,7 @@ export function LegacySubjectsPage() {
             Materias Previas
           </h1>
           <p className="text-gray-500">
-            Registra las materias que los estudiantes cursaron antes de la creacion del sistema.
+            Registra las materias que los estudiantes cursaron antes de la creación del sistema.
             Estas materias se incluyen en el CUM del estudiante.
           </p>
         </div>
@@ -207,7 +207,7 @@ export function LegacySubjectsPage() {
                     </option>
                     {availableSubjects.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.code} - {s.name} ({s.credits} creditos)
+                        {s.code} - {s.name} ({s.credits} créditos)
                       </option>
                     ))}
                   </select>
@@ -228,7 +228,7 @@ export function LegacySubjectsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <Input
-                    label="Ano (opcional)"
+                    label="Año (opcional)"
                     type="number"
                     placeholder="2025"
                     value={form.year}
@@ -247,7 +247,7 @@ export function LegacySubjectsPage() {
 
                 <Input
                   label="Observaciones (opcional)"
-                  placeholder="Ej: Cursada en otra institucion"
+                  placeholder="Ej: Cursada en otra institución"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 />
@@ -281,10 +281,10 @@ export function LegacySubjectsPage() {
                     <thead>
                       <tr className="border-b text-left text-gray-500">
                         <th className="pb-3 font-medium">Materia</th>
-                        <th className="pb-3 font-medium">Creditos</th>
+                        <th className="pb-3 font-medium">Créditos</th>
                         <th className="pb-3 font-medium">Nota</th>
                         <th className="pb-3 font-medium">Estado</th>
-                        <th className="pb-3 font-medium">Ano/Semestre</th>
+                        <th className="pb-3 font-medium">Año/Semestre</th>
                         <th className="pb-3 font-medium">Acciones</th>
                       </tr>
                     </thead>
@@ -346,7 +346,7 @@ export function LegacySubjectsPage() {
           />
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Ano (opcional)"
+              label="Año (opcional)"
               type="number"
               value={editForm.year}
               onChange={(e) => setEditForm({ ...editForm, year: e.target.value })}

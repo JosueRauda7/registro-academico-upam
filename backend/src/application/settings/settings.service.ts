@@ -26,7 +26,7 @@ export class SettingsService {
   async getSettings() {
     const settings = await this.systemSettingRepository.getSettings();
     if (!settings) {
-      throw new NotFoundException('Configuracion del sistema no encontrada');
+      throw new NotFoundException('Configuración del sistema no encontrada');
     }
     return settings;
   }

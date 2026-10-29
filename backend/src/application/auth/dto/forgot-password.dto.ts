@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ForgotPasswordDto {
   @ApiProperty({
-    description: 'Correo electronico registrado para enviar token de recuperacion',
+    description: 'Correo electrónico registrado para enviar token de recuperación',
     example: 'admin@upam.edu.sv',
     format: 'email',
   })

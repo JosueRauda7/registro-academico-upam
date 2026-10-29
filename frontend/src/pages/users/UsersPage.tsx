@@ -17,7 +17,7 @@ const emptyForm = {
   firstName: '',
   lastName: '',
   role: UserRole.STUDENT,
-  career: 'Ingenieria en Sistemas',
+  career: 'Ingeniería en Sistemas',
   carnet: '',
 };
 
@@ -141,7 +141,7 @@ export function UsersPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestion de Usuarios</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
             <p className="text-gray-500">Cuentas del sistema (solo administradores)</p>
           </div>
           <Button onClick={() => setShowCreateModal(true)}>
@@ -251,7 +251,7 @@ export function UsersPage() {
             />
           </div>
           <Input
-            label="Correo electronico *"
+            label="Correo electrónico *"
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -259,11 +259,11 @@ export function UsersPage() {
             required
           />
           <Input
-            label="Contrasena *"
+            label="Contraseña *"
             type="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            placeholder="Minimo 6 caracteres"
+            placeholder="Mínimo 6 caracteres"
             required
           />
           <div>
@@ -284,7 +284,7 @@ export function UsersPage() {
                 label="Carrera"
                 value={form.career}
                 onChange={(e) => setForm({ ...form, career: e.target.value })}
-                placeholder="Ingenieria en Sistemas"
+                placeholder="Ingeniería en Sistemas"
               />
               <Input
                 label="Carnet"
@@ -331,11 +331,11 @@ export function UsersPage() {
             </select>
           </div>
           <Input
-            label="Nueva contrasena (dejar vacio para no cambiar)"
+            label="Nueva contraseña (dejar vacio para no cambiar)"
             type="password"
             value={editForm.password}
             onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-            placeholder="Minimo 6 caracteres"
+            placeholder="Mínimo 6 caracteres"
           />
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>Cancelar</Button>

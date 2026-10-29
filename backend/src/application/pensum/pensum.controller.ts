@@ -21,7 +21,7 @@ export class PensumController {
     description:
       'Estudiante: retorna el pensum de su carrera con el estado de cada materia (cursada, inscrita, pendiente) y su historial por ciclo. Admin/Administrativo: requiere el parametro career para gestionar el pensum de una carrera.',
   })
-  @ApiQuery({ name: 'career', required: false, description: 'Carrera (obligatorio para admin/administrativo)', example: 'Ingenieria en Sistemas' })
+  @ApiQuery({ name: 'career', required: false, description: 'Carrera (obligatorio para admin/administrativo)', example: 'Ingeniería en Sistemas' })
   @ApiResponse({ status: 200, description: 'Pensum estructurado por año y semestre' })
   getPensum(
     @CurrentUser('sub') userId: string,

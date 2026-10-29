@@ -1,0 +1,13 @@
+import { Module } from '@nestjs/common';
+import { UploadsController } from './uploads.controller';
+import { UploadsService } from './uploads.service';
+import { AuthModule } from '../auth/auth.module';
+import { DatabaseModule } from '../../infrastructure/database/database.module';
+
+@Module({
+  imports: [AuthModule, DatabaseModule],
+  controllers: [UploadsController],
+  providers: [UploadsService],
+  exports: [UploadsService],
+})
+export class UploadsModule {}

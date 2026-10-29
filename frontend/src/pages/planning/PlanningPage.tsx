@@ -132,7 +132,7 @@ export function PlanningPage() {
         classroomId: groupForm.classroomId,
         capacity: parseInt(groupForm.capacity) || undefined,
       });
-      toast.success('Grupo actualizado (incluye cambio de salon/docente)');
+      toast.success('Grupo actualizado (incluye cambio de salón/docente)');
       setShowGroupModal(false);
       setEditingGroup(null);
       loadGroups();
@@ -142,7 +142,7 @@ export function PlanningPage() {
   };
 
   const handleDeleteGroup = async (id: string) => {
-    if (!confirm('¿Eliminar este grupo? Se eliminaran sus horarios.')) return;
+    if (!confirm('¿Eliminar este grupo? Se eliminarán sus horarios.')) return;
     try {
       await subjectGroupsApi.remove(id);
       toast.success('Grupo eliminado');
@@ -221,12 +221,12 @@ export function PlanningPage() {
         building: classroomForm.building,
         capacity: parseInt(classroomForm.capacity),
       });
-      toast.success('Salon creado');
+      toast.success('Salón creado');
       setShowClassroomModal(false);
       setClassroomForm({ name: '', building: '', capacity: '' });
       loadClassrooms();
     } catch (err: any) {
-      toast.error(err.response?.data?.message?.[0] || 'Error al crear salon');
+      toast.error(err.response?.data?.message?.[0] || 'Error al crear salón');
     }
   };
 
@@ -239,23 +239,23 @@ export function PlanningPage() {
         building: classroomForm.building,
         capacity: parseInt(classroomForm.capacity),
       });
-      toast.success('Salon actualizado');
+      toast.success('Salón actualizado');
       setShowClassroomModal(false);
       setEditingClassroom(null);
       loadClassrooms();
     } catch (err: any) {
-      toast.error(err.response?.data?.message?.[0] || 'Error al actualizar salon');
+      toast.error(err.response?.data?.message?.[0] || 'Error al actualizar salón');
     }
   };
 
   const handleDeleteClassroom = async (id: string) => {
-    if (!confirm('¿Desactivar este salon?')) return;
+    if (!confirm('¿Desactivar este salón?')) return;
     try {
       await classroomsApi.remove(id);
-      toast.success('Salon desactivado');
+      toast.success('Salón desactivado');
       loadClassrooms();
     } catch (err: any) {
-      toast.error(err.response?.data?.message?.[0] || 'Error al desactivar salon');
+      toast.error(err.response?.data?.message?.[0] || 'Error al desactivar salón');
     }
   };
 
@@ -321,8 +321,8 @@ export function PlanningPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Planificacion Academica</h1>
-          <p className="text-gray-500">Gestion de grupos, horarios, salones y docentes</p>
+          <h1 className="text-2xl font-bold text-gray-900">Planificación Academica</h1>
+          <p className="text-gray-500">Gestión de grupos, horarios, salones y docentes</p>
         </div>
 
         {/* Tabs */}
@@ -430,7 +430,7 @@ export function PlanningPage() {
                         <Plus size={14} className="mr-1" /> Horario
                       </Button>
                       <Button size="sm" variant="secondary" onClick={() => openEditGroup(group)}>
-                        <Pencil size={14} className="mr-1" /> Editar (Salon/Docente)
+                        <Pencil size={14} className="mr-1" /> Editar (Salón/Docente)
                       </Button>
                       <Button size="sm" variant="danger" onClick={() => handleDeleteGroup(group.id)}>
                         <Trash2 size={14} className="mr-1" /> Eliminar
@@ -466,7 +466,7 @@ export function PlanningPage() {
                     </div>
                     <div className="mt-2 space-y-1 text-sm text-gray-600">
                       <p>{t.email || 'Sin email'}</p>
-                      <p>{t.phone || 'Sin telefono'}</p>
+                      <p>{t.phone || 'Sin teléfono'}</p>
                     </div>
                     <div className="mt-3 flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => openEditTeacher(t)}>
@@ -488,7 +488,7 @@ export function PlanningPage() {
           <div className="space-y-4">
             <div className="flex justify-end">
               <Button onClick={openCreateClassroom}>
-                <Plus size={16} className="mr-2" /> Nuevo Salon
+                <Plus size={16} className="mr-2" /> Nuevo Salón
               </Button>
             </div>
             {classrooms.length === 0 ? (
@@ -567,20 +567,20 @@ export function PlanningPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Salon *</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Salón *</label>
             <select
               value={groupForm.classroomId}
               onChange={(e) => setGroupForm({ ...groupForm, classroomId: e.target.value })}
               required
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
             >
-              <option value="">Seleccionar salon</option>
+              <option value="">Seleccionar salón</option>
               {classrooms.map((c) => (
                 <option key={c.id} value={c.id}>{c.name} (Capacidad {c.capacity})</option>
               ))}
             </select>
             <p className="mt-1 text-xs text-gray-500">
-              La capacidad del grupo no podra exceder la del salon seleccionado
+              La capacidad del grupo no podra exceder la del salón seleccionado
             </p>
           </div>
           <Input
@@ -589,7 +589,7 @@ export function PlanningPage() {
             min="1"
             value={groupForm.capacity}
             onChange={(e) => setGroupForm({ ...groupForm, capacity: e.target.value })}
-            placeholder="Si se deja vacio, usa la capacidad del salon"
+            placeholder="Si se deja vacio, usa la capacidad del salón"
           />
 
           {!editingGroup && (
@@ -677,7 +677,7 @@ export function PlanningPage() {
             onChange={(e) => setTeacherForm({ ...teacherForm, email: e.target.value })}
           />
           <Input
-            label="Telefono"
+            label="Teléfono"
             value={teacherForm.phone}
             onChange={(e) => setTeacherForm({ ...teacherForm, phone: e.target.value })}
           />
@@ -694,7 +694,7 @@ export function PlanningPage() {
       </Modal>
 
       {/* Classroom Modal */}
-      <Modal isOpen={showClassroomModal} onClose={() => setShowClassroomModal(false)} title={editingClassroom ? 'Editar Salon' : 'Nuevo Salon'}>
+      <Modal isOpen={showClassroomModal} onClose={() => setShowClassroomModal(false)} title={editingClassroom ? 'Editar Salón' : 'Nuevo Salón'}>
         <form onSubmit={editingClassroom ? handleUpdateClassroom : handleCreateClassroom} className="space-y-4">
           <Input
             label="Nombre *"
@@ -719,7 +719,7 @@ export function PlanningPage() {
           />
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setShowClassroomModal(false)}>Cancelar</Button>
-            <Button type="submit">{editingClassroom ? 'Guardar Cambios' : 'Crear Salon'}</Button>
+            <Button type="submit">{editingClassroom ? 'Guardar Cambios' : 'Crear Salón'}</Button>
           </div>
         </form>
       </Modal>

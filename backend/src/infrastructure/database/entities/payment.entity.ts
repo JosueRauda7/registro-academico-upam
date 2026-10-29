@@ -42,6 +42,15 @@ export class Payment {
   @Column({ name: 'wompi_transaction_id', type: 'varchar', nullable: true })
   wompiTransactionId: string | null;
 
+  @Column({ name: 'bank_name', type: 'varchar', nullable: true })
+  bankName: string | null;
+
+  @Column({ name: 'bank_transaction_code', type: 'varchar', nullable: true })
+  bankTransactionCode: string | null;
+
+  @Column({ name: 'receipt_image_url', type: 'varchar', nullable: true })
+  receiptImageUrl: string | null;
+
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
   status: PaymentStatus;
 

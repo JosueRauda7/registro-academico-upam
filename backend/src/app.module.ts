@@ -17,6 +17,7 @@ import { PensumModule } from './application/pensum/pensum.module';
 import { CareersModule } from './application/careers/careers.module';
 import { GradesModule } from './application/grades/grades.module';
 import { LegacySubjectsModule } from './application/legacy-subjects/legacy-subjects.module';
+import { UploadsModule } from './application/uploads/uploads.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { LegacySubjectsModule } from './application/legacy-subjects/legacy-subje
     CareersModule,
     GradesModule,
     LegacySubjectsModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}

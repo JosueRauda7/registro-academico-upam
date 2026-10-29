@@ -11,11 +11,16 @@ export class UserRepository {
     private readonly repo: Repository<User>,
   ) {}
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string, credentials = false): Promise<User | null> {
+    if (credentials) return this.repo.createQueryBuilder('user')
+      .addSelect(['user.passwordHash', 'user.resetToken', 'user.resetTokenExpires'])
+      .where('user.id = :id', { id }).getOne();
     return this.repo.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string, credentials = false): Promise<User | null> {
+    if (credentials) return this.repo.createQueryBuilder('user')
+      .addSelect('user.passwordHash').where('user.email = :email', { email }).getOne();
     return this.repo.findOne({ where: { email } });
   }
 

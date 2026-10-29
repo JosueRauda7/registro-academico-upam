@@ -18,7 +18,7 @@ export class ClassroomsService {
   async findById(id: string) {
     const classroom = await this.classroomRepository.findById(id);
     if (!classroom) {
-      throw new NotFoundException('Salon no encontrado');
+      throw new NotFoundException('Salón no encontrado');
     }
     return classroom;
   }

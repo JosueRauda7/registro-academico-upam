@@ -11,6 +11,8 @@ import { WompiGateway } from '../../infrastructure/payment/wompi.gateway';
 import { EmailService } from '../../infrastructure/email/email.service';
 import { PaymentStatus } from '../../domain/enums/payment-status.enum';
 import { PaymentType } from '../../domain/enums/payment-type.enum';
+import { UserRole } from '../../domain/enums/role.enum';
+import { paymentResponse } from './payment-response';
 
 @Injectable()
 export class PaymentsService {
@@ -43,7 +45,7 @@ export class PaymentsService {
 
     const existingPayment = await this.paymentRepository.findTuitionPayment(studentId, cycleId);
     if (existingPayment) {
-      throw new BadRequestException('La matricula de este ciclo ya ha sido pagada');
+      throw new BadRequestException('La matrícula de este ciclo ya ha sido pagada');
     }
 
     const reference = this.wompiGateway.generateReference();
@@ -54,7 +56,7 @@ export class PaymentsService {
       amount: cycle.tuitionAmount,
       status: PaymentStatus.PENDING,
       type: PaymentType.TUITION,
-      description: `Matricula ${cycle.name}`,
+      description: `Matrícula ${cycle.name}`,
       reference,
     });
 
@@ -67,11 +69,12 @@ export class PaymentsService {
       });
 
       this.logger.log(`Wompi payment created: ${wompiResponse.data.id}`);
+      await this.paymentRepository.update(payment.id, { wompiTransactionId: wompiResponse.data.id });
 
       return {
-        payment,
+        payment: paymentResponse({ ...payment, wompiTransactionId: wompiResponse.data.id }),
         wompiOrderId: wompiResponse.data.id,
-        message: 'Pago de matricula creado. Procese el pago con Wompi.',
+        message: 'Pago de matrícula creado. Procese el pago con Wompi.',
       };
     } catch (error) {
       this.logger.error(`Wompi error: ${error.message}`);
@@ -125,8 +128,10 @@ export class PaymentsService {
         customerEmail: student!.user.email,
       });
 
+      await this.paymentRepository.update(payment.id, { wompiTransactionId: wompiResponse.data.id });
+
       return {
-        payment,
+        payment: paymentResponse({ ...payment, wompiTransactionId: wompiResponse.data.id }),
         wompiOrderId: wompiResponse.data.id,
         message: `Pago mensualidad ${month} creado. Procese el pago con Wompi.`,
       };
@@ -137,26 +142,23 @@ export class PaymentsService {
   }
 
   async handleWompiWebhook(payload: any) {
-    const { event, transaction } = payload;
-
-    this.logger.log(`Wompi webhook received: ${event} - ${transaction?.id}`);
-
-    if (event === 'transaction.updated' || event === 'payment.approved') {
-      const payment = await this.paymentRepository.findByReference(transaction.reference);
-      if (!payment) {
-        this.logger.warn(`Payment not found for reference: ${transaction.reference}`);
-        return;
-      }
-
-      const status = await this.wompiGateway.getTransactionStatus(transaction.id);
-
-      await this.paymentRepository.update(payment.id, {
-        status,
-        wompiTransactionId: transaction.id,
-        paymentDate: status === PaymentStatus.COMPLETED ? new Date() : null,
-      });
-
-      if (status === PaymentStatus.COMPLETED) {
+    const event = this.wompiGateway.verifyEvent(payload);
+    const transaction = await this.wompiGateway.getTransaction(event.id);
+    const payment = await this.paymentRepository.findByReference(transaction.reference);
+    if (!payment || transaction.id !== event.id || payment.paymentMethod !== 'wompi' ||
+        payment.wompiTransactionId !== transaction.id || transaction.currency !== 'USD' ||
+        !Number.isSafeInteger(transaction.amount_in_cents) ||
+        transaction.amount_in_cents !== Math.round(Number(payment.amount) * 100)) {
+      throw new BadRequestException('La transacción no corresponde al pago');
+    }
+    const statuses: Record<string, PaymentStatus> = {
+      APPROVED: PaymentStatus.COMPLETED, DECLINED: PaymentStatus.FAILED,
+      ERROR: PaymentStatus.FAILED, PENDING: PaymentStatus.PENDING, VOIDED: PaymentStatus.REFUNDED,
+    };
+    const status = statuses[transaction.status];
+    if (!status) throw new BadRequestException('Estado de transacción inválido');
+    const changed = await this.paymentRepository.applyVerifiedTransaction(payment.id, transaction.id, status);
+    if (changed && status === PaymentStatus.COMPLETED) {
         const student = await this.studentRepository.findById(payment.studentId);
         if (student) {
           await this.emailService.sendPaymentConfirmation(student.user.email, {
@@ -168,9 +170,6 @@ export class PaymentsService {
           });
         }
       }
-
-      this.logger.log(`Payment ${payment.id} updated to ${status}`);
-    }
 
     return { received: true };
   }
@@ -184,6 +183,10 @@ export class PaymentsService {
       type: 'tuition' | 'monthly';
       month?: number;
       description?: string;
+      paymentMethod?: 'cash' | 'bank';
+      bankName?: string;
+      bankTransactionCode?: string;
+      receiptImageUrl?: string;
     },
   ) {
     const student = await this.studentRepository.findById(data.studentId);
@@ -199,7 +202,7 @@ export class PaymentsService {
     if (data.type === 'tuition') {
       const existing = await this.paymentRepository.findTuitionPayment(data.studentId, data.cycleId);
       if (existing) {
-        throw new BadRequestException('La matricula de este ciclo ya ha sido pagada');
+        throw new BadRequestException('La matrícula de este ciclo ya ha sido pagada');
       }
     }
 
@@ -216,65 +219,101 @@ export class PaymentsService {
       }
     }
 
+    const expectedAmount =
+      data.type === 'monthly' ? Number(cycle.monthlyAmount) : Number(cycle.tuitionAmount);
+
+    if (Math.abs(Number(data.amount) - expectedAmount) > 0.01) {
+      throw new BadRequestException(
+        `El monto del pago debe ser exactamente ${expectedAmount.toFixed(2)} USD para ${
+          data.type === 'monthly' ? 'la mensualidad' : 'la matrícula'
+        } de este ciclo`,
+      );
+    }
+
+    const paymentMethod = data.paymentMethod || 'cash';
+    if (paymentMethod !== 'cash' && paymentMethod !== 'bank') {
+      throw new BadRequestException('El método de pago debe ser cash o bank');
+    }
+
+    if (paymentMethod === 'bank') {
+      if (!data.bankName || !data.bankName.trim()) {
+        throw new BadRequestException('Debe indicar el banco para pagos por transacción bancaria');
+      }
+      if (!data.bankTransactionCode || !data.bankTransactionCode.trim()) {
+        throw new BadRequestException('Debe indicar el código de la transacción bancaria');
+      }
+      if (data.receiptImageUrl && !/^\/api\/uploads\/receipts\/[a-f0-9-]+\.webp$/i.test(data.receiptImageUrl)) {
+        throw new BadRequestException('El comprobante debe ser una imagen válida del sistema');
+      }
+    }
+
     const reference = this.wompiGateway.generateReference();
 
     const payment = await this.paymentRepository.create({
       studentId: data.studentId,
       cycleId: data.cycleId,
-      amount: data.amount,
+      amount: expectedAmount,
       status: PaymentStatus.COMPLETED,
       type: data.type === 'monthly' ? PaymentType.MONTHLY : PaymentType.TUITION,
       month: data.month || null,
-      description: data.description || `Pago manual - ${data.type === 'tuition' ? 'Matricula' : `Mensualidad ${data.month}`}`,
+      description: data.description || `Pago manual - ${data.type === 'tuition' ? 'Matrícula' : `Mensualidad ${data.month}`}`,
       reference,
       paymentDate: new Date(),
+      paymentMethod,
+      bankName: paymentMethod === 'bank' ? data.bankName! : null,
+      bankTransactionCode: paymentMethod === 'bank' ? data.bankTransactionCode! : null,
+      receiptImageUrl: data.receiptImageUrl || null,
     });
 
     this.logger.log(`Manual payment created: ${payment.id} by collector ${collectorId}`);
 
     await this.emailService.sendPaymentConfirmation(student.user.email, {
       studentName: `${student.user.firstName} ${student.user.lastName}`,
-      amount: data.amount,
+      amount: expectedAmount,
       cycleName: cycle.name,
       type: data.type === 'tuition' ? 'tuition' : 'monthly',
       reference,
     });
 
     return {
-      payment,
+      payment: paymentResponse(payment),
       message: 'Pago manual registrado exitosamente',
     };
   }
 
   async getMyPayments(userId: string) {
     const studentId = await this.resolveStudentId(userId);
-    return this.paymentRepository.findByStudent(studentId);
+    return (await this.paymentRepository.findByStudent(studentId)).map(paymentResponse);
   }
 
   async getMyPaymentsByCycle(userId: string, cycleId: string) {
     const studentId = await this.resolveStudentId(userId);
-    return this.paymentRepository.findByStudentAndCycle(studentId, cycleId);
+    return (await this.paymentRepository.findByStudentAndCycle(studentId, cycleId)).map(paymentResponse);
   }
 
   async getMonthlyPayments(userId: string, cycleId: string) {
     const studentId = await this.resolveStudentId(userId);
     const payments = await this.paymentRepository.findByStudentAndCycle(studentId, cycleId);
-    return payments.filter((p) => p.type === PaymentType.MONTHLY);
+    return payments.filter((p) => p.type === PaymentType.MONTHLY).map(paymentResponse);
   }
 
-  async getPaymentById(id: string) {
+  async getPaymentById(id: string, actor: { sub: string; role: UserRole }) {
     const payment = await this.paymentRepository.findById(id);
     if (!payment) {
       throw new NotFoundException('Pago no encontrado');
     }
-    return payment;
+    const staff = [UserRole.ADMINISTRATOR, UserRole.COLLECTOR].includes(actor.role);
+    if (!staff && (actor.role !== UserRole.STUDENT || payment.student?.userId !== actor.sub)) {
+      throw new NotFoundException('Pago no encontrado');
+    }
+    return paymentResponse(payment);
   }
 
   async getAllPayments(cycleId?: string) {
     if (cycleId) {
-      return this.paymentRepository.findByCycle(cycleId);
+      return (await this.paymentRepository.findByCycle(cycleId)).map(paymentResponse);
     }
-    return this.paymentRepository.findAll();
+    return (await this.paymentRepository.findAll()).map(paymentResponse);
   }
 
   async getPaymentStats(cycleId: string) {

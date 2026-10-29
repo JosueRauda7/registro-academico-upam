@@ -24,36 +24,36 @@ export class ClassroomsController {
 
   @Get(':id')
   @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
-  @ApiOperation({ summary: 'Obtener salon por ID' })
-  @ApiParam({ name: 'id', description: 'UUID del salon' })
-  @ApiResponse({ status: 200, description: 'Salon encontrado' })
-  @ApiResponse({ status: 404, description: 'Salon no encontrado' })
+  @ApiOperation({ summary: 'Obtener salón por ID' })
+  @ApiParam({ name: 'id', description: 'UUID del salón' })
+  @ApiResponse({ status: 200, description: 'Salón encontrado' })
+  @ApiResponse({ status: 404, description: 'Salón no encontrado' })
   findById(@Param('id') id: string) {
     return this.classroomsService.findById(id);
   }
 
   @Post()
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Crear salon', description: 'Registra un nuevo salon/aula.' })
-  @ApiResponse({ status: 201, description: 'Salon creado exitosamente' })
+  @ApiOperation({ summary: 'Crear salón', description: 'Registra un nuevo salón/aula.' })
+  @ApiResponse({ status: 201, description: 'Salón creado exitosamente' })
   create(@Body() body: any) {
     return this.classroomsService.create(body);
   }
 
   @Put(':id')
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Actualizar salon', description: 'Actualiza los datos del salon (capacidad, edificio, etc).' })
-  @ApiParam({ name: 'id', description: 'UUID del salon' })
-  @ApiResponse({ status: 200, description: 'Salon actualizado' })
+  @ApiOperation({ summary: 'Actualizar salón', description: 'Actualiza los datos del salón (capacidad, edificio, etc).' })
+  @ApiParam({ name: 'id', description: 'UUID del salón' })
+  @ApiResponse({ status: 200, description: 'Salón actualizado' })
   update(@Param('id') id: string, @Body() body: any) {
     return this.classroomsService.update(id, body);
   }
 
   @Delete(':id')
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Desactivar salon', description: 'Marca el salon como inactivo.' })
-  @ApiParam({ name: 'id', description: 'UUID del salon' })
-  @ApiResponse({ status: 200, description: 'Salon desactivado' })
+  @ApiOperation({ summary: 'Desactivar salón', description: 'Marca el salón como inactivo.' })
+  @ApiParam({ name: 'id', description: 'UUID del salón' })
+  @ApiResponse({ status: 200, description: 'Salón desactivado' })
   remove(@Param('id') id: string) {
     return this.classroomsService.remove(id);
   }

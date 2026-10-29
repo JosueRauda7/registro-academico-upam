@@ -1,5 +1,5 @@
 -- ============================================================
--- BASE DE DATOS: Registro Academico UPAM
+-- BASE DE DATOS: Registro Académico UPAM
 -- Universidad Panamericana de El Salvador
 -- ============================================================
 
@@ -31,7 +31,7 @@ CREATE TABLE users (
 
 -- ============================================================
 -- TABLA: students
--- Datos academicos de los estudiantes
+-- Datos académicos de los estudiantes
 -- ============================================================
 CREATE TABLE students (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -50,7 +50,7 @@ CREATE INDEX idx_students_career ON students(career);
 
 -- ============================================================
 -- TABLA: cycles
--- Ciclos academicos (Ciclo I 2026, Ciclo II 2026, etc.)
+-- Ciclos académicos (Ciclo I 2026, Ciclo II 2026, etc.)
 -- ============================================================
 CREATE TABLE cycles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -89,8 +89,8 @@ CREATE INDEX idx_subjects_code ON subjects(code);
 -- ============================================================
 -- TABLA: careers
 -- Carreras academicas de la universidad (mantenimiento)
--- years: total de anos del pensum
--- semesters_per_year: cantidad de semestres por ano
+-- years: total de años del pensum
+-- semesters_per_year: cantidad de semestres por año
 -- ============================================================
 CREATE TABLE careers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -153,8 +153,8 @@ CREATE TABLE classrooms (
 
 -- ============================================================
 -- TABLA: subject_groups
--- Grupos de una materia en un ciclo (seccion A, B, etc.)
--- Cada grupo tiene docente, salon, capacidad y horario propio
+-- Grupos de una materia en un ciclo (sección A, B, etc.)
+-- Cada grupo tiene docente, salón, capacidad y horario propio
 -- ============================================================
 CREATE TABLE subject_groups (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -192,7 +192,7 @@ CREATE INDEX idx_schedules_day_time ON schedules(day_of_week, start_time, end_ti
 
 -- ============================================================
 -- TABLA: enrollments
--- Inscripcion de un estudiante a un ciclo
+-- Inscripción de un estudiante a un ciclo
 -- ============================================================
 CREATE TABLE enrollments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -209,7 +209,7 @@ CREATE INDEX idx_enrollments_cycle ON enrollments(cycle_id);
 
 -- ============================================================
 -- TABLA: enrollment_subjects
--- Materia inscrita dentro de una inscripcion (reserva/confirmacion)
+-- Materia inscrita dentro de una inscripción (reserva/confirmación)
 -- ============================================================
 CREATE TABLE enrollment_subjects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -227,7 +227,7 @@ CREATE INDEX idx_enrollment_subjects_schedule ON enrollment_subjects(schedule_id
 -- ============================================================
 -- TABLA: grades
 -- Notas de los estudiantes en las materias registradas
--- (calificaciones registradas por el catedratico)
+-- (calificaciones registradas por el catedrático)
 -- ============================================================
 CREATE TYPE grade_status AS ENUM ('approved', 'failed');
 
@@ -247,7 +247,7 @@ CREATE INDEX idx_grades_graded_by ON grades(graded_by);
 
 -- ============================================================
 -- TABLA: legacy_completed_subjects
--- Materias cursadas por el estudiante ANTES de la creacion del
+-- Materias cursadas por el estudiante ANTES de la creación del
 -- sistema (carga inicial para dejar al dia a los estudiantes).
 -- Registra la nota con la que aprobo/reprobo la materia.
 -- ============================================================
@@ -269,7 +269,7 @@ CREATE INDEX idx_legacy_subjects_subject ON legacy_completed_subjects(subject_id
 
 -- ============================================================
 -- TABLA: system_settings
--- Configuracion global del sistema (logo, color principal, nombre)
+-- Configuración global del sistema (logo, color principal, nombre)
 -- ============================================================
 CREATE TABLE system_settings (
     id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
@@ -281,7 +281,7 @@ CREATE TABLE system_settings (
 
 -- ============================================================
 -- TABLA: payments
--- Pagos de matricula y mensualidades
+-- Pagos de matrícula y mensualidades
 -- ============================================================
 CREATE TABLE payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -291,6 +291,9 @@ CREATE TABLE payments (
     payment_date TIMESTAMP,
     payment_method VARCHAR(50) NOT NULL DEFAULT 'wompi',
     wompi_transaction_id VARCHAR(255),
+    bank_name VARCHAR(100),
+    bank_transaction_code VARCHAR(255),
+    receipt_image_url VARCHAR(500),
     status payment_status NOT NULL DEFAULT 'pending',
     type payment_type NOT NULL,
     month INTEGER,
@@ -354,7 +357,7 @@ CREATE TRIGGER check_capacity_before_enroll
 
 -- ============================================================
 -- NOTA: El incremento/decremento de enrolled_count en los grupos
--- se maneja a nivel de aplicacion (EnrollmentsService) para evitar
+-- se maneja a nivel de aplicación (EnrollmentsService) para evitar
 -- doble conteo con triggers de base de datos.
 -- ============================================================
 
@@ -434,12 +437,12 @@ JOIN classrooms cl ON g.classroom_id = cl.id;
 -- DATOS INICIALES (Seed)
 -- ============================================================
 
--- Configuracion del sistema (fila unica id=1)
+-- Configuración del sistema (fila unica id=1)
 INSERT INTO system_settings (id, logo_url, primary_color, institution_name)
 VALUES (1, NULL, '#1B4F72', 'Universidad Panamericana de El Salvador') ON CONFLICT DO NOTHING;
 
 -- Usuarios de prueba con hashes bcrypt generados con bcryptjs
--- Todas las contrasenas estan en texto plano abajo:
+-- Todas las contraseñas están en texto plano abajo:
 -- admin123, colector123, adminstaff123, estudiante123
 
 -- Administrador (admin123)
@@ -462,7 +465,7 @@ VALUES (
     '$2a$10$3YeBPpTfsXe7vynITRjLfetyTZtQL1GyzrvYdnU.jmeOc1FeeOFZK',
     'collector',
     'Maria',
-    'Gonzalez',
+    'González',
     TRUE
 );
 
@@ -474,7 +477,7 @@ VALUES (
     '$2a$10$P5ECIXJSvSkN4eRKUGh36.K3iPwKXZqka0/c9ROqVCU5qRWCbLfgm',
     'administrative',
     'Carlos',
-    'Ramirez',
+    'Ramírez',
     TRUE
 );
 
@@ -485,7 +488,7 @@ VALUES (
     'estudiante@upam.edu.sv',
     '$2a$10$HAo7PgoeKOZw.0VnlWLh3.Zx2Xdt7N9gkO5rmE0ZxBLOFDUEKHJbS',
     'student',
-    'Josue',
+    'Josué',
     'Rauda',
     TRUE
 );
@@ -496,14 +499,14 @@ VALUES (
     'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
     'UPAM-2026-0001',
     'LR021501',
-    'Ingenieria en Sistemas',
+    'Ingeniería en Sistemas',
     2026,
     '7012-3456',
     'San Salvador, El Salvador',
     '2000-05-15'
 );
 
--- Docente (docente123) vinculado al catedratico "Ing. Ana Martinez"
+-- Docente (docente123) vinculado al catedrático "Ing. Ana Martínez"
 INSERT INTO users (id, email, password_hash, role, first_name, last_name, is_active)
 VALUES (
     'e1eebc99-9c0b-4ef8-bb6d-6bb9bd380a6a',
@@ -511,7 +514,7 @@ VALUES (
     '$2a$10$gwlulrzA6nuBuLHaPNkX5OQHgrOSvgkNdgodi.nau/n4LPudDEedq',
     'teacher',
     'Ana',
-    'Martinez',
+    'Martínez',
     TRUE
 );
 
@@ -533,38 +536,38 @@ VALUES (
 
 -- Carreras disponibles
 INSERT INTO careers (code, name, description, years, semesters_per_year) VALUES
-('IIS', 'Ingenieria en Sistemas', 'Ingenieria en Sistemas Informaticos', 5, 2),
-('IC', 'Ingenieria Civil', 'Ingenieria Civil', 5, 2),
-('II', 'Ingenieria Industrial', 'Ingenieria Industrial', 5, 2),
-('ADE', 'Administracion de Empresas', 'Licenciatura en Administracion de Empresas', 4, 2),
-('CP', 'Contaduria Publica', 'Licenciatura en Contaduria Publica', 5, 2),
-('DER', 'Derecho', 'Licenciatura en Ciencias Juridicas', 5, 2),
+('IIS', 'Ingeniería en Sistemas', 'Ingeniería en Sistemas Informáticos', 5, 2),
+('IC', 'Ingeniería Civil', 'Ingeniería Civil', 5, 2),
+('II', 'Ingeniería Industrial', 'Ingeniería Industrial', 5, 2),
+('ADE', 'Administración de Empresas', 'Licenciatura en Administración de Empresas', 4, 2),
+('CP', 'Contaduría Pública', 'Licenciatura en Contaduría Pública', 5, 2),
+('DER', 'Derecho', 'Licenciatura en Ciencias Jurídicas', 5, 2),
 ('MED', 'Medicina', 'Doctorado en Medicina', 6, 2),
-('PSI', 'Psicologia', 'Licenciatura en Psicologia', 5, 2);
+('PSI', 'Psicología', 'Licenciatura en Psicología', 5, 2);
 
 -- Materias - Semestre 1
 INSERT INTO subjects (code, name, credits, career, year, semester, is_active) VALUES
-('MAT101', 'Matematica I', 4, 'Ingenieria en Sistemas', 1, 1, TRUE),
-('INF101', 'Introduccion a la Programacion', 4, 'Ingenieria en Sistemas', 1, 1, TRUE),
-('FIS101', 'Fisica I', 4, 'Ingenieria en Sistemas', 1, 1, TRUE),
-('ING101', 'Ingles I', 3, 'Ingenieria en Sistemas', 1, 1, TRUE);
+('MAT101', 'Matemática I', 4, 'Ingeniería en Sistemas', 1, 1, TRUE),
+('INF101', 'Introducción a la Programación', 4, 'Ingeniería en Sistemas', 1, 1, TRUE),
+('FIS101', 'Física I', 4, 'Ingeniería en Sistemas', 1, 1, TRUE),
+('ING101', 'Inglés I', 3, 'Ingeniería en Sistemas', 1, 1, TRUE);
 
 -- Materias - Semestre 2
 INSERT INTO subjects (code, name, credits, career, year, semester, is_active) VALUES
-('MAT102', 'Matematica II', 4, 'Ingenieria en Sistemas', 1, 2, TRUE),
-('INF102', 'Programacion II', 4, 'Ingenieria en Sistemas', 1, 2, TRUE),
-('FIS102', 'Fisica II', 4, 'Ingenieria en Sistemas', 1, 2, TRUE),
-('ING102', 'Ingles II', 3, 'Ingenieria en Sistemas', 1, 2, TRUE);
+('MAT102', 'Matemática II', 4, 'Ingeniería en Sistemas', 1, 2, TRUE),
+('INF102', 'Programación II', 4, 'Ingeniería en Sistemas', 1, 2, TRUE),
+('FIS102', 'Física II', 4, 'Ingeniería en Sistemas', 1, 2, TRUE),
+('ING102', 'Inglés II', 3, 'Ingeniería en Sistemas', 1, 2, TRUE);
 
 -- Materias - Semestre 3
 INSERT INTO subjects (code, name, credits, career, year, semester, is_active) VALUES
-('MAT201', 'Matematica III', 4, 'Ingenieria en Sistemas', 2, 1, TRUE),
-('INF201', 'Estructuras de Datos', 4, 'Ingenieria en Sistemas', 2, 1, TRUE);
+('MAT201', 'Matemática III', 4, 'Ingeniería en Sistemas', 2, 1, TRUE),
+('INF201', 'Estructuras de Datos', 4, 'Ingeniería en Sistemas', 2, 1, TRUE);
 
 -- Materias - Semestre 4
 INSERT INTO subjects (code, name, credits, career, year, semester, is_active) VALUES
-('INF202', 'Base de Datos', 4, 'Ingenieria en Sistemas', 2, 2, TRUE),
-('INF203', 'Redes de Computadoras', 3, 'Ingenieria en Sistemas', 2, 2, TRUE);
+('INF202', 'Base de Datos', 4, 'Ingeniería en Sistemas', 2, 2, TRUE),
+('INF203', 'Redes de Computadoras', 3, 'Ingeniería en Sistemas', 2, 2, TRUE);
 
 -- Prerrequisitos
 INSERT INTO prerequisites (subject_id, prerequisite_subject_id)
@@ -584,12 +587,12 @@ SELECT s1.id, s2.id FROM subjects s1, subjects s2
 WHERE s1.code = 'INF201' AND s2.code = 'INF102';
 
 -- Catedraticos (Docentes)
--- Ing. Ana Martinez esta vinculada a la cuenta docente@upam.edu.sv (e1eebc99-...-a6a)
+-- Ing. Ana Martínez está vinculada a la cuenta docente@upam.edu.sv (e1eebc99-...-a6a)
 INSERT INTO teachers (id, user_id, name, email, phone, department, is_active) VALUES
-('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'e1eebc99-9c0b-4ef8-bb6d-6bb9bd380a6a', 'Ing. Ana Martinez', 'ana.martinez@upam.edu.sv', '7011-1111', 'Matematicas', TRUE),
-('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', NULL, 'Ing. Luis Perez', 'luis.perez@upam.edu.sv', '7011-2222', 'Sistemas', TRUE),
-('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', NULL, 'Lic. Maria Lopez', 'maria.lopez@upam.edu.sv', '7011-3333', 'Fisica', TRUE),
-('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a04', NULL, 'Msc. Carlos Chavez', 'carlos.chavez@upam.edu.sv', '7011-4444', 'Idiomas', TRUE);
+('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'e1eebc99-9c0b-4ef8-bb6d-6bb9bd380a6a', 'Ing. Ana Martínez', 'ana.martinez@upam.edu.sv', '7011-1111', 'Matemáticas', TRUE),
+('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', NULL, 'Ing. Luis Pérez', 'luis.perez@upam.edu.sv', '7011-2222', 'Sistemas', TRUE),
+('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', NULL, 'Lic. María López', 'maria.lopez@upam.edu.sv', '7011-3333', 'Física', TRUE),
+('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a04', NULL, 'Msc. Carlos Chávez', 'carlos.chavez@upam.edu.sv', '7011-4444', 'Idiomas', TRUE);
 
 -- Salones (Aulas)
 INSERT INTO classrooms (id, name, building, capacity, is_active) VALUES
@@ -599,43 +602,43 @@ INSERT INTO classrooms (id, name, building, capacity, is_active) VALUES
 ('a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a04', 'Lab-2', 'Edificio B', 35, TRUE);
 
 -- Grupos de materias - Ciclo I 2026
--- MAT101: Grupo 1 - Ing. Ana Martinez - Aula 101
+-- MAT101: Grupo 1 - Ing. Ana Martínez - Aula 101
 INSERT INTO subject_groups (subject_id, cycle_id, teacher_id, classroom_id, group_number, capacity, enrolled_count)
 SELECT s.id, 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 1, 40, 0
 FROM subjects s WHERE s.code = 'MAT101';
 
--- INF101: Grupo 1 - Ing. Luis Perez - Lab-1
+-- INF101: Grupo 1 - Ing. Luis Pérez - Lab-1
 INSERT INTO subject_groups (subject_id, cycle_id, teacher_id, classroom_id, group_number, capacity, enrolled_count)
 SELECT s.id, 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 1, 35, 0
 FROM subjects s WHERE s.code = 'INF101';
 
--- FIS101: Grupo 1 - Lic. Maria Lopez - Aula 201
+-- FIS101: Grupo 1 - Lic. Maria López - Aula 201
 INSERT INTO subject_groups (subject_id, cycle_id, teacher_id, classroom_id, group_number, capacity, enrolled_count)
 SELECT s.id, 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 1, 40, 0
 FROM subjects s WHERE s.code = 'FIS101';
 
--- ING101: Grupo 1 - Msc. Carlos Chavez - Aula 101
+-- ING101: Grupo 1 - Msc. Carlos Chávez - Aula 101
 INSERT INTO subject_groups (subject_id, cycle_id, teacher_id, classroom_id, group_number, capacity, enrolled_count)
 SELECT s.id, 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a04', 'a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 1, 30, 0
 FROM subjects s WHERE s.code = 'ING101';
 
--- MAT102: Grupo 1 - Ing. Ana Martinez - Aula 101
+-- MAT102: Grupo 1 - Ing. Ana Martínez - Aula 101
 INSERT INTO subject_groups (subject_id, cycle_id, teacher_id, classroom_id, group_number, capacity, enrolled_count)
 SELECT s.id, 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 1, 40, 0
 FROM subjects s WHERE s.code = 'MAT102';
 
--- INF102: Grupo 1 - Ing. Luis Perez - Lab-2
+-- INF102: Grupo 1 - Ing. Luis Pérez - Lab-2
 INSERT INTO subject_groups (subject_id, cycle_id, teacher_id, classroom_id, group_number, capacity, enrolled_count)
 SELECT s.id, 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a04', 1, 35, 0
 FROM subjects s WHERE s.code = 'INF102';
 
--- INF201: Grupo 1 - Ing. Luis Perez - Aula 201
+-- INF201: Grupo 1 - Ing. Luis Pérez - Aula 201
 INSERT INTO subject_groups (subject_id, cycle_id, teacher_id, classroom_id, group_number, capacity, enrolled_count)
 SELECT s.id, 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 1, 35, 0
 FROM subjects s WHERE s.code = 'INF201';
 
 -- Horarios - Ciclo I 2026 (pertenecientes a los grupos)
--- MAT101: Lunes y Miercoles 7:00-9:00 (Aula 101)
+-- MAT101: Lunes y Miércoles 7:00-9:00 (Aula 101)
 INSERT INTO schedules (group_id, day_of_week, start_time, end_time)
 SELECT g.id, 'monday', '07:00', '09:00'
 FROM subject_groups g JOIN subjects s ON g.subject_id = s.id
@@ -657,7 +660,7 @@ SELECT g.id, 'thursday', '09:00', '11:00'
 FROM subject_groups g JOIN subjects s ON g.subject_id = s.id
 WHERE s.code = 'INF101' AND g.cycle_id = 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55';
 
--- FIS101: Lunes y Miercoles 11:00-13:00 (Aula 201)
+-- FIS101: Lunes y Miércoles 11:00-13:00 (Aula 201)
 INSERT INTO schedules (group_id, day_of_week, start_time, end_time)
 SELECT g.id, 'monday', '11:00', '13:00'
 FROM subject_groups g JOIN subjects s ON g.subject_id = s.id
@@ -685,7 +688,7 @@ SELECT g.id, 'thursday', '07:00', '09:00'
 FROM subject_groups g JOIN subjects s ON g.subject_id = s.id
 WHERE s.code = 'MAT102' AND g.cycle_id = 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55';
 
--- INF102: Lunes y Miercoles 14:00-16:00 (Lab-2)
+-- INF102: Lunes y Miércoles 14:00-16:00 (Lab-2)
 INSERT INTO schedules (group_id, day_of_week, start_time, end_time)
 SELECT g.id, 'monday', '14:00', '16:00'
 FROM subject_groups g JOIN subjects s ON g.subject_id = s.id

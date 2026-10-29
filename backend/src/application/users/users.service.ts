@@ -42,11 +42,11 @@ export class UsersService {
   }) {
     const existing = await this.userRepository.findByEmail(data.email);
     if (existing) {
-      throw new ConflictException('Ya existe una cuenta con este correo electronico');
+      throw new ConflictException('Ya existe una cuenta con este correo electrónico');
     }
 
     if (!data.password || data.password.length < 6) {
-      throw new BadRequestException('La contrasena debe tener al menos 6 caracteres');
+      throw new BadRequestException('La contraseña debe tener al menos 6 caracteres');
     }
 
     const passwordHash = await bcrypt.hash(data.password, 10);
@@ -65,7 +65,7 @@ export class UsersService {
         userId: user.id,
         studentCode,
         carnet: data.carnet || `C${studentCode.split('-').pop()}`,
-        career: data.career || 'Ingenieria en Sistemas',
+        career: data.career || 'Ingeniería en Sistemas',
         enrollmentYear: new Date().getFullYear(),
       });
     }
@@ -94,7 +94,7 @@ export class UsersService {
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
     if (data.password) {
       if (data.password.length < 6) {
-        throw new BadRequestException('La contrasena debe tener al menos 6 caracteres');
+        throw new BadRequestException('La contraseña debe tener al menos 6 caracteres');
       }
       updateData.passwordHash = await bcrypt.hash(data.password, 10);
     }

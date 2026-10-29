@@ -149,8 +149,8 @@ export function ReportsPage() {
     },
     {
       id: 'collection',
-      title: 'Recaudacion',
-      description: 'Reporte de recaudacion del ciclo',
+      title: 'Recaudación',
+      description: 'Reporte de recaudación del ciclo',
       icon: DollarSign,
       roles: ['administrator', 'collector'],
       action: handleDownloadCollectionReport,
@@ -175,7 +175,7 @@ export function ReportsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Reportes</h1>
           <p className="text-gray-500">
-            Genera reportes en Excel y PDF del sistema academico
+            Genera reportes en Excel y PDF del sistema académico
           </p>
         </div>
 

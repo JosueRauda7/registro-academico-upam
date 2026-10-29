@@ -125,7 +125,7 @@ export function CareersPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Mantenimiento de Carreras</h1>
             <p className="text-gray-500">
-              {activeCount} carrera(s) activa(s) - los anos y semestres definen la estructura del pensum
+              {activeCount} carrera(s) activa(s) - los años y semestres definen la estructura del pensum
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -158,11 +158,11 @@ export function CareersPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 text-left text-xs font-semibold uppercase text-gray-500">
-                    <th className="px-4 py-3">Codigo</th>
+                    <th className="px-4 py-3">Código</th>
                     <th className="px-4 py-3">Nombre</th>
-                    <th className="px-4 py-3">Descripcion</th>
-                    <th className="px-4 py-3 text-center">Anos</th>
-                    <th className="px-4 py-3 text-center">Sem/Ano</th>
+                    <th className="px-4 py-3">Descripción</th>
+                    <th className="px-4 py-3 text-center">Años</th>
+                    <th className="px-4 py-3 text-center">Sem/Año</th>
                     <th className="px-4 py-3">Estado</th>
                     <th className="px-4 py-3 text-right">Acciones</th>
                   </tr>
@@ -212,7 +212,7 @@ export function CareersPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
-              label="Codigo *"
+              label="Código *"
               value={form.code}
               onChange={(e) => setForm({ ...form, code: e.target.value })}
               placeholder="Ej. IIS"
@@ -222,21 +222,21 @@ export function CareersPage() {
               label="Nombre *"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Ingenieria en Sistemas"
+              placeholder="Ej. Ingeniería en Sistemas"
               required
             />
           </div>
           <Input
-            label="Descripcion"
+            label="Descripción"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Descripcion opcional de la carrera"
+            placeholder="Descripción opcional de la carrera"
           />
           <div className="rounded-lg bg-gray-50 p-3">
             <p className="mb-2 text-xs font-semibold text-gray-500">Estructura del pensum</p>
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Total de anos *"
+                label="Total de años *"
                 type="number"
                 min="1"
                 max="10"
@@ -245,7 +245,7 @@ export function CareersPage() {
                 required
               />
               <Input
-                label="Semestres por ano *"
+                label="Semestres por año *"
                 type="number"
                 min="1"
                 max="4"

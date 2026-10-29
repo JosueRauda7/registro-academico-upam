@@ -5,13 +5,21 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import { subjectsApi } from '@/api/subjects.api';
+import { subjectsApi, SubjectInput } from '@/api/subjects.api';
 import { careersApi } from '@/api/careers.api';
 import { Subject, Career } from '@/types';
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 
-const emptyForm = { code: '', name: '', credits: '', career: '', year: '1', semester: '1' };
+const emptyForm = {
+  code: '',
+  name: '',
+  credits: '',
+  career: '',
+  year: '1',
+  semester: '1',
+  prerequisiteSubjectId: '',
+};
 
 export function SubjectsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -62,6 +70,7 @@ export function SubjectsPage() {
       career: s.career,
       year: String(s.year),
       semester: String(s.semester),
+      prerequisiteSubjectId: s.prerequisites?.[0]?.prerequisiteSubjectId || '',
     });
     setShowModal(true);
   };
@@ -70,21 +79,22 @@ export function SubjectsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = {
+      const payload: SubjectInput = {
         code: form.code.toUpperCase().trim(),
         name: form.name.trim(),
         credits: parseInt(form.credits),
         career: form.career,
         year: parseInt(form.year),
         semester: parseInt(form.semester),
+        prerequisiteSubjectId: form.prerequisiteSubjectId || null,
       };
-      if (editing) {
-        await subjectsApi.update(editing.id, payload);
-        toast.success('Materia actualizada');
-      } else {
-        await subjectsApi.create(payload);
-        toast.success('Materia creada');
-      }
+    if (editing) {
+      await subjectsApi.update(editing.id, payload);
+      toast.success('Materia actualizada');
+    } else {
+      await subjectsApi.create(payload);
+      toast.success('Materia creada');
+    }
       setShowModal(false);
       loadData();
     } catch (err: any) {
@@ -110,8 +120,8 @@ export function SubjectsPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestion de Materias</h1>
-            <p className="text-gray-500">Administracion del catalogo de materias por carrera</p>
+            <h1 className="text-2xl font-bold text-gray-900">Gestión de Materias</h1>
+            <p className="text-gray-500">Administración del catálogo de materias por carrera</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -143,12 +153,13 @@ export function SubjectsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 text-left text-xs font-semibold uppercase text-gray-500">
-                    <th className="px-4 py-3">Codigo</th>
+                    <th className="px-4 py-3">Código</th>
                     <th className="px-4 py-3">Nombre</th>
                     <th className="px-4 py-3">Carrera</th>
-                    <th className="px-4 py-3 text-center">Creditos</th>
+                    <th className="px-4 py-3 text-center">Créditos</th>
                     <th className="px-4 py-3 text-center">Año</th>
                     <th className="px-4 py-3 text-center">Semestre</th>
+                    <th className="px-4 py-3">Prerrequisito</th>
                     <th className="px-4 py-3">Estado</th>
                     <th className="px-4 py-3 text-right">Acciones</th>
                   </tr>
@@ -162,6 +173,15 @@ export function SubjectsPage() {
                       <td className="px-4 py-3 text-center">{s.credits}</td>
                       <td className="px-4 py-3 text-center">{s.year}</td>
                       <td className="px-4 py-3 text-center">{s.semester}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {s.prerequisites?.[0]?.prerequisiteSubject ? (
+                          <span>
+                            {s.prerequisites[0].prerequisiteSubject.code} - {s.prerequisites[0].prerequisiteSubject.name}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">Ninguno</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         <Badge status={s.isActive ? 'active' : 'failed'} label={s.isActive ? 'Activa' : 'Inactiva'} />
                       </td>
@@ -188,14 +208,14 @@ export function SubjectsPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
-              label="Codigo *"
+              label="Código *"
               value={form.code}
               onChange={(e) => setForm({ ...form, code: e.target.value })}
               placeholder="Ej. MAT101"
               required
             />
             <Input
-              label="Creditos *"
+              label="Créditos *"
               type="number"
               min="1"
               max="10"
@@ -208,7 +228,7 @@ export function SubjectsPage() {
             label="Nombre *"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Ej. Matematica I"
+            placeholder="Ej. Matemática I"
             required
           />
           <div>
@@ -223,6 +243,23 @@ export function SubjectsPage() {
               {careers.map((c) => (
                 <option key={c.id} value={c.name}>{c.name}</option>
               ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Prerrequisito (opcional)</label>
+            <select
+              value={form.prerequisiteSubjectId}
+              onChange={(e) => setForm({ ...form, prerequisiteSubjectId: e.target.value })}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            >
+              <option value="">Sin prerrequisito</option>
+              {subjects
+                .filter((s) => s.isActive && (!editing || s.id !== editing.id))
+                .map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.code} - {s.name}
+                  </option>
+                ))}
             </select>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

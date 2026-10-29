@@ -200,7 +200,7 @@ function App() {
             }
           />
           <Route
-            path="/configuracion"
+            path="/configuración"
             element={
               <ProtectedRoute>
                 <SettingsPage />

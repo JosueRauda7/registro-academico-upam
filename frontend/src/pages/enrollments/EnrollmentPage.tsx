@@ -8,6 +8,7 @@ import { cyclesApi } from '@/api/cycles.api';
 import { subjectsApi } from '@/api/subjects.api';
 import { enrollmentsApi } from '@/api/enrollments.api';
 import { paymentsApi } from '@/api/payments.api';
+import { gradesApi } from '@/api/grades.api';
 import { Cycle, Subject, Schedule, PaymentSummary } from '@/types';
 import { formatCurrency, getDayName, formatTime } from '@/utils/formatDate';
 import toast from 'react-hot-toast';
@@ -20,6 +21,7 @@ export function EnrollmentPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [enrolledSubjects, setEnrolledSubjects] = useState<any[]>([]);
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);
+  const [approvedSubjectIds, setApprovedSubjectIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState<string | null>(null);
 
@@ -45,6 +47,15 @@ export function EnrollmentPage() {
         const summary = await paymentsApi.getPaymentSummary(openCycle.id);
         setPaymentSummary(summary);
 
+        const myGrades = await gradesApi.getMy();
+        setApprovedSubjectIds(
+          new Set(
+            myGrades.records
+              .filter((r) => r.status === 'approved')
+              .map((r) => r.subjectId),
+          ),
+        );
+
         if (summary.tuitionPaid) {
           const enrollment = await enrollmentsApi.getMyEnrollment(openCycle.id);
           setEnrolledSubjects(enrollment.subjects || []);
@@ -53,7 +64,7 @@ export function EnrollmentPage() {
         // Not enrolled yet
       }
     } catch (err: any) {
-      toast.error('No hay ciclos abiertos para inscripcion');
+      toast.error('No hay ciclos abiertos para inscripción');
     } finally {
       setLoading(false);
     }
@@ -63,7 +74,7 @@ export function EnrollmentPage() {
     if (!cycle) return;
     try {
       const result = await paymentsApi.createTuitionPayment(cycle.id);
-      toast.success('Pago de matricula creado. Procese el pago con Wompi.');
+      toast.success('Pago de matrícula creado. Procese el pago con Wompi.');
       loadData();
     } catch (err: any) {
       toast.error(err.response?.data?.message?.[0] || 'Error al crear el pago');
@@ -98,7 +109,7 @@ export function EnrollmentPage() {
     if (!cycle) return;
     try {
       await enrollmentsApi.confirmEnrollment(cycle.id);
-      toast.success('Inscripcion confirmada');
+      toast.success('Inscripción confirmada');
       loadData();
     } catch (err: any) {
       toast.error(err.response?.data?.message?.[0] || 'Error al confirmar');
@@ -121,6 +132,15 @@ export function EnrollmentPage() {
     );
   };
 
+  const getPrerequisite = (subject: Subject) => {
+    return subject.prerequisites?.[0]?.prerequisiteSubject || null;
+  };
+
+  const meetsPrerequisite = (subject: Subject) => {
+    const prereq = getPrerequisite(subject);
+    return !prereq || approvedSubjectIds.has(prereq.id);
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -136,7 +156,7 @@ export function EnrollmentPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Inscripcion de Materias</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Inscripción de Materias</h1>
             <p className="text-gray-500">
               {cycle ? `${cycle.name} - ${cycle.year}` : 'No hay ciclo disponible'}
             </p>
@@ -156,8 +176,8 @@ export function EnrollmentPage() {
                 <div>
                   <p className="font-semibold">
                     {paymentSummary.tuitionPaid
-                      ? 'Matricula pagada - Puede inscribir materias'
-                      : 'Matricula pendiente - Debe pagar para inscribir materias'}
+                      ? 'Matrícula pagada - Puede inscribir materias'
+                      : 'Matrícula pendiente - Debe pagar para inscribir materias'}
                   </p>
                   <p className="text-sm text-gray-500">
                     Monto: {formatCurrency(paymentSummary.tuitionAmount)}
@@ -165,7 +185,7 @@ export function EnrollmentPage() {
                 </div>
               </div>
               {!paymentSummary.tuitionPaid && (
-                <Button onClick={handlePayTuition}>Pagar Matricula</Button>
+                <Button onClick={handlePayTuition}>Pagar Matrícula</Button>
               )}
             </div>
           </Card>
@@ -204,7 +224,7 @@ export function EnrollmentPage() {
               ))}
               {enrolledSubjects.some((es) => es.status === 'reserved') && (
                 <Button onClick={handleConfirmEnrollment} className="w-full">
-                  Confirmar Inscripcion
+                  Confirmar Inscripción
                 </Button>
               )}
             </div>
@@ -219,6 +239,8 @@ export function EnrollmentPage() {
                 const subjectSchedules = getSchedulesForSubject(subject.id);
                 const enrolled = isSubjectEnrolled(subject.id);
                 const enrolledStatus = getEnrolledStatus(subject.id);
+                const prereq = getPrerequisite(subject);
+                const prerequisiteMet = meetsPrerequisite(subject);
 
                 return (
                   <div key={subject.id} className="rounded-lg border p-4">
@@ -228,8 +250,19 @@ export function EnrollmentPage() {
                           {subject.code} - {subject.name}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {subject.credits} creditos | Semestre {subject.semester}
+                          {subject.credits} créditos | Semestre {subject.semester}
                         </p>
+                        {prereq && (
+                          <p
+                            className={`mt-1 text-xs ${
+                              prerequisiteMet ? 'text-green-600' : 'text-red-500'
+                            }`}
+                          >
+                            {prerequisiteMet
+                              ? `Prerrequisito cumplido: ${prereq.code} - ${prereq.name}`
+                              : `Requiere prerrequisito: ${prereq.code} - ${prereq.name}`}
+                          </p>
+                        )}
                       </div>
                       {enrolled && (
                         <Badge status={enrolledStatus?.status || 'reserved'} />
@@ -264,8 +297,9 @@ export function EnrollmentPage() {
                             <Button
                               size="sm"
                               disabled={
+                                !prerequisiteMet ||
                                 (schedule.group?.enrolledCount ?? 0) >=
-                                (schedule.group?.capacity ?? 0)
+                                  (schedule.group?.capacity ?? 0)
                               }
                               loading={enrolling === subject.id}
                               onClick={() =>
@@ -275,7 +309,9 @@ export function EnrollmentPage() {
                               {(schedule.group?.enrolledCount ?? 0) >=
                               (schedule.group?.capacity ?? 0)
                                 ? 'Sin cupos'
-                                : 'Reservar'}
+                                : !prerequisiteMet
+                                  ? 'Requiere prerrequisito'
+                                  : 'Reservar'}
                             </Button>
                           </div>
                         ))}
@@ -288,7 +324,7 @@ export function EnrollmentPage() {
           ) : (
             <div className="py-8 text-center text-gray-500">
               <Clock size={48} className="mx-auto mb-4 text-gray-300" />
-              <p>Debe pagar la matricula para ver las materias disponibles</p>
+              <p>Debe pagar la matrícula para ver las materias disponibles</p>
             </div>
           )}
         </Card>

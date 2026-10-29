@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import { UserRole } from '../../domain/enums/role.enum';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -21,7 +22,12 @@ export class JwtAuthGuard implements CanActivate {
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get<string>('JWT_SECRET'),
+        algorithms: ['HS256'],
       });
+      if (payload.purpose !== 'access' || typeof payload.sub !== 'string' ||
+          typeof payload.email !== 'string' || !Object.values(UserRole).includes(payload.role)) {
+        throw new Error('Token de sesión requerido');
+      }
       request['user'] = payload;
       return true;
     } catch {

@@ -8,6 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
+import { createHash, randomUUID } from 'crypto';
 import { UserRepository } from '../../infrastructure/database/repositories/user.repository';
 import { StudentRepository } from '../../infrastructure/database/repositories/student.repository';
 import { TeacherRepository } from '../../infrastructure/database/repositories/teacher.repository';
@@ -36,7 +37,10 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
-    const role = dto.role || UserRole.STUDENT;
+    if (dto.role && dto.role !== UserRole.STUDENT) {
+      throw new BadRequestException('El registro público solo permite estudiantes');
+    }
+    const role = UserRole.STUDENT;
 
     const user = await this.userRepository.create({
       email: dto.email,
@@ -52,7 +56,7 @@ export class AuthService {
         userId: user.id,
         studentCode,
         carnet: dto.carnet || `C${studentCode.split('-').pop()}`,
-        career: dto.career || 'Ingenieria en Sistemas',
+        career: dto.career || 'Ingeniería en Sistemas',
         enrollmentYear: new Date().getFullYear(),
         phone: dto.phone,
         address: dto.address,
@@ -74,7 +78,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.userRepository.findByEmail(dto.email);
+    const user = await this.userRepository.findByEmail(dto.email, true);
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
@@ -151,17 +155,17 @@ export class AuthService {
 
     await this.issueResetToken(user);
 
-    return { message: 'Se ha enviado un enlace de verificacion a tu correo electronico' };
+    return { message: 'Se ha enviado un enlace de verificación a tu correo electrónico' };
   }
 
   private async issueResetToken(user: any) {
     const resetToken = this.jwtService.sign(
       { sub: user.id, purpose: 'password-reset' },
-      { expiresIn: '1h' },
+      { expiresIn: '1h', jwtid: randomUUID() },
     );
 
     await this.userRepository.update(user.id, {
-      resetToken,
+      resetToken: createHash('sha256').update(resetToken).digest('hex'),
       resetTokenExpires: new Date(Date.now() + 3600000),
     });
 
@@ -169,11 +173,18 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const user = await this.userRepository.findById(
-      this.jwtService.verify(dto.token).sub,
-    );
+    let payload: { sub: string; purpose: string };
+    try {
+      payload = this.jwtService.verify(dto.token, { algorithms: ['HS256'] });
+      if (payload.purpose !== 'password-reset' || typeof payload.sub !== 'string') {
+        throw new Error('Invalid purpose');
+      }
+    } catch {
+      throw new BadRequestException('Token inválido o expirado');
+    }
+    const user = await this.userRepository.findById(payload.sub, true);
 
-    if (!user || user.resetToken !== dto.token) {
+    if (!user || user.resetToken !== createHash('sha256').update(dto.token).digest('hex')) {
       throw new BadRequestException('Token inválido o expirado');
     }
 
@@ -242,6 +253,7 @@ export class AuthService {
   private async generateToken(user: any) {
     const payload = {
       sub: user.id,
+      purpose: 'access',
       email: user.email,
       role: user.role,
     };

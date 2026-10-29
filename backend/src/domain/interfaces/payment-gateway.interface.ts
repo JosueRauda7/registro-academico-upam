@@ -26,16 +26,19 @@ export interface WompiPaymentResponse {
 
 export interface WompiTransactionEvent {
   event: string;
-  transaction: {
+  timestamp: number;
+  signature: { properties: string[]; checksum: string };
+  data: { transaction: {
     id: string;
     status: string;
     reference: string;
     amount_in_cents: number;
-  };
+  } };
 }
 
 export interface IPaymentGateway {
   createPayment(data: WompiPaymentRequest): Promise<WompiPaymentResponse>;
   getTransactionStatus(transactionId: string): Promise<PaymentStatus>;
+  getTransaction(transactionId: string): Promise<WompiPaymentResponse['data']>;
   createWidget(orderId: string): Promise<string>;
 }

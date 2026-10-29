@@ -69,7 +69,7 @@ export function TeacherGroupsPage() {
                   <p className="text-sm text-gray-500">
                     Grupo {group.groupNumber} | {group.cycleName} | {group.classroomName || 'Sin aula'}
                   </p>
-                  <p className="text-xs text-gray-400">{group.credits} creditos</p>
+                  <p className="text-xs text-gray-400">{group.credits} créditos</p>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
                   <div className="rounded-lg bg-gray-50 p-2 text-center">
@@ -97,8 +97,8 @@ export function TeacherGroupsPage() {
           <div className="flex items-start gap-3 text-sm text-gray-600">
             <AlertTriangle size={18} className="mt-0.5 text-yellow-500" />
             <p>
-              Cuando el ciclo academico haya finalizado ya no se podran modificar las notas.
-              Las notas son calificaciones de 0 a 10; se considera aprobada una materia con 6 o mas.
+              Cuando el ciclo académico haya finalizado ya no se podrán modificar las notas.
+              Las notas son calificaciones de 0 a 10; se considera aprobada una materia con 6 o más.
             </p>
           </div>
         </Card>

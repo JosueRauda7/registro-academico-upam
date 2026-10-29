@@ -11,7 +11,10 @@ export class SubjectRepository {
   ) {}
 
   async findById(id: string): Promise<Subject | null> {
-    return this.repo.findOne({ where: { id } });
+    return this.repo.findOne({
+      where: { id },
+      relations: ['prerequisites', 'prerequisites.prerequisiteSubject'],
+    });
   }
 
   async findByCode(code: string): Promise<Subject | null> {
@@ -19,15 +22,26 @@ export class SubjectRepository {
   }
 
   async findByCareer(career: string): Promise<Subject[]> {
-    return this.repo.find({ where: { career, isActive: true }, order: { year: 'ASC', semester: 'ASC' } });
+    return this.repo.find({
+      where: { career, isActive: true },
+      relations: ['prerequisites', 'prerequisites.prerequisiteSubject'],
+      order: { year: 'ASC', semester: 'ASC' },
+    });
   }
 
   async findAll(): Promise<Subject[]> {
-    return this.repo.find({ where: { isActive: true } });
+    return this.repo.find({
+      where: { isActive: true },
+      relations: ['prerequisites', 'prerequisites.prerequisiteSubject'],
+      order: { year: 'ASC', semester: 'ASC', code: 'ASC' },
+    });
   }
 
   async findAllIncludingInactive(): Promise<Subject[]> {
-    return this.repo.find({ order: { year: 'ASC', semester: 'ASC', code: 'ASC' } });
+    return this.repo.find({
+      relations: ['prerequisites', 'prerequisites.prerequisiteSubject'],
+      order: { year: 'ASC', semester: 'ASC', code: 'ASC' },
+    });
   }
 
   async countActiveByCareer(career: string): Promise<number> {

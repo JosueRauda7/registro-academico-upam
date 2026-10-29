@@ -32,14 +32,14 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/pagos', icon: CreditCard, label: 'Pagos', roles: [UserRole.STUDENT] },
-  { to: '/inscripcion', icon: BookOpen, label: 'Inscripcion de Materias', roles: [UserRole.STUDENT] },
+  { to: '/inscripcion', icon: BookOpen, label: 'Inscripción de Materias', roles: [UserRole.STUDENT] },
   { to: '/horario', icon: CalendarClock, label: 'Mi Horario', roles: [UserRole.STUDENT] },
   { to: '/mi-pensum', icon: ClipboardList, label: 'Mi Pensum', roles: [UserRole.STUDENT] },
   { to: '/mis-materias', icon: GraduationCap, label: 'Mis Materias', roles: [UserRole.STUDENT] },
   { to: '/historial', icon: FileText, label: 'Historial', roles: [UserRole.STUDENT] },
   { to: '/notas-docente', icon: ClipboardList, label: 'Notas de Estudiantes', roles: [UserRole.TEACHER] },
   { to: '/colecturia', icon: Banknote, label: 'Colecturia', roles: [UserRole.COLLECTOR, UserRole.ADMINISTRATOR] },
-  { to: '/planificacion', icon: CalendarRange, label: 'Planificacion', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
+  { to: '/planificacion', icon: CalendarRange, label: 'Planificación', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/materias', icon: Library, label: 'Materias', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/pensum', icon: BookMarked, label: 'Pensum', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/carreras', icon: GraduationCap, label: 'Carreras', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
   { to: '/materias-previas', icon: BookOpenCheck, label: 'Materias Previas', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/ciclos', icon: Calendar, label: 'Ciclos', roles: [UserRole.ADMINISTRATOR] },
   { to: '/usuarios', icon: Users, label: 'Usuarios', roles: [UserRole.ADMINISTRATOR] },
-  { to: '/configuracion', icon: Settings, label: 'Configuracion', roles: [UserRole.ADMINISTRATOR] },
+  { to: '/configuracion', icon: Settings, label: 'Configuración', roles: [UserRole.ADMINISTRATOR] },
   { to: '/reportes', icon: BarChart3, label: 'Reportes', roles: [UserRole.ADMINISTRATOR, UserRole.COLLECTOR, UserRole.ADMINISTRATIVE, UserRole.TEACHER] },
 ];
 
@@ -88,7 +88,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         )}
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-sm font-bold tracking-wide text-gray-900">{branding.institutionName || 'UPAM'}</h1>
-          <p className="text-xs text-gray-400">Registro Academico</p>
+          <p className="text-xs text-gray-400">Registro Académico</p>
         </div>
         <button
           onClick={onClose}
@@ -99,7 +99,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </button>
       </div>
 
-      {/* Navegacion */}
+      {/* Navegación */}
       <nav className="mt-4 space-y-1 overflow-y-auto px-3 pb-24"
            style={{ height: 'calc(100vh - 4rem)' }}>
         <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Menu</p>

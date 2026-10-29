@@ -39,17 +39,17 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         <button
           onClick={() => navigate('/cambiar-contrasena')}
           className="flex items-center gap-2 text-sm text-gray-600 hover:text-upam-primary"
-          title="Cambiar contrasena"
+          title="Cambiar contraseña"
         >
           <Lock size={18} />
-          <span className="hidden sm:inline">Cambiar contrasena</span>
+          <span className="hidden sm:inline">Cambiar contraseña</span>
         </button>
         <button
           onClick={handleLogout}
           className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600"
         >
           <LogOut size={18} />
-          <span className="hidden sm:inline">Cerrar sesion</span>
+          <span className="hidden sm:inline">Cerrar sesión</span>
         </button>
       </div>
     </header>

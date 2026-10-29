@@ -7,6 +7,7 @@ import {
   WompiPaymentResponse,
 } from '../../domain/interfaces/payment-gateway.interface';
 import { PaymentStatus } from '../../domain/enums/payment-status.enum';
+import { verifyWompiEvent } from './wompi-event';
 
 @Injectable()
 export class WompiGateway implements IPaymentGateway {
@@ -51,6 +52,14 @@ export class WompiGateway implements IPaymentGateway {
   }
 
   async getTransactionStatus(transactionId: string): Promise<PaymentStatus> {
+    return this.mapWompiStatus((await this.getTransaction(transactionId)).status);
+  }
+
+  verifyEvent(payload: unknown) {
+    return verifyWompiEvent(payload, this.configService.get<string>('WOMPI_EVENTS_SECRET', ''));
+  }
+
+  async getTransaction(transactionId: string): Promise<WompiPaymentResponse['data']> {
     const response = await fetch(`${this.baseUrl}/transactions/${transactionId}`, {
       headers: {
         Authorization: `Bearer ${this.privateKey}`,
@@ -62,7 +71,7 @@ export class WompiGateway implements IPaymentGateway {
     }
 
     const data = await response.json();
-    return this.mapWompiStatus(data.data.status);
+    return data.data;
   }
 
   async createWidget(orderId: string): Promise<string> {

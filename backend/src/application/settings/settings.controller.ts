@@ -20,10 +20,10 @@ export class SettingsController {
 
   @Get('public')
   @ApiOperation({
-    summary: 'Configuracion publica',
-    description: 'Retorna la configuracion de marca (logo, color principal, nombre) para el frontend. No requiere autenticacion.',
+    summary: 'Configuración publica',
+    description: 'Retorna la configuración de marca (logo, color principal, nombre) para el frontend. No requiere autenticación.',
   })
-  @ApiResponse({ status: 200, description: 'Configuracion publica' })
+  @ApiResponse({ status: 200, description: 'Configuración publica' })
   getPublic() {
     return this.settingsService.getPublic();
   }
@@ -31,8 +31,8 @@ export class SettingsController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Obtener configuracion del sistema', description: 'Solo administradores.' })
-  @ApiResponse({ status: 200, description: 'Configuracion del sistema' })
+  @ApiOperation({ summary: 'Obtener configuración del sistema', description: 'Solo administradores.' })
+  @ApiResponse({ status: 200, description: 'Configuración del sistema' })
   getSettings() {
     return this.settingsService.getSettings();
   }
@@ -40,7 +40,7 @@ export class SettingsController {
   @Put()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Actualizar configuracion del sistema', description: 'Actualiza logo, color principal o nombre de la institucion. Solo administradores.' })
+  @ApiOperation({ summary: 'Actualizar configuración del sistema', description: 'Actualiza logo, color principal o nombre de la institución. Solo administradores.' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -51,7 +51,7 @@ export class SettingsController {
       },
     },
   })
-  @ApiResponse({ status: 200, description: 'Configuracion actualizada' })
+  @ApiResponse({ status: 200, description: 'Configuración actualizada' })
   update(@Body() body: any) {
     return this.settingsService.update(body);
   }

@@ -36,6 +36,23 @@ export class PaymentRepository {
     return this.repo.findOne({ where: { reference }, relations: ['student', 'student.user', 'cycle'] });
   }
 
+  async findByReceipt(url: string): Promise<Payment | null> {
+    return this.repo.findOne({ where: { receiptImageUrl: url }, relations: ['student'] });
+  }
+
+  async applyVerifiedTransaction(id: string, transactionId: string, status: PaymentStatus): Promise<boolean> {
+    return this.repo.manager.transaction(async (manager) => {
+      const repo = manager.getRepository(Payment);
+      const payment = await repo.findOne({ where: { id }, lock: { mode: 'pessimistic_write' } });
+      if (!payment || payment.wompiTransactionId !== transactionId || payment.status === status) return false;
+      const allowed = payment.status === PaymentStatus.PENDING ||
+        (payment.status === PaymentStatus.COMPLETED && status === PaymentStatus.REFUNDED);
+      if (!allowed || status === PaymentStatus.PENDING) return false;
+      await repo.update(id, { status, paymentDate: status === PaymentStatus.COMPLETED ? new Date() : payment.paymentDate });
+      return true;
+    });
+  }
+
   async findByStudent(studentId: string): Promise<Payment[]> {
     return this.repo.find({
       where: { studentId },

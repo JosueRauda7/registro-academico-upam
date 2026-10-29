@@ -14,7 +14,7 @@ export class CyclesController {
   constructor(private readonly cyclesService: CyclesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar todos los ciclos', description: 'Retorna todos los ciclos academicos registrados.' })
+  @ApiOperation({ summary: 'Listar todos los ciclos', description: 'Retorna todos los ciclos académicos registrados.' })
   @ApiResponse({ status: 200, description: 'Lista de ciclos' })
   findAll() {
     return this.cyclesService.findAll();
@@ -28,8 +28,8 @@ export class CyclesController {
   }
 
   @Get('open-enrollment')
-  @ApiOperation({ summary: 'Ciclos abiertos a inscripcion', description: 'Retorna ciclos donde la inscripcion de materias esta habilitada.' })
-  @ApiResponse({ status: 200, description: 'Ciclos con inscripcion abierta' })
+  @ApiOperation({ summary: 'Ciclos abiertos a inscripción', description: 'Retorna ciclos donde la inscripción de materias está habilitada.' })
+  @ApiResponse({ status: 200, description: 'Ciclos con inscripción abierta' })
   findOpenForEnrollment() {
     return this.cyclesService.findOpenForEnrollment();
   }
@@ -45,7 +45,7 @@ export class CyclesController {
 
   @Post()
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Crear ciclo academico', description: 'Solo administradores pueden crear ciclos.' })
+  @ApiOperation({ summary: 'Crear ciclo académico', description: 'Solo administradores pueden crear ciclos.' })
   @ApiResponse({ status: 201, description: 'Ciclo creado exitosamente' })
   @ApiResponse({ status: 403, description: 'Sin permisos de administrador' })
   create(@Body() body: any) {
@@ -54,7 +54,7 @@ export class CyclesController {
 
   @Put(':id')
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Actualizar ciclo academico' })
+  @ApiOperation({ summary: 'Actualizar ciclo académico' })
   @ApiParam({ name: 'id', description: 'UUID del ciclo' })
   @ApiResponse({ status: 200, description: 'Ciclo actualizado' })
   @ApiResponse({ status: 403, description: 'Sin permisos de administrador' })
@@ -64,20 +64,20 @@ export class CyclesController {
 
   @Put(':id/open-enrollment')
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Abrir inscripcion de materias', description: 'Habilita la inscripcion de materias para el ciclo.' })
+  @ApiOperation({ summary: 'Abrir inscripción de materias', description: 'Habilita la inscripción de materias para el ciclo.' })
   @ApiParam({ name: 'id', description: 'UUID del ciclo' })
-  @ApiResponse({ status: 200, description: 'Inscripcion abierta' })
-  @ApiResponse({ status: 400, description: 'El ciclo no esta activo' })
+  @ApiResponse({ status: 200, description: 'Inscripción abierta' })
+  @ApiResponse({ status: 400, description: 'El ciclo no está activo' })
   openEnrollment(@Param('id') id: string) {
     return this.cyclesService.openEnrollment(id);
   }
 
   @Put(':id/close-enrollment')
   @Roles(UserRole.ADMINISTRATOR)
-  @ApiOperation({ summary: 'Cerrar inscripcion de materias', description: 'Deshabilita la inscripcion de materias para el ciclo.' })
+  @ApiOperation({ summary: 'Cerrar inscripción de materias', description: 'Deshabilita la inscripción de materias para el ciclo.' })
   @ApiParam({ name: 'id', description: 'UUID del ciclo' })
-  @ApiResponse({ status: 200, description: 'Inscripcion cerrada' })
-  @ApiResponse({ status: 400, description: 'El ciclo no esta activo' })
+  @ApiResponse({ status: 200, description: 'Inscripción cerrada' })
+  @ApiResponse({ status: 400, description: 'El ciclo no está activo' })
   closeEnrollment(@Param('id') id: string) {
     return this.cyclesService.closeEnrollment(id);
   }

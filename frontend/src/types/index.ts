@@ -128,6 +128,12 @@ export interface Subject {
   year: number;
   semester: number;
   isActive: boolean;
+  prerequisites?: {
+    id: string;
+    prerequisiteSubjectId: string;
+    prerequisiteSubject?: Subject;
+  }[];
+  prerequisiteSubjectId?: string | null;
 }
 
 export type PensumSubjectState = 'completed' | 'enrolled' | 'pending';
@@ -384,6 +390,9 @@ export interface Payment {
   paymentDate: string | null;
   paymentMethod: string;
   wompiTransactionId: string | null;
+  bankName: string | null;
+  bankTransactionCode: string | null;
+  receiptImageUrl: string | null;
   status: PaymentStatus;
   type: PaymentType;
   month: number | null;
