@@ -1,0 +1,13 @@
+# Revisión del arranque local Compose
+
+## Ampliación posterior: acceso remoto autorizado
+
+El usuario indicó que utiliza el servidor desde otro equipo y accede a sus servicios 80/81. Se cambió únicamente la publicación web a 0.0.0.0:8082, manteniendo API directa y DB en loopback. FRONTEND_URL es configurable con valor por defecto LAN. Tras reconstruir/recrear, ps y logs confirman arranque correcto; pruebas desde el servidor a sus IP LAN/Tailscale dan 200 y API privada por Nginx da 401. No se verificó conectividad desde el cliente ni se modificaron reglas de firewall/router. El alcance continúa siendo desarrollo HTTP, sin certificación de producción. El resultado siguiente conserva el historial del arranque inicial en loopback.
+
+- Fecha: 2026-10-29. Agente: Codex. Alcance autorizado: levantar Docker local y cambiar puertos en conflicto.
+- Puertos 80/3000/5433 ocupados por otros proyectos. Se publican 8082/3002/5434 únicamente en loopback; puertos internos sin cambios y FRONTEND_URL coherente con la web.
+- No había contenedores ni volúmenes UPAM en el Docker consultado. `.env` creado por `node scripts/secure-local-docker.cjs --init-env`, con secretos aleatorios, modo 0600 e ignorado por Git. Sin valores secretos en esta evidencia.
+- Se conserva el rol DB limitado, los volúmenes persistentes y la configuración de integraciones opcionales. No se ejecutan pagos/correos, seeds manuales, rotación de DB ajena ni borrado de volúmenes. Una base nueva usa automáticamente el init.sql configurado por Compose.
+- npm ci durante la construcción reporta alertas de dependencias; clasificación y corrección siguen pendientes, conforme a la auditoría anterior. No se actualizan paquetes ni lockfiles en esta tarea.
+- Incidencia: tras una interrupción de la sesión se retomó el build; npm ci del builder backend siguió varios minutos sin completar. Se canceló únicamente ese build y se añadió --no-audit a las instalaciones del Dockerfile backend. El reintento instaló dependencias en 35 segundos y compiló correctamente; no demuestra por sí solo la causa interna de la demora anterior. La auditoría de dependencias debe ejecutarse por separado.
+- Resultado runtime: `docker compose up -d --build backend frontend` completó con exit 0; ambos servicios activos y DB healthy. Logs recientes de backend/frontend con arranque correcto. Web en 8082 y Swagger en 3002 devolvieron 200; `/api/enrollments/my` y `/api/settings` vía Nginx devolvieron 401 sin autenticación. Sin pruebas de login ni flujos académicos completos. Esta revisión no reabre ni amplía los seis cierres históricos ni certifica producción.

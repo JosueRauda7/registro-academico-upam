@@ -20,6 +20,8 @@ Navegador: React SPA
 
 API bajo `/api`; Swagger en `/api/docs`, actualmente habilitado sin condición por ambiente. Solo `/uploads/logos/` es público; comprobantes se descargan con Bearer JWT en `/api/uploads/receipts/:filename` y autorización por propietario o rol financiero.
 
+Helmet conserva sus cabeceras y CSP por defecto, salvo las políticas que requieren HTTPS: `upgrade-insecure-requests` y HSTS se activan cuando `FRONTEND_URL` comienza por `https://`. En desarrollo HTTP se omiten para que el navegador pueda cargar los recursos de Swagger por el mismo protocolo. Configurar la URL HTTPS real al desplegar con TLS.
+
 ## Tecnologías y paquetes
 
 Los números siguientes son rangos declarados en los manifiestos; los `package-lock.json` determinan las versiones resueltas. Un paquete declarado no demuestra su uso en todas las pantallas.
@@ -81,7 +83,7 @@ La aplicación usa `synchronize: false`, pero el seed usa `synchronize: true` y 
 
 Variables observadas: `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`, `POSTGRES_PASSWORD` (Compose), `JWT_SECRET`, `JWT_EXPIRATION`, `WOMPI_PUBLIC_KEY`, `WOMPI_PRIVATE_KEY`, `WOMPI_EVENTS_SECRET`, `WOMPI_BASE_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `FRONTEND_URL`, `PORT`, `NODE_ENV`. No copiar valores secretos a documentación. `.env.example` de la raíz documenta Compose; `backend/.env.example`, ejecución fuera de Docker. `.env` está ignorado por Git y excluido del contexto Docker del backend. JWT_SECRET debe tener al menos 32 bytes y generarse aleatoriamente.
 
-Compose publica frontend en 80, backend en 3000 y PostgreSQL en 5433, todos ligados a 127.0.0.1; mantiene volúmenes pgdata y uploads. Exige secretos externos sin defaults y usa upam_app (sin superusuario/crear roles/crear bases) en la aplicación, con NODE_ENV production para evitar logs SQL. Es un entorno local HTTP, no un despliegue de producción validado. Nginx reenvía /api y logos; bloquea los antiguos /uploads/:archivo. Solo logos conservan caché pública de 30 días.
+Compose publica frontend en 8082, backend en 3002 y PostgreSQL en 5434, frontend ligado a 0.0.0.0 para acceso remoto autorizado y API directa/DB a 127.0.0.1; mantiene volúmenes pgdata y uploads. Los puertos publicados se cambiaron el 2026-10-29 por conflictos con otros proyectos locales; los internos siguen en 80/3000/5432 y FRONTEND_URL es configurable y por defecto http://192.168.0.151:8082 para este servidor. Exige secretos externos sin defaults y usa upam_app (sin superusuario/crear roles/crear bases) en la aplicación, con NODE_ENV production para evitar logs SQL. Es un entorno de desarrollo HTTP con acceso remoto a la web, no un despliegue de producción validado. Nginx reenvía /api y logos; bloquea los antiguos /uploads/:archivo. Solo logos conservan caché pública de 30 días.
 
 Para un clon nuevo, `node scripts/secure-local-docker.cjs --init-env` crea .env solo si no existe; luego `docker compose up -d --build`. Los scripts database/init-app-role.sh y database/security-role.sql crean el rol limitado al inicializar una base nueva. Para una base local existente, `node scripts/secure-local-docker.cjs` rota secretos/credenciales sobre upam_db sin borrar datos; recrear servicios inmediatamente después. Este comando rota sesiones: no ejecutarlo innecesariamente. Migraciones futuras deberán conceder permisos al rol; editar init.sql no actualiza volúmenes existentes.
 

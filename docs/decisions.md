@@ -58,6 +58,27 @@ Mantener historial cronológico con identificadores estables. Registrar contexto
 - Referencia de contrato: https://docs.wompi.co/en/docs/colombia/eventos/ (consultada el 2026-10-28).
 - Alternativas: aceptar notificaciones sin firma o configurar secretos conocidos como fallback; descartadas por permitir suplantación.
 
+## DEC-008 — Puertos locales compatibles con otros proyectos
+
+- Fecha: 2026-10-29. Estado: APLICADA por autorización del usuario para levantar Compose y resolver conflictos de puertos.
+- Contexto: 80, 3000 y 5433 ocupados por otros proyectos en el host; no había contenedores ni volúmenes previos UPAM en el Docker consultado.
+- Decisión: publicar frontend en 127.0.0.1:8082, backend en 127.0.0.1:3002 y PostgreSQL en 127.0.0.1:5434. Conservar puertos internos y volúmenes; ajustar FRONTEND_URL a http://localhost:8082.
+- Consecuencias: accesos locales y enlaces generados usan la nueva URL; no cambian los servicios de otros proyectos. `.env` local generado con secretos independientes mediante el helper existente, sin versionar valores.
+- Alternativa: detener servicios ajenos; descartada por estar fuera del alcance.
+
+## DEC-009 — Acceso remoto a la web de desarrollo
+
+- Fecha: 2026-10-29. Estado: APLICADA por solicitud del usuario que accede al servidor mediante red.
+- Decisión: ampliar la publicación del frontend a 0.0.0.0:8082; API directa y DB conservan loopback. FRONTEND_URL configurable, por defecto http://192.168.0.151:8082. Reemplaza únicamente la restricción loopback de la web y URL de DEC-008.
+- Consecuencias: acceso por LAN o Tailscale al servidor, con API a través de Nginx. HTTP de desarrollo; no acredita preparación para producción. No se alteran firewall ni routers.
+
+## DEC-010 — Cabeceras de transporte acordes a la URL configurada
+
+- Fecha: 2026-10-29. Estado: APLICADA al corregir la visualización de Swagger solicitada.
+- Evidencia: el HTML y bundle Swagger respondían 200 en HTTP, pero CSP incluía upgrade-insecure-requests y el servidor no ofrece TLS en ese puerto.
+- Decisión: activar upgrade-insecure-requests y HSTS solo cuando FRONTEND_URL usa https://; conservar las demás protecciones de Helmet. HTTP de desarrollo no debe ordenar al navegador cambiar el protocolo de sus recursos.
+- Consecuencias: la configuración de un despliegue TLS debe declarar FRONTEND_URL con HTTPS. No se deshabilita CSP ni se amplían sus orígenes de scripts.
+
 ## Plantilla para futuras decisiones
 
 ```text

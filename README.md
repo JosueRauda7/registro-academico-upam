@@ -468,23 +468,29 @@ frontend/src/
 
 ```bash
 # Clonar el repositorio
-git clone <url-del-repositorio>
-cd registro-académico-upam
+git clone https://github.com/JosueRauda7/registro-academico-upam.git
+cd registro-academico-upam
 
 # En un clon nuevo: generar .env con secretos independientes (no sobrescribe uno existente)
 node scripts/secure-local-docker.cjs --init-env
+
+# Para ejecutar en tu computadora, añadir al .env generado:
+# FRONTEND_URL=http://localhost:8082
+# En un servidor, usar la URL por la que accederán los usuarios.
 
 # Levantar todos los servicios
 docker compose up -d --build
 ```
 
-> **Nota**: Una base nueva se inicializa con `database/init.sql` y el rol limitado `upam_app`. Compose exige secretos externos y publica los puertos solo en 127.0.0.1. Para una base local existente, `node scripts/secure-local-docker.cjs` rota credenciales conservando datos; después recrear los servicios. No eliminar volúmenes para aplicar cambios. Véase `docs/architecture.md` para configuración y límites de Wompi.
+> **Nota**: Una base nueva se inicializa con `database/init.sql` y el rol limitado `upam_app`. Compose exige secretos externos; la web publica 8082 en las interfaces del servidor, mientras API directa y DB permanecen en 127.0.0.1. Para una base local existente, `node scripts/secure-local-docker.cjs` rota credenciales conservando datos; después recrear los servicios. No eliminar volúmenes para aplicar cambios. Véase `docs/architecture.md` para configuración y límites de Wompi.
 
 Los servicios estarán disponibles en:
-- **Frontend**: http://localhost
-- **Backend API**: http://localhost:3000/api
-- **Swagger docs**: http://localhost:3000/api/docs
-- **PostgreSQL**: localhost:5433
+- **Frontend remoto (LAN)**: http://192.168.0.151:8082 (o la dirección del servidor que utilices, puerto 8082)
+- **Frontend desde el servidor**: http://localhost:8082
+- **Backend API**: http://localhost:3002/api
+- **Swagger docs**: http://localhost:3002/api/docs
+- **Swagger vía frontend**: http://localhost:8082/api/docs
+- **PostgreSQL**: localhost:5434
 
 ### Opción 2: Desarrollo local
 
@@ -822,7 +828,7 @@ WOMPI_PRIVATE_KEY=sk_test_abc123     # Clave privada (sandbox)
 WOMPI_BASE_URL=https://sandbox.wompi.co/v1
 RESEND_API_KEY=re_xxx                # Clave de Resend para envío de correos (recuperación de contraseña, pagos, inscripciones)
 RESEND_FROM_EMAIL=UPAM <no-reply@upam.edu.sv>
-FRONTEND_URL=http://localhost         # URL publica del frontend usada en los enlaces de los correos
+FRONTEND_URL=http://192.168.0.151:8082 # URL del frontend usada en los enlaces de los correos; ajustar al servidor
 ```
 
 ### Flujo de pago
@@ -847,8 +853,8 @@ El archivo `docker-compose.yml` define 3 servicios:
 ```yaml
 services:
   db:           # PostgreSQL 16 Alpine (esquema y seed desde database/init.sql)
-  backend:      # NestJS app (puerto 3000)
-  frontend:     # React app via Nginx (puerto 80)
+  backend:      # NestJS app (localhost:3002 → 3000 interno)
+  frontend:     # React app via Nginx (localhost:8082 → 80 interno)
 ```
 
 ### Comandos Docker
