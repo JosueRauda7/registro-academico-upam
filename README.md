@@ -657,7 +657,21 @@ Todas las rutas están prefijadas con `/api`.
 - El **carnet** es unico: se valida que no exista otro estudiante con el mismo (evita duplicados).
 - La **contraseña** debe tener mínimo 6 caracteres y el correo no puede repetirse (409).
 
-### Configuración del sistema
+### Importar notas anteriores al sistema desde Excel
+
+En **Materias previas**, con rol administrador o administrativo:
+
+1. Pulsa **Descargar plantilla**. Incluye instrucciones y un catálogo de materias.
+2. Completa únicamente la hoja **Notas previas**: `carnet`, `codigo_materia`, `nota`, `anio`, `semestre`, `observaciones`. Puedes incluir varios estudiantes existentes; carnet y código deben conservarse como texto.
+3. Adjunta el archivo `.xlsx` y pulsa **Validar e importar**. No hace falta seleccionar un estudiante en el formulario individual.
+
+Hasta 500 notas y 2 MiB por archivo. Nota obligatoria de 0 a 10, máximo dos decimales; año opcional desde 1900 al actual, semestre opcional 1/2 y observaciones opcionales de hasta 500 caracteres. Las materias deben estar activas y pertenecer a la carrera del estudiante. Las notas reprobadas también forman parte del historial.
+
+Si hay errores, se indican sus filas y no se guarda ninguna nota del lote. No se sobrescriben registros existentes. Usa la plantilla simple, sin fórmulas, macros, enlaces, imágenes, objetos, celdas combinadas ni hojas adicionales. El archivo se valida y procesa en memoria; no queda publicado ni almacenado.
+
+Swagger documenta `GET /api/legacy-subjects/template` y `POST /api/legacy-subjects/import`. Pruebas aisladas: desde backend, `node --test test/legacy-import.test.cjs`.
+
+## Configuración del sistema
 
 | Método | Ruta | Descripción | Auth |
 |--------|------|-------------|------|
@@ -783,6 +797,20 @@ Todas las rutas están prefijadas con `/api`.
 - Descargar lista de estudiantes (Excel)
 
 ---
+
+## Importar notas anteriores al sistema desde Excel
+
+En **Materias previas**, con rol administrador o administrativo:
+
+1. Pulsa **Descargar plantilla**. Incluye instrucciones y un catálogo de materias.
+2. Completa únicamente la hoja **Notas previas**: `carnet`, `codigo_materia`, `nota`, `anio`, `semestre`, `observaciones`. Puedes incluir varios estudiantes existentes; carnet y código deben conservarse como texto.
+3. Adjunta el archivo `.xlsx` y pulsa **Validar e importar**. No hace falta seleccionar un estudiante en el formulario individual.
+
+Hasta 500 notas y 2 MiB por archivo. Nota obligatoria de 0 a 10, máximo dos decimales; año opcional desde 1900 al actual, semestre opcional 1/2 y observaciones opcionales de hasta 500 caracteres. Las materias deben estar activas y pertenecer a la carrera del estudiante. Las notas reprobadas también forman parte del historial.
+
+Si hay errores, se indican sus filas y no se guarda ninguna nota del lote. No se sobrescriben registros existentes. Usa la plantilla simple, sin fórmulas, macros, enlaces, imágenes, objetos, celdas combinadas ni hojas adicionales. El archivo se valida y procesa en memoria; no queda publicado ni almacenado.
+
+Swagger documenta `GET /api/legacy-subjects/template` y `POST /api/legacy-subjects/import`. Pruebas aisladas: desde backend, `node --test test/legacy-import.test.cjs`.
 
 ## Configuración del sistema
 

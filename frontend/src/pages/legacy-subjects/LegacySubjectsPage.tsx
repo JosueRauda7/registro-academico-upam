@@ -11,6 +11,7 @@ import { legacySubjectsApi } from '@/api/legacySubjects.api';
 import { Student, Subject, LegacyCompletedSubject } from '@/types';
 import toast from 'react-hot-toast';
 import { BookOpenCheck, Trash2, Pencil } from 'lucide-react';
+import { LegacyImportCard } from './LegacyImportCard';
 
 interface FormState {
   subjectId?: string;
@@ -33,6 +34,11 @@ export function LegacySubjectsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editing, setEditing] = useState<LegacyCompletedSubject | null>(null);
   const [editForm, setEditForm] = useState<FormState>(emptyForm);
+  const [importVersion, setImportVersion] = useState(0);
+
+  useEffect(() => {
+    if (importVersion && studentId) loadRecords(studentId);
+  }, [importVersion]);
 
   useEffect(() => {
     loadInitial();
@@ -172,6 +178,8 @@ export function LegacySubjectsPage() {
             Estas materias se incluyen en el CUM del estudiante.
           </p>
         </div>
+
+        <LegacyImportCard onImported={() => setImportVersion((version) => version + 1)} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Lista + formulario */}

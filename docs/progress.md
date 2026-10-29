@@ -109,6 +109,26 @@ Bitácora acumulativa de trabajos de IA. No borrar entradas anteriores ni atribu
 - Seguridad: sin secretos incluidos, sin nuevos hallazgos ni cambios de estado; se conservan auditorías y límites. Docker: no aplica reconstrucción por crear commits y editar únicamente documentación; los contenedores ya incorporan los cambios ejecutables anteriores.
 - Siguiente paso: revisar los commits locales; publicar solo por solicitud del usuario.
 
+## 2026-10-29 — Importación Excel de materias previas
+
+- Agente: Codex. Estado: implementado y verificado en Docker local. Solicitud: migrar notas anteriores al sistema desde Excel, brindar plantilla y validar seguridad del contenido. Base b1605a2, árbol limpio al iniciar.
+- Backend: LegacyImportService, preanálisis safe-xlsx y DTO por fila; rutas GET /legacy-subjects/template y POST /legacy-subjects/import con JWT/roles administrator/administrative. Plantilla con Notas previas, Instrucciones y catálogo Materias, sin datos personales. Lotes de varios estudiantes por carnet/código, nota 0–10 y opcionales año/semestre/observaciones.
+- Integridad: validación completa y errores por fila, sin sobrescribir registros; importBatch inserta en una transacción usando unicidad SQL existente y actor autenticado. Conserva historial reprobado y sus efectos existentes en CUM/prerrequisitos. Sin cambios de entidades, SQL o esquema ni migraciones necesarias.
+- Frontend: LegacyImportCard en Materias previas, descarga autenticada, selector XLSX, botón Validar e importar, resumen de registros/estudiantes y errores. Se conserva formulario individual y se actualiza la tabla seleccionada tras importar. API frontend ampliada.
+- Seguridad: 2 MiB comprimidos, 8 MiB expandidos, 100 entradas ZIP, 500 notas y una importación por proceso. Rechazo de fórmulas/resultados cacheados, macros, enlaces, objetos, DTD/entidades, ZIP sospechoso, hojas/formatos no admitidos, coordenadas desmedidas y campos multipart extra. Archivo solo en memoria, plantilla no-store, errores sin datos de filas ni parámetros SQL. Sin nuevos hallazgos formalizados ni cambios de estado de los cierres anteriores.
+- Verificación: typecheck backend/frontend y builds NestJS/Vite correctos en imágenes de validación/construcción con dependencias existentes. Ocho pruebas nuevas de importación aprobadas; siete regresiones de seguridad existentes aprobadas. Primer ensayo encontró parts=1 demasiado estricto; parts=2 con files=1/fields=0 corregido y re-test exitoso. Casos adicionales de tamaño ZIP falsificado y columnas gigantes rechazados.
+- Docker: `docker compose up -d --build backend frontend` completó, ambos recreados y Up, DB healthy. Rebuild final incorpora mensajes de error ajustados. `docker compose exec -T backend node < backend/test/docker-legacy-import.cjs`: 19 comprobaciones API/PostgreSQL correctas, incluidas reversión del lote y duplicados concurrentes; fixtures eliminados en finally. Logs recientes de arranque sin errores. Página /materias-previas HTTP 200 y plantilla anónima 401 a través de Nginx.
+- Documentación: README, arquitectura y DEC-011 actualizados; auditoría security/audits/2026-10-29-legacy-excel-import.md y evidencia security/evidence/2026-10-29-legacy-excel-tests.md. Diff y enlaces revisados al terminar.
+- Límites: sin navegador automatizado ni prueba con Excel/LibreOffice de escritorio; compatibilidad limitada a libros simples de la plantilla. No es antivirus ni nueva auditoría de dependencias. Sin librerías nuevas/lockfiles, datos ajenos, pagos/correos, seeds, cambios de volumen, commit o push. El último cambio del archivo de pruebas solo amplía casos y no altera recursos de las imágenes en ejecución.
+- Siguiente paso: entrar a Materias previas como administrador/administrativo, descargar plantilla y cargar un lote histórico revisado; si se necesita otro formato de origen, acordar su mapeo antes de ampliar el importador.
+
+## 2026-10-29 — Commit de importación Excel de materias previas
+
+- Agente: Codex. Solicitud: registrar en un commit local la funcionalidad recién implementada. Base b1605a2, conservando los archivos de esa tarea; sin cambios nuevos de aplicación.
+- Alcance: importador/plantilla, UI, DTOs, controles de contenido, transacción, pruebas y documentación/evidencia de seguridad en un commit funcional. Cambio propio de esta tarea: esta entrada.
+- Verificación actual: git diff --check correcto, escaneo de patrones sensibles sin coincidencias y enlaces relativos de archivos candidatos sin roturas. `.env` ignorado y excluido del commit. Se conservan resultados previos de builds/typechecks, ocho pruebas nuevas, siete regresiones y 19 comprobaciones API/PostgreSQL; no se repiten por tratarse del registro de cambios ya verificados.
+- Seguridad: sin hallazgos nuevos ni cambios de estado. Docker: no aplica reconstrucción por este commit y cambio documental; la actualización de ambos servicios consta en la entrada anterior. Sin push, pagos, correos ni cambios de datos. Siguiente paso: publicar solo cuando el usuario lo solicite.
+
 ## Plantilla por trabajo
 
 ```text

@@ -79,6 +79,15 @@ Mantener historial cronológico con identificadores estables. Registrar contexto
 - Decisión: activar upgrade-insecure-requests y HSTS solo cuando FRONTEND_URL usa https://; conservar las demás protecciones de Helmet. HTTP de desarrollo no debe ordenar al navegador cambiar el protocolo de sus recursos.
 - Consecuencias: la configuración de un despliegue TLS debe declarar FRONTEND_URL con HTTPS. No se deshabilita CSP ni se amplían sus orígenes de scripts.
 
+## DEC-011 — Migración histórica mediante XLSX simple y lote atómico
+
+- Fecha: 2026-10-29. Estado: APLICADA por solicitud del usuario para migrar notas anteriores a la adopción del sistema.
+- Decisión: ExcelJS existente, plantilla sin PII con carnet/código de materia y catálogo; permitir varios estudiantes por lote. Conservar ingreso individual y usar el mismo historial, incluidas notas reprobadas.
+- Integridad: validar todas las filas y reglas de negocio antes de insertar en una transacción; rechazar duplicados sin sobrescribir. Reutilizar columnas y unicidad SQL existentes; sin migración de esquema.
+- Seguridad: permisos administrator/administrative también en backend, preanálisis ZIP con tamaños reales acotados antes de ExcelJS, valores simples, sin fórmulas/macros/enlaces/objetos y errores sin valores del archivo. Archivo solo en memoria. Límites de 2 MiB, 500 filas, 8 MiB expandidos y una importación por proceso.
+- Alternativas: guardar las filas válidas omitiendo las inválidas o actualizar notas existentes automáticamente; descartadas para evitar migraciones parciales o reemplazos accidentales. La plantilla simple reduce compatibilidad con libros complejos a cambio de limitar contenido activo y consumo de recursos.
+- Límites: no certifica ausencia de malware ni sustituye auditoría de dependencias; no permite libros XLS/XLSM, hojas adicionales, celdas combinadas ni contenido enriquecido. Una instancia adicional tiene su propio límite de concurrencia, con unicidad protegida en PostgreSQL.
+
 ## Plantilla para futuras decisiones
 
 ```text

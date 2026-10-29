@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LegacyCompletedSubject } from '../entities/legacy-completed-subject.entity';
@@ -34,6 +34,20 @@ export class LegacyCompletedSubjectRepository {
   async create(data: Partial<LegacyCompletedSubject>): Promise<LegacyCompletedSubject> {
     const entity = this.repo.create(data);
     return this.repo.save(entity);
+  }
+
+  async importBatch(rows: Partial<LegacyCompletedSubject>[]): Promise<void> {
+    try {
+      await this.repo.manager.transaction(async (manager) => {
+        await manager.insert(LegacyCompletedSubject, rows);
+      });
+    } catch (error) {
+      // Database uniqueness also protects against concurrent imports/manual registration.
+      if (error.code === '23505') throw new ConflictException('Una materia ya fue registrada durante la importación. No se guardó ninguna fila. Actualiza el archivo.');
+      if (['23503', '23514', '22003'].includes(error.code)) throw new BadRequestException('Los datos cambiaron o incumplen las restricciones. No se guardó ninguna fila.');
+      // Do not log a driver error containing parameters from the uploaded workbook.
+      throw new ServiceUnavailableException('No se pudo confirmar la importación. Actualiza los registros antes de reintentar.');
+    }
   }
 
   async update(id: string, data: Partial<LegacyCompletedSubject>): Promise<LegacyCompletedSubject | null> {
