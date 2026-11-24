@@ -1,0 +1,70 @@
+# Docker Compose v2 / Portainer Docker Standalone. No clone or host bind mounts needed.
+services:
+  db:
+    image: ${DOCKERHUB_NAMESPACE:-josuerauda117}/registro-academico-upam-database:${IMAGE_TAG:-2026.11.24}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: upam_academico
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Define DATABASE_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U postgres -d upam_academico']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  backend:
+    image: ${DOCKERHUB_NAMESPACE:-josuerauda117}/registro-academico-upam-backend:${IMAGE_TAG:-2026.11.24}
+    restart: unless-stopped
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: upam_academico
+      DATABASE_USER: upam_app
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Define DATABASE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-24h}
+      NODE_ENV: production
+      PORT: 3000
+      FRONTEND_URL: ${FRONTEND_URL:?Define FRONTEND_URL como URL del navegador}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
+      WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-}
+      WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY:-}
+      WOMPI_EVENTS_SECRET: ${WOMPI_EVENTS_SECRET:-}
+      WOMPI_BASE_URL: ${WOMPI_BASE_URL:-https://sandbox.wompi.co/v1}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-UPAM <no-reply@upam.edu.sv>}
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3000/api/auth/profile').then(r=>process.exit(r.status===401?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  frontend:
+    image: ${DOCKERHUB_NAMESPACE:-josuerauda117}/registro-academico-upam-frontend:${IMAGE_TAG:-2026.11.24}
+    restart: unless-stopped
+    ports:
+      - '${WEB_BIND_ADDRESS:-0.0.0.0}:${WEB_PORT:-8082}:80'
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://127.0.0.1/']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  uploads:

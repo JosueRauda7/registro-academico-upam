@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!init.sql
+!init-app-role.sh
+!security-role.sql
+!initial-settings.sql

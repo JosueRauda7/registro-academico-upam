@@ -12,6 +12,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev --no-audit
 COPY --from=builder /app/dist ./dist
+COPY scripts/bootstrap-admin.cjs ./scripts/bootstrap-admin.cjs
 
 EXPOSE 3000
-CMD ["node", "dist/main"]
+CMD ["sh", "-c", "node scripts/bootstrap-admin.cjs && exec node dist/main"]
