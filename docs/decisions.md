@@ -143,6 +143,13 @@ Mantener historial cronológico con identificadores estables. Registrar contexto
 - Actualización: detener backend, respaldar/aplicar migración de aranceles a volúmenes existentes y después actualizar el Stack con imágenes nuevas. Portainer puede ejecutar el SQL del repositorio antes de cambiar imágenes; Compose puede actualizar solo DB y usar el SQL empaquetado. No inicializar volúmenes existentes ni desplegar remotamente como parte de publicar imágenes.
 - Validación: instalación nueva aislada con secretos independientes, bootstrap/login y pruebas académicas sobre las imágenes publicadas. Sin datos reales ni secretos en imágenes/Git; Linux amd64 y Docker Standalone, sin certificar ARM/Swarm.
 
+## DEC-020 — Un grupo inscrito muestra todos sus bloques sin duplicar materias
+
+- Fecha: 2026-11-24. Estado: APLICADA por solicitud de mostrar todos los horarios de la materia, no únicamente su primer día.
+- Decisión: conservar scheduleId de EnrollmentSubject como referencia existente y cargar la colección schedules de ese grupo al leer inscripción detallada. Expandir bloques solo para mostrar cuadrícula/detalle; totales académicos siguen basados en inscripciones. No crear filas por día ni migrar registros.
+- Compatibilidad: fallback al bloque ancla si una respuesta anterior no incluye colección; excluir canceladas y bloques de otros grupos, ordenar y deduplicar. Dibujar cada tarjeta una vez y ampliar rango temporal para clases tempranas/nocturnas.
+- Alcance: lectura y presentación, sin ampliar permisos, alterar reservas o publicar otra imagen automáticamente. Las reglas de conflictos de inscripción requieren revisión separada registrada en FINDING-2026-009.
+
 ## Plantilla para futuras decisiones
 
 ```text

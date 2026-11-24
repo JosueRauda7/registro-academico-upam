@@ -15,6 +15,7 @@ const ENROLLMENT_RELATIONS = [
   'subjects.schedule.group.subject',
   'subjects.schedule.group.teacher',
   'subjects.schedule.group.classroom',
+  'subjects.schedule.group.schedules',
 ];
 
 @Injectable()

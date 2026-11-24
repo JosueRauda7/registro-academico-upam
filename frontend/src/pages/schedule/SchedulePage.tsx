@@ -1,3 +1,4 @@
+import { WEEK_DAYS as DAYS, subjectScheduleBlocks, timetableBlocks, timetableRange, toMinutes } from './schedule-blocks';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
@@ -9,15 +10,7 @@ import { Cycle, Enrollment } from '@/types';
 import { getDayName, formatTime } from '@/utils/formatDate';
 import { CalendarDays, Clock, DoorOpen, Users } from 'lucide-react';
 
-const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-const START_HOUR = 6;
-const END_HOUR = 20;
 const HOUR_HEIGHT = 56;
-
-function toMinutes(time: string): number {
-  const [h, m] = time.split(':').map(Number);
-  return h * 60 + m;
-}
 
 export function SchedulePage() {
   const [cycles, setCycles] = useState<Cycle[]>([]);
@@ -69,8 +62,10 @@ export function SchedulePage() {
 
   const currentCycle = cycles.find((c) => c.id === selectedCycle);
 
-  const hourRows: number[] = [];
-  for (let h = START_HOUR; h <= END_HOUR; h++) hourRows.push(h);
+  const blocks = timetableBlocks(activeSubjects);
+  const { startHour, endHour } = timetableRange(blocks.map(block => block.schedule));
+  const gridHeight = (endHour - startHour) * HOUR_HEIGHT;
+  const hourRows = Array.from({ length: endHour - startHour + 1 }, (_, index) => startHour + index);
 
   return (
     <Layout>
@@ -129,53 +124,33 @@ export function SchedulePage() {
                       </div>
                     ))}
                   </div>
-                  {hourRows.map((h) => {
-                    const label = `${h}:00`;
-                    const start = (h - START_HOUR) * HOUR_HEIGHT;
-                    return (
-                      <div key={h} className="relative flex border-t border-gray-100">
-                        <div className="w-14 shrink-0 py-1 pr-2 text-right text-xs text-gray-400">
-                          {formatTime(`${h}:00`)}
-                        </div>
-                        <div className="absolute left-14 right-0" style={{ top: start / HOUR_HEIGHT, height: HOUR_HEIGHT }}>
-                          {DAYS.map((day) => {
-                            const cards = activeSubjects.filter((es) => es.schedule?.dayOfWeek === day);
-                            return (
-                              <div key={day} className="absolute top-0 h-full w-[16.666%] border-l border-gray-100" style={{ left: `${DAYS.indexOf(day) * 16.666}%` }}>
-                                {cards.map((es) => {
-                                  const s = es.schedule!;
-                                  const startMin = toMinutes(s.startTime);
-                                  const endMin = toMinutes(s.endTime);
-                                  return (
-                                    <div
-                                      key={es.id}
-                                      className="absolute inset-x-1 overflow-hidden rounded-md border-l-4 bg-blue-50 px-2 py-1"
-                                      style={{
-                                        borderColor: 'var(--upam-primary, #1e3a8a)',
-                                        backgroundColor: '#eff6ff',
-                                        top: ((startMin - START_HOUR * 60) / 60) * HOUR_HEIGHT,
-                                        height: Math.max(((endMin - startMin) / 60) * HOUR_HEIGHT - 4, 24),
-                                      }}
-                                    >
-                                      <p className="truncate text-xs font-semibold text-gray-900">
-                                        {es.subject?.code} {es.schedule?.group?.groupNumber ? `(G${es.schedule.group.groupNumber})` : ''}
-                                      </p>
-                                      <p className="truncate text-[11px] text-gray-600">
-                                        {formatTime(s.startTime)} - {formatTime(s.endTime)}
-                                      </p>
-                                      <p className="truncate text-[11px] text-gray-500">
-                                        {es.schedule?.group?.classroom?.name} | {es.schedule?.group?.teacher?.name || 'Sin docente'}
-                                      </p>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <div className="flex border-t border-gray-100" style={{ height: gridHeight }}>
+                    <div className="relative w-14 shrink-0">
+                      {hourRows.map(hour => <div key={hour} className="absolute right-2 text-xs text-gray-400" style={{ top: (hour - startHour) * HOUR_HEIGHT }}>
+                        {formatTime(`${hour % 24}:00`)}
+                      </div>)}
+                    </div>
+                    {DAYS.map(day => <div key={day} className="relative min-w-0 flex-1 border-l border-gray-100">
+                      {hourRows.map(hour => <div key={hour} className="absolute inset-x-0 border-t border-gray-100" style={{ top: (hour - startHour) * HOUR_HEIGHT }} />)}
+                      {blocks.filter(block => block.schedule.dayOfWeek === day).map(({ subject: es, schedule: s }) => {
+                        const group = es.schedule?.group;
+                        return <div
+                          key={`${es.id}:${s.id}`}
+                          className="absolute inset-x-1 overflow-hidden rounded-md border-l-4 bg-blue-50 px-2 py-1"
+                          title={`${es.subject?.name || ''} · ${getDayName(day)} ${formatTime(s.startTime)} - ${formatTime(s.endTime)}`}
+                          style={{
+                            borderColor: 'var(--upam-primary, #1e3a8a)',
+                            top: ((toMinutes(s.startTime) - startHour * 60) / 60) * HOUR_HEIGHT,
+                            height: Math.max(((toMinutes(s.endTime) - toMinutes(s.startTime)) / 60) * HOUR_HEIGHT - 4, 24),
+                          }}
+                        >
+                          <p className="truncate text-xs font-semibold text-gray-900">{es.subject?.code} {group?.groupNumber ? `(G${group.groupNumber})` : ''}</p>
+                          <p className="truncate text-[11px] text-gray-600">{formatTime(s.startTime)} - {formatTime(s.endTime)}</p>
+                          <p className="truncate text-[11px] text-gray-500">{group?.classroom?.name} | {group?.teacher?.name || 'Sin docente'}</p>
+                        </div>;
+                      })}
+                    </div>)}
+                  </div>
                 </div>
               </div>
             </Card>
@@ -199,10 +174,10 @@ export function SchedulePage() {
                       </span>
                     </div>
                     <div className="mt-2 space-y-1 text-sm text-gray-600">
-                      <p className="flex items-center gap-2">
+                      {subjectScheduleBlocks(es).map(schedule => <p key={schedule.id} className="flex items-center gap-2">
                         <Clock size={14} className="text-gray-400" />
-                        {getDayName(es.schedule?.dayOfWeek || '')} {formatTime(es.schedule?.startTime || '')} - {formatTime(es.schedule?.endTime || '')}
-                      </p>
+                        {getDayName(schedule.dayOfWeek)} {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                      </p>)}
                       <p className="flex items-center gap-2">
                         <DoorOpen size={14} className="text-gray-400" />
                         Salón: {es.schedule?.group?.classroom?.name || '-'}
