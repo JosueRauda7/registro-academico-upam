@@ -150,6 +150,13 @@ Mantener historial cronológico con identificadores estables. Registrar contexto
 - Compatibilidad: fallback al bloque ancla si una respuesta anterior no incluye colección; excluir canceladas y bloques de otros grupos, ordenar y deduplicar. Dibujar cada tarjeta una vez y ampliar rango temporal para clases tempranas/nocturnas.
 - Alcance: lectura y presentación, sin ampliar permisos, alterar reservas o publicar otra imagen automáticamente. Las reglas de conflictos de inscripción requieren revisión separada registrada en FINDING-2026-009.
 
+## DEC-021 — Entrega 2026.11.24.2 del horario completo
+
+- Fecha: 2026-11-24. Estado: APLICADA por solicitud explícita de publicar la corrección y crear sus commits.
+- Decisión: registrar corrección/pruebas/documentación como commit funcional 386c467 y publicar las tres imágenes con tag nuevo 2026.11.24.2, sin sobrescribir 2026.11.24.1 o latest. Actualizar YAML/plantilla, metadata de digest y guía.
+- Actualización: desde 2026.11.24.1 basta descargar imágenes y recrear servicios con el mismo Stack/volúmenes; sin DDL nuevo. Conservar modificaciones locales como el puerto loopback 5435 para pgAdmin. La migración de aranceles sigue requerida si se parte del tag original 2026.11.24.
+- Validación: artefactos públicos iguales a contenedores locales, acceso anónimo y tres servicios QA healthy, 12 checks de instalación y 29 del horario aprobados. FINDING-2026-009 permanece OPEN, no se amplía la entrega a reglas de reserva ni se declara corregido.
+
 ## Plantilla para futuras decisiones
 
 ```text
