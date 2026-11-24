@@ -458,6 +458,8 @@ frontend/src/
 
 ## Instalación y ejecución
 
+Para instalar desde Docker Hub sin compilar ni clonar el código, usa [docker-compose.portainer.yml](docker-compose.portainer.yml) y la [guía de Docker Compose / Portainer](docs/deployment/dockerhub-portainer.md). Las variables están en [.env.portainer.example](.env.portainer.example).
+
 ### Requisitos previos
 
 - Node.js 20+

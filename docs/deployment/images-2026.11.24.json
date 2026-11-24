@@ -1,0 +1,29 @@
+{
+  "tag": "2026.11.24",
+  "images": [
+    {
+      "image": "josuerauda117/registro-academico-upam-backend:2026.11.24",
+      "digest": "sha256:a01d9972698a63b4e29eede22d4fd3d6dd66abdcdacc72a0ed34f5dc0b1a9f6e",
+      "platforms": [
+        "linux/amd64"
+      ],
+      "anonymous_pull_verified": true
+    },
+    {
+      "image": "josuerauda117/registro-academico-upam-frontend:2026.11.24",
+      "digest": "sha256:40fd4d5061123c3735605b032a1cf303e9785cd835f9e128a7dc80f2f8e9258b",
+      "platforms": [
+        "linux/amd64"
+      ],
+      "anonymous_pull_verified": true
+    },
+    {
+      "image": "josuerauda117/registro-academico-upam-database:2026.11.24",
+      "digest": "sha256:c2e579b2a090e3ac7b7fc2a221b930cf92765fc13d752438ec94fc9c46d82397",
+      "platforms": [
+        "linux/amd64"
+      ],
+      "anonymous_pull_verified": true
+    }
+  ]
+}

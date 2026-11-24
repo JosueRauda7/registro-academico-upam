@@ -121,3 +121,13 @@ Hay módulos por funcionalidad, inyección de dependencias, repositorios, tipos/
 Estos mecanismos no garantizan por sí solos código limpio o seguridad. Algunos cuerpos usan tipos inline/`any`, que no reciben la misma validación de un DTO decorado; varias pantallas y servicios concentran responsabilidades. Preferir funciones pequeñas con nombres de negocio, DTOs concretos, respuestas explícitas que excluyan secretos, autorización por objeto, cambios acotados y pruebas de reglas críticas. No introducir abstracciones o refactorizaciones extensas sin necesidad.
 
 Consultar el estado actualizado en security/audits/. Quedan pendientes migraciones generales verificables, pruebas adicionales de inscripciones/notas, concurrencia de cupos y pagos manuales, revisión de dependencias, revocación de sesiones y endurecimiento de producción. La corrección de los seis hallazgos iniciales no certifica toda la aplicación.
+
+## Distribución Docker Hub y Portainer (2026-11-24)
+
+`docker-compose.portainer.yml` usa imágenes versionadas de backend/frontend/database bajo josuerauda117, sin build, bind mounts o container_name fijo. Soporta Compose v2 y Portainer Docker Standalone en Linux amd64. Solo publica web (WEB_BIND_ADDRESS/WEB_PORT); DB/API usan la red interna, con healthchecks y volúmenes pgdata/uploads por proyecto. FRONTEND_URL y secretos son obligatorios y externos. La configuración de desarrollo docker-compose.yml conserva su comportamiento y volúmenes.
+
+`database/Dockerfile` genera DDL desde init.sql en una etapa de construcción hasta el primer INSERT; la imagen final incluye solo esquema, ajustes institucionales no sensibles y script del rol upam_app. No incluye registros/usuarios demo ni datos del host. El SQL empaquetado se ejecuta únicamente sobre un volumen PostgreSQL nuevo; no reemplaza migraciones sobre datos existentes. `database/.dockerignore` restringe el contexto a esos recursos.
+
+El backend ejecuta scripts/bootstrap-admin.cjs antes de NestJS. Sin INITIAL_ADMIN_EMAIL/PASSWORD no hace nada; con ambos valida email/password (16 caracteres mínimo, 72 bytes máximo) y crea el primer administrator solo cuando users está vacía, usando bcrypt 12, transacción y bloqueo de tabla. En una base con usuarios no los cambia. Retirar esas variables tras el primer inicio. Los errores no imprimen parámetros SQL ni secretos. La imagen frontend excluye .env y .env.* del contexto.
+
+Los valores de ejemplo y la guía están en .env.portainer.example y docs/deployment/dockerhub-portainer.md; .env.portainer está ignorado. scripts/publish-images.sh construye/publica tags explícitos, sin latest automático ni credenciales de build. La publicación no despliega un Stack remoto, no migra volúmenes y no certifica producción ni compatibilidad Swarm/ARM64.

@@ -129,6 +129,24 @@ Bitácora acumulativa de trabajos de IA. No borrar entradas anteriores ni atribu
 - Verificación actual: git diff --check correcto, escaneo de patrones sensibles sin coincidencias y enlaces relativos de archivos candidatos sin roturas. `.env` ignorado y excluido del commit. Se conservan resultados previos de builds/typechecks, ocho pruebas nuevas, siete regresiones y 19 comprobaciones API/PostgreSQL; no se repiten por tratarse del registro de cambios ya verificados.
 - Seguridad: sin hallazgos nuevos ni cambios de estado. Docker: no aplica reconstrucción por este commit y cambio documental; la actualización de ambos servicios consta en la entrada anterior. Sin push, pagos, correos ni cambios de datos. Siguiente paso: publicar solo cuando el usuario lo solicite.
 
+## 2026-11-24 — Imágenes Docker Hub y YAML Compose/Portainer
+
+- Agente: Codex. Estado: completado. Solicitud: publicar imágenes y brindar un YAML utilizable en Compose o Portainer. Base da16833, árbol limpio al iniciar. Namespace josuerauda117 y tres repositorios públicos confirmados explícitamente por el usuario tras auto-review inicial del push backend; reintento posterior autorizado completado.
+- Cambios: docker-compose.portainer.yml, .env.portainer.example, scripts/publish-images.sh, database/Dockerfile/.dockerignore/initial-settings.sql, backend/scripts/bootstrap-admin.cjs y COPY/CMD del Dockerfile backend, frontend/.dockerignore y .gitignore. Imagen DB sin datos/usuarios demo; administrador inicial opcional solo si users vacía, sin modificar usuarios existentes. Stack sin build/bind mounts y únicamente web publicada.
+- Documentación: guía docs/deployment/dockerhub-portainer.md, metadatos de digest/plataforma images-2026.11.24.json, README, arquitectura y DEC-012. Auditoría/evidencia security de la fecha. Sin cambios de esquema, dependencias o lockfiles.
+- Verificación: builds de tres imágenes correctos, node --check y sh -n correctos, Compose config --quiet correcto. Stack QA aislado con secretos independientes: tres servicios healthy, 15 comprobaciones DB/API aprobadas (admin/login/idempotencia, permisos DB, ausencia de datos demo y settings/Swagger/plantilla). Web/Swagger por proxy 200. Imágenes revisadas sin .env ni usuarios demo. No se repiten suites académicas/Excel ni typechecks separados, por cambios de empaquetado y bootstrap JS; Nest/Vite recompilados.
+- Docker local: docker compose up -d --build backend frontend completó; ambos recreados y activos, DB existente healthy, logs de arranque y Swagger 200. QA up --wait correcto y down sin -v completado; volúmenes de todos los proyectos preservados. Credenciales QA temporales retiradas después de detener sus contenedores.
+- Publicación: backend/frontend/database en josuerauda117/registro-academico-upam-<componente>:2026.11.24, tres pushes exit 0. Manifiestos accesibles anónimamente y digest confirmados en metadatos/evidencia. Solo linux/amd64 disponible; no se publica latest. No se suben datos o secretos del servidor.
+- Seguridad/límites: inicialización y credenciales externas documentadas; retirar INITIAL_ADMIN_* tras primer arranque. Sin hallazgos nuevos formalizados, sin cerrar por intuición los pendientes anteriores. Alertas npm existentes pendientes. Sin prueba del editor Portainer, Swarm/ARM64/TLS/restauración ni certificación productiva; sin migrar datos, pagos/correos reales o despliegues remotos. Sin commit/push Git.
+- Siguiente paso: cargar el YAML y variables propias en Portainer Docker Standalone o ejecutar Compose según la guía; si se requiere migrar datos existentes, verificar backup/restauración por separado.
+
+## 2026-11-24 — Commits de distribución Docker Hub y Portainer
+
+- Agente: Codex. Solicitud: registrar los cambios de la distribución en commits locales. Base da16833 y archivos de la tarea anterior conservados; sin cambios nuevos de aplicación.
+- Organización: commit de empaquetado, Stack, bootstrap, publicación y prueba de instalación; commit de guía, metadatos Docker Hub, arquitectura/decisiones y expediente de seguridad. Cambio propio de esta tarea: esta entrada.
+- Verificación actual: diff sin errores de espacios, escaneo de patrones sensibles sin coincidencias, enlaces relativos sin roturas y JSON de metadatos válido. node --check bootstrap y sh -n publicación correctos; .env y .env.portainer ignorados y excluidos. Se conservan los builds, 15 comprobaciones de instalación y verificación de tres manifiestos públicos de la tarea anterior; no se repiten por registrar cambios ya probados.
+- Seguridad: sin hallazgos nuevos ni cambios de estado. Docker: no aplica reconstrucción por crear commits y añadir bitácora; la actualización de servicios consta en la entrada anterior. Sin push Git ni nuevas publicaciones Docker Hub. Siguiente paso: publicar el código en Git solo si el usuario lo solicita.
+
 ## Plantilla por trabajo
 
 ```text

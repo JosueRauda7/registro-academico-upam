@@ -88,6 +88,14 @@ Mantener historial cronológico con identificadores estables. Registrar contexto
 - Alternativas: guardar las filas válidas omitiendo las inválidas o actualizar notas existentes automáticamente; descartadas para evitar migraciones parciales o reemplazos accidentales. La plantilla simple reduce compatibilidad con libros complejos a cambio de limitar contenido activo y consumo de recursos.
 - Límites: no certifica ausencia de malware ni sustituye auditoría de dependencias; no permite libros XLS/XLSM, hojas adicionales, celdas combinadas ni contenido enriquecido. Una instancia adicional tiene su propio límite de concurrencia, con unicidad protegida en PostgreSQL.
 
+## DEC-012 — Distribución autónoma mediante tres imágenes y Stack portable
+
+- Fecha: 2026-11-24. Estado: APLICADA por solicitud de publicar Docker Hub y preparar YAML Compose/Portainer. Namespace público josuerauda117 confirmado explícitamente por el usuario tras revisión automática.
+- Decisión: imágenes versionadas backend/frontend/database, YAML independiente sin rutas del repositorio, solo web publicada, variables externas, healthchecks y volúmenes por proyecto. Alcance Docker Standalone/Compose v2 Linux amd64; no Swarm/ARM64.
+- Inicialización: imagen DB con DDL y configuración institucional, sin datos/usuarios de prueba; administrador inicial opcional con credenciales propias y solo si users está vacía. La inicialización de un volumen nuevo no es un procedimiento de migración.
+- Alternativa: montar archivos SQL del repositorio en Portainer; descartada porque obliga a preparar rutas en el host y limita el editor Web. Publicar cuentas demo como instalación por defecto se evitó mediante separación del DDL y bootstrap.
+- Consecuencias: un Stack nuevo empieza sin información académica/financiera; los datos anteriores se trasladan con backup/restauración verificables por separado. No se modifican credenciales ni volúmenes del servicio existente.
+
 ## Plantilla para futuras decisiones
 
 ```text
