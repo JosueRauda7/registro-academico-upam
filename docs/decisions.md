@@ -136,6 +136,13 @@ Mantener historial cronológico con identificadores estables. Registrar contexto
 - Ciclos: ambos roles crean, editan, activan/desactivan y abren/cierran inscripciones. Nuevo ciclo activo/cerrado; desactivar cierra inscripción. Mantener ciclos e historial existentes y aranceles propios prioritarios por concepto; importes base se usan en ausencia de overrides, sin reprecificar pagos ya creados. Edición acotada por DTO y estado de inscripción mediante endpoints específicos.
 - Consecuencias: serialización global de escrituras de planificación simplifica concurrencia al volumen actual; no bloquea lecturas de catálogo. SQL externo puede evadir la política; no se introduce una restricción de exclusión ni cambios de esquema. Conflictos históricos no se corrigen automáticamente. No se eliminan ciclos con historial ni se modifican datos académicos reales para probar.
 
+## DEC-019 — Nueva entrega Docker con tag explícito y migración previa
+
+- Fecha: 2026-11-24. Estado: APLICADA. Solicitud explícita: hacer commits pendientes y publicar imágenes nuevas; se conserva autorización previa para los tres repositorios públicos de josuerauda117.
+- Decisión: publicar backend/frontend/database como 2026.11.24.1 y actualizar el tag por defecto de Portainer/plantilla. Conservar los manifiestos 2026.11.24 y no publicar latest. Exigir argumento de tag al script de publicación y registrar digest/plataforma verificados por acceso anónimo.
+- Actualización: detener backend, respaldar/aplicar migración de aranceles a volúmenes existentes y después actualizar el Stack con imágenes nuevas. Portainer puede ejecutar el SQL del repositorio antes de cambiar imágenes; Compose puede actualizar solo DB y usar el SQL empaquetado. No inicializar volúmenes existentes ni desplegar remotamente como parte de publicar imágenes.
+- Validación: instalación nueva aislada con secretos independientes, bootstrap/login y pruebas académicas sobre las imágenes publicadas. Sin datos reales ni secretos en imágenes/Git; Linux amd64 y Docker Standalone, sin certificar ARM/Swarm.
+
 ## Plantilla para futuras decisiones
 
 ```text

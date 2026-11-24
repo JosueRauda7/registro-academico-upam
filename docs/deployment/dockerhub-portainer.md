@@ -4,13 +4,13 @@ Este despliegue usa `docker-compose.portainer.yml` tanto con Docker Compose v2 c
 
 ## Imágenes
 
-Namespace: `josuerauda117`. Tag de esta entrega: `2026.11.24`.
+Namespace: `josuerauda117`. Tag de esta entrega: `2026.11.24.1`.
 
-- `josuerauda117/registro-academico-upam-backend:2026.11.24`
-- `josuerauda117/registro-academico-upam-frontend:2026.11.24`
-- `josuerauda117/registro-academico-upam-database:2026.11.24`
+- `josuerauda117/registro-academico-upam-backend:2026.11.24.1`
+- `josuerauda117/registro-academico-upam-frontend:2026.11.24.1`
+- `josuerauda117/registro-academico-upam-database:2026.11.24.1`
 
-Los digest y plataformas publicados están registrados en [images-2026.11.24.json](images-2026.11.24.json).
+Los digest y plataformas publicados están registrados en [images-2026.11.24.1.json](images-2026.11.24.1.json).
 
 La imagen de base de datos contiene el esquema, configuración institucional inicial y creación del rol limitado `upam_app`. No incluye registros del servidor, usuarios de demostración ni sus contraseñas. En un volumen nuevo no habrá estudiantes, carreras, materias o ciclos; se cargan desde la aplicación. La inicialización no se ejecuta de nuevo sobre un volumen existente.
 
@@ -53,7 +53,7 @@ Para detener conservando datos:
 docker compose --env-file .env.portainer -p upam -f docker-compose.portainer.yml stop
 ```
 
-Para actualizar, elige el tag publicado en IMAGE_TAG, ejecuta pull y luego up -d. Mantén el mismo nombre de proyecto/Stack: los volúmenes dependen de él. Cambiar el password en variables de un volumen existente no modifica por sí solo las credenciales de PostgreSQL. No elimines volúmenes para actualizar ni ejecutes seeds sobre ellos.
+Para actualizar desde la versión 2026.11.24, aplica primero la migración de aranceles descrita abajo con el backend detenido; luego configura IMAGE_TAG=2026.11.24.1, ejecuta pull y up -d. Para otras versiones revisa las migraciones de esa entrega. Mantén el mismo nombre de proyecto/Stack: los volúmenes dependen de él. Cambiar el password en variables de un volumen existente no modifica por sí solo las credenciales de PostgreSQL. No elimines volúmenes para actualizar ni ejecutes seeds sobre ellos.
 
 ## Portainer
 
@@ -79,7 +79,7 @@ Desde el repositorio, con tu cuenta autenticada mediante `docker login`:
 DOCKERHUB_NAMESPACE=josuerauda117 sh scripts/publish-images.sh NUEVO_TAG
 ```
 
-El script construye las tres imágenes y publica únicamente el tag indicado. No sobrescribe `latest` de forma automática. El comando de subida se describe en la [referencia oficial de Docker](https://docs.docker.com/reference/cli/docker/image/push/). Publicar otro tag requiere ejecutar el script explícitamente; modificar el repositorio no lo publica por sí solo.
+El script exige un tag explícito, construye las tres imágenes y publica únicamente ese tag. Usa tags nuevos para conservar las versiones anteriores. No sobrescribe `latest` de forma automática. El comando de subida se describe en la [referencia oficial de Docker](https://docs.docker.com/reference/cli/docker/image/push/). Publicar otro tag requiere ejecutar el script explícitamente; modificar el repositorio no lo publica por sí solo.
 
 ## Actualización de esquema: aranceles del estudiante
 
@@ -89,4 +89,23 @@ Antes de ejecutar un backend que incluya esta función sobre un volumen existent
 docker compose exec -T db psql -X -v ON_ERROR_STOP=1 -U postgres -d upam_academico < database/migrations/20261124_student_fees.sql
 ```
 
-Si usas otro archivo/proyecto Compose, añade los mismos parámetros --env-file, -p y -f de ese despliegue. En Portainer usa la consola de su contenedor DB como postgres para ejecutar el contenido del archivo; una futura imagen DB reconstruida también lo incluye en /opt/upam/migrations/20261124_student_fees.sql. Los tags publicados anteriormente no incluyen todavía estos cambios. La migración puede repetirse y conserva los registros existentes con ambos overrides en NULL; requiere permisos de propietario del esquema. Verifica backup y conectividad antes de aplicarla en otra base. No elimina columnas ni cambia pagos; para volver a código anterior conserva las columnas en vez de borrarlas.
+Si usas otro archivo/proyecto Compose, añade los mismos parámetros --env-file, -p y -f de ese despliegue. En Portainer usa la consola de su contenedor DB como postgres para ejecutar el contenido del archivo; la imagen DB 2026.11.24.1 también lo incluye en /opt/upam/migrations/20261124_student_fees.sql. El tag anterior 2026.11.24 no incluye la migración ni las nuevas funciones. La migración puede repetirse y conserva los registros existentes con ambos overrides en NULL; requiere permisos de propietario del esquema. Verifica backup y conectividad antes de aplicarla en otra base. No elimina columnas ni cambia pagos; para volver a código anterior conserva las columnas en vez de borrarlas.
+
+### Actualizar desde Portainer sin reinicializar volúmenes
+
+1. Conserva el mismo Stack y sus volúmenes. Realiza un respaldo verificado y detén el contenedor backend para evitar peticiones durante la actualización.
+2. Abre la consola del contenedor db como usuario postgres, ejecuta `psql -X -v ON_ERROR_STOP=1 -U postgres -d upam_academico` y pega el contenido de [20261124_student_fees.sql](../../database/migrations/20261124_student_fees.sql). Comprueba que termina con COMMIT. En el tag anterior este archivo aún no existe dentro del contenedor: usa el SQL del repositorio actualizado.
+3. Tras confirmar la migración, configura IMAGE_TAG=`2026.11.24.1` en el Stack y actualízalo con descarga de imágenes habilitada, conservando sus variables y volúmenes.
+4. Comprueba salud de los tres servicios, acceso a la web/Swagger y los nuevos campos de aranceles. La imagen database nueva incluye la migración en `/opt/upam/migrations/20261124_student_fees.sql`, pero cambiar de imagen no ejecuta migraciones sobre un volumen existente.
+
+Con Compose, el equivalente usando las variables de la entrega es:
+
+```bash
+docker compose --env-file .env.portainer -p upam -f docker-compose.portainer.yml stop backend
+docker compose --env-file .env.portainer -p upam -f docker-compose.portainer.yml pull
+docker compose --env-file .env.portainer -p upam -f docker-compose.portainer.yml up -d --no-deps db
+docker compose --env-file .env.portainer -p upam -f docker-compose.portainer.yml exec -T db psql -X -v ON_ERROR_STOP=1 -U postgres -d upam_academico -f /opt/upam/migrations/20261124_student_fees.sql
+docker compose --env-file .env.portainer -p upam -f docker-compose.portainer.yml up -d
+```
+
+Configura IMAGE_TAG=2026.11.24.1 antes de estos comandos y espera a que db esté healthy antes de ejecutar psql. El procedimiento no ejecuta migraciones automáticamente ni elimina volúmenes.
