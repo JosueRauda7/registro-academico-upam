@@ -27,6 +27,11 @@ export const cyclesApi = {
     return res.data.data;
   },
 
+  update: async (id: string, data: Partial<Cycle>): Promise<Cycle> => {
+    const res = await api.put(`/cycles/${id}`, data);
+    return res.data.data;
+  },
+
   openEnrollment: async (id: string) => {
     const res = await api.put(`/cycles/${id}/open-enrollment`);
     return res.data.data;

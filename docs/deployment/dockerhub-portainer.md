@@ -80,3 +80,13 @@ DOCKERHUB_NAMESPACE=josuerauda117 sh scripts/publish-images.sh NUEVO_TAG
 ```
 
 El script construye las tres imágenes y publica únicamente el tag indicado. No sobrescribe `latest` de forma automática. El comando de subida se describe en la [referencia oficial de Docker](https://docs.docker.com/reference/cli/docker/image/push/). Publicar otro tag requiere ejecutar el script explícitamente; modificar el repositorio no lo publica por sí solo.
+
+## Actualización de esquema: aranceles del estudiante
+
+Antes de ejecutar un backend que incluya esta función sobre un volumen existente, aplica la migración aditiva desde el repositorio actualizado:
+
+```bash
+docker compose exec -T db psql -X -v ON_ERROR_STOP=1 -U postgres -d upam_academico < database/migrations/20261124_student_fees.sql
+```
+
+Si usas otro archivo/proyecto Compose, añade los mismos parámetros --env-file, -p y -f de ese despliegue. En Portainer usa la consola de su contenedor DB como postgres para ejecutar el contenido del archivo; una futura imagen DB reconstruida también lo incluye en /opt/upam/migrations/20261124_student_fees.sql. Los tags publicados anteriormente no incluyen todavía estos cambios. La migración puede repetirse y conserva los registros existentes con ambos overrides en NULL; requiere permisos de propietario del esquema. Verifica backup y conectividad antes de aplicarla en otra base. No elimina columnas ni cambia pagos; para volver a código anterior conserva las columnas en vez de borrarlas.

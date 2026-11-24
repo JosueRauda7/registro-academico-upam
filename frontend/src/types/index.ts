@@ -78,6 +78,8 @@ export interface Student {
   dateOfBirth?: string;
   enrollmentYear: number;
   user: User;
+  tuitionAmount?: number | null;
+  monthlyAmount?: number | null;
 }
 
 export interface CreateStudentData {

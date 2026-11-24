@@ -34,7 +34,7 @@ export class SubjectGroup {
   cycle: Cycle;
 
   @Column({ name: 'teacher_id', nullable: true })
-  teacherId: string;
+  teacherId: string | null;
 
   @ManyToOne(() => Teacher, (teacher) => teacher.groups)
   @JoinColumn({ name: 'teacher_id' })

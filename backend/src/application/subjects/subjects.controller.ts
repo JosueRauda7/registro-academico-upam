@@ -1,3 +1,4 @@
+import { CreateSubjectScheduleDto } from '../subject-groups/dto/group.dto';
 import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { SubjectsService } from './subjects.service';
@@ -5,6 +6,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../domain/enums/role.enum';
+import { CreateSubjectDto, UpdateSubjectDto } from './dto/subject.dto';
 
 @ApiTags('Subjects')
 @ApiBearerAuth('jwt-auth')
@@ -53,7 +55,7 @@ export class SubjectsController {
   @ApiOperation({ summary: 'Crear materia', description: 'Administradores y administrativos pueden crear materias.' })
   @ApiResponse({ status: 201, description: 'Materia creada exitosamente' })
   @ApiResponse({ status: 403, description: 'Sin permisos' })
-  create(@Body() body: any) {
+  create(@Body() body: CreateSubjectDto) {
     return this.subjectsService.create(body);
   }
 
@@ -63,7 +65,7 @@ export class SubjectsController {
   @ApiParam({ name: 'id', description: 'UUID de la materia' })
   @ApiResponse({ status: 200, description: 'Materia actualizada' })
   @ApiResponse({ status: 403, description: 'Sin permisos' })
-  update(@Param('id') id: string, @Body() body: any) {
+  update(@Param('id') id: string, @Body() body: UpdateSubjectDto) {
     return this.subjectsService.update(id, body);
   }
 
@@ -82,7 +84,7 @@ export class SubjectsController {
   @ApiOperation({ summary: 'Crear horario para una materia', description: 'Asigna un horario (dia, hora, aula, cupo) a una materia en un ciclo.' })
   @ApiResponse({ status: 201, description: 'Horario creado exitosamente' })
   @ApiResponse({ status: 400, description: 'La materia o ciclo no existen' })
-  createSchedule(@Body() body: any) {
+  createSchedule(@Body() body: CreateSubjectScheduleDto) {
     return this.subjectsService.createSchedule(body);
   }
 

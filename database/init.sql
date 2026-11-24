@@ -40,6 +40,8 @@ CREATE TABLE students (
     carnet VARCHAR(50) NOT NULL UNIQUE,
     career VARCHAR(150) NOT NULL,
     enrollment_year INTEGER NOT NULL,
+    tuition_amount NUMERIC(10,2) CONSTRAINT students_tuition_amount_check CHECK (tuition_amount IS NULL OR tuition_amount BETWEEN 0.01 AND 99999999.99),
+    monthly_amount NUMERIC(10,2) CONSTRAINT students_monthly_amount_check CHECK (monthly_amount IS NULL OR monthly_amount BETWEEN 0.01 AND 99999999.99),
     phone VARCHAR(30),
     address TEXT,
     date_of_birth DATE

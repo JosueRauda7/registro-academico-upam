@@ -1,3 +1,5 @@
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { useDialog } from '@/context/DialogContext';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -24,6 +26,7 @@ interface FormState {
 const emptyForm: FormState = { subjectId: '', score: '', year: '', semester: '', notes: '' };
 
 export function LegacySubjectsPage() {
+  const { confirm } = useDialog();
   const [students, setStudents] = useState<Student[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [studentId, setStudentId] = useState('');
@@ -155,7 +158,7 @@ export function LegacySubjectsPage() {
   };
 
   const handleDelete = async (record: LegacyCompletedSubject) => {
-    if (!window.confirm(`¿Eliminar la materia ${record.subjectName} de este estudiante?`)) return;
+    if (!(await confirm(`¿Eliminar la materia ${record.subjectName} de este estudiante?`))) return;
     try {
       await legacySubjectsApi.remove(record.id);
       toast.success('Materia eliminada');
@@ -188,7 +191,7 @@ export function LegacySubjectsPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-700">Estudiante *</label>
-                  <select
+                  <SearchableSelect
                     value={studentId}
                     onChange={(e) => handleSelectStudent(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -199,12 +202,12 @@ export function LegacySubjectsPage() {
                         {s.carnet} - {s.user.firstName} {s.user.lastName} ({s.career})
                       </option>
                     ))}
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-700">Materia *</label>
-                  <select
+                  <SearchableSelect
                     value={form.subjectId}
                     onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
                     disabled={!selectedStudent}
@@ -218,7 +221,7 @@ export function LegacySubjectsPage() {
                         {s.code} - {s.name} ({s.credits} créditos)
                       </option>
                     ))}
-                  </select>
+                  </SearchableSelect>
                 </div>
 
                 <div>

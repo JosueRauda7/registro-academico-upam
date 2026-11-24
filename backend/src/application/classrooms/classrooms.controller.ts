@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../domain/enums/role.enum';
+import { CreateClassroomDto } from './dto/create-classroom.dto';
 
 @ApiTags('Classrooms')
 @ApiBearerAuth('jwt-auth')
@@ -33,10 +34,10 @@ export class ClassroomsController {
   }
 
   @Post()
-  @Roles(UserRole.ADMINISTRATOR)
+  @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
   @ApiOperation({ summary: 'Crear salón', description: 'Registra un nuevo salón/aula.' })
   @ApiResponse({ status: 201, description: 'Salón creado exitosamente' })
-  create(@Body() body: any) {
+  create(@Body() body: CreateClassroomDto) {
     return this.classroomsService.create(body);
   }
 

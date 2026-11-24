@@ -132,14 +132,11 @@ export function EnrollmentPage() {
     );
   };
 
-  const getPrerequisite = (subject: Subject) => {
-    return subject.prerequisites?.[0]?.prerequisiteSubject || null;
-  };
+  const getPrerequisites = (subject: Subject) =>
+    subject.prerequisites?.map(prerequisite => prerequisite.prerequisiteSubject).filter((value): value is Subject => !!value) ?? [];
 
-  const meetsPrerequisite = (subject: Subject) => {
-    const prereq = getPrerequisite(subject);
-    return !prereq || approvedSubjectIds.has(prereq.id);
-  };
+  const meetsPrerequisite = (subject: Subject) =>
+    (subject.prerequisites ?? []).every(prerequisite => approvedSubjectIds.has(prerequisite.prerequisiteSubjectId));
 
   if (loading) {
     return (
@@ -239,7 +236,7 @@ export function EnrollmentPage() {
                 const subjectSchedules = getSchedulesForSubject(subject.id);
                 const enrolled = isSubjectEnrolled(subject.id);
                 const enrolledStatus = getEnrolledStatus(subject.id);
-                const prereq = getPrerequisite(subject);
+                const prerequisites = getPrerequisites(subject);
                 const prerequisiteMet = meetsPrerequisite(subject);
 
                 return (
@@ -252,15 +249,15 @@ export function EnrollmentPage() {
                         <p className="text-sm text-gray-500">
                           {subject.credits} créditos | Semestre {subject.semester}
                         </p>
-                        {prereq && (
+                        {prerequisites.length > 0 && (
                           <p
                             className={`mt-1 text-xs ${
                               prerequisiteMet ? 'text-green-600' : 'text-red-500'
                             }`}
                           >
                             {prerequisiteMet
-                              ? `Prerrequisito cumplido: ${prereq.code} - ${prereq.name}`
-                              : `Requiere prerrequisito: ${prereq.code} - ${prereq.name}`}
+                              ? `Prerrequisitos cumplidos: ${prerequisites.map(p => `${p.code} - ${p.name}`).join(", ")}`
+                              : `Requiere prerrequisitos: ${prerequisites.filter(p => !approvedSubjectIds.has(p.id)).map(p => `${p.code} - ${p.name}`).join(", ")}`}
                           </p>
                         )}
                       </div>

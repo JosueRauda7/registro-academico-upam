@@ -18,6 +18,8 @@ export interface StudentEntity {
   carnet: string;
   career: string;
   enrollmentYear: number;
+  tuitionAmount?: number | null;
+  monthlyAmount?: number | null;
   phone: string;
   address: string;
   dateOfBirth: Date;

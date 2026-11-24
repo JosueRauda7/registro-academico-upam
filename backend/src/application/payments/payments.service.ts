@@ -13,6 +13,7 @@ import { PaymentStatus } from '../../domain/enums/payment-status.enum';
 import { PaymentType } from '../../domain/enums/payment-type.enum';
 import { UserRole } from '../../domain/enums/role.enum';
 import { paymentResponse } from './payment-response';
+import { resolveStudentFees } from './student-fees';
 
 @Injectable()
 export class PaymentsService {
@@ -48,12 +49,13 @@ export class PaymentsService {
       throw new BadRequestException('La matrícula de este ciclo ya ha sido pagada');
     }
 
+    const { tuitionAmount } = resolveStudentFees(student!, cycle);
     const reference = this.wompiGateway.generateReference();
 
     const payment = await this.paymentRepository.create({
       studentId,
       cycleId,
-      amount: cycle.tuitionAmount,
+      amount: tuitionAmount,
       status: PaymentStatus.PENDING,
       type: PaymentType.TUITION,
       description: `Matrícula ${cycle.name}`,
@@ -62,7 +64,7 @@ export class PaymentsService {
 
     try {
       const wompiResponse = await this.wompiGateway.createPayment({
-        amountInCents: Math.round(cycle.tuitionAmount * 100),
+        amountInCents: Math.round(tuitionAmount * 100),
         currency: 'USD',
         reference,
         customerEmail: student!.user.email,
@@ -108,11 +110,12 @@ export class PaymentsService {
 
     const reference = this.wompiGateway.generateReference();
     const student = await this.studentRepository.findById(studentId);
+    const { monthlyAmount } = resolveStudentFees(student!, cycle);
 
     const payment = await this.paymentRepository.create({
       studentId,
       cycleId,
-      amount: cycle.monthlyAmount,
+      amount: monthlyAmount,
       status: PaymentStatus.PENDING,
       type: PaymentType.MONTHLY,
       month,
@@ -122,7 +125,7 @@ export class PaymentsService {
 
     try {
       const wompiResponse = await this.wompiGateway.createPayment({
-        amountInCents: Math.round(cycle.monthlyAmount * 100),
+        amountInCents: Math.round(monthlyAmount * 100),
         currency: 'USD',
         reference,
         customerEmail: student!.user.email,
@@ -219,14 +222,16 @@ export class PaymentsService {
       }
     }
 
-    const expectedAmount =
-      data.type === 'monthly' ? Number(cycle.monthlyAmount) : Number(cycle.tuitionAmount);
+    const fees = resolveStudentFees(student, cycle);
+    const expectedAmount = data.type === 'monthly' ? fees.monthlyAmount : fees.tuitionAmount;
 
-    if (Math.abs(Number(data.amount) - expectedAmount) > 0.01) {
+    if (typeof data.amount !== 'number' || !Number.isFinite(data.amount) ||
+        Math.abs(data.amount * 100 - Math.round(data.amount * 100)) > 0.000001 ||
+        Math.round(data.amount * 100) !== Math.round(expectedAmount * 100)) {
       throw new BadRequestException(
         `El monto del pago debe ser exactamente ${expectedAmount.toFixed(2)} USD para ${
           data.type === 'monthly' ? 'la mensualidad' : 'la matrícula'
-        } de este ciclo`,
+        } de este estudiante y ciclo`,
       );
     }
 
@@ -330,34 +335,35 @@ export class PaymentsService {
       throw new NotFoundException('Ciclo no encontrado');
     }
 
-    const tuitionPaid = payments.some(
-      (p) => p.type === PaymentType.TUITION && p.status === PaymentStatus.COMPLETED,
-    );
-
-    const monthlyPayments = payments.filter((p) => p.type === PaymentType.MONTHLY);
-    const completedMonthly = monthlyPayments.filter((p) => p.status === PaymentStatus.COMPLETED);
+    const student = await this.studentRepository.findById(studentId);
+    if (!student) throw new NotFoundException('Estudiante no encontrado');
+    const fees = resolveStudentFees(student, cycle);
+    const completed = payments.filter(p => p.status === PaymentStatus.COMPLETED);
+    const tuitionPayment = completed.find(p => p.type === PaymentType.TUITION);
+    const tuitionPaid = !!tuitionPayment;
+    const completedMonthly = completed.filter(p => p.type === PaymentType.MONTHLY);
+    const paidMonths = new Set(completedMonthly.map(p => p.month).filter(month => month && month >= 1 && month <= cycle.monthlyCount));
 
     return {
       cycle: cycle.name,
-      tuitionAmount: cycle.tuitionAmount,
+      tuitionAmount: Number(tuitionPayment?.amount ?? fees.tuitionAmount),
       tuitionPaid,
-      monthlyAmount: cycle.monthlyAmount,
+      monthlyAmount: fees.monthlyAmount,
       monthlyCount: cycle.monthlyCount,
       monthlyPayments: Array.from({ length: cycle.monthlyCount }, (_, i) => {
         const month = i + 1;
         const payment = completedMonthly.find((p) => p.month === month);
         return {
           month,
-          amount: cycle.monthlyAmount,
+          amount: Number(payment?.amount ?? fees.monthlyAmount),
           paid: !!payment,
           paymentDate: payment?.paymentDate || null,
           reference: payment?.reference || null,
         };
       }),
-      totalPaid: completedMonthly.reduce((sum, p) => sum + Number(p.amount), 0) + (tuitionPaid ? Number(cycle.tuitionAmount) : 0),
-      totalPending:
-        (!tuitionPaid ? Number(cycle.tuitionAmount) : 0) +
-        (cycle.monthlyCount - completedMonthly.length) * Number(cycle.monthlyAmount),
+      totalPaid: Number(completed.reduce((sum, p) => sum + Number(p.amount), 0).toFixed(2)),
+      totalPending: Number(((!tuitionPaid ? fees.tuitionAmount : 0) +
+        (cycle.monthlyCount - paidMonths.size) * fees.monthlyAmount).toFixed(2)),
     };
   }
 }

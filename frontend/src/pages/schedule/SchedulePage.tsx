@@ -1,3 +1,4 @@
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -80,7 +81,7 @@ export function SchedulePage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <select
+          <SearchableSelect
             value={selectedCycle}
             onChange={(e) => setSelectedCycle(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-upam-primary focus:outline-none"
@@ -88,7 +89,7 @@ export function SchedulePage() {
             {cycles.map((c) => (
               <option key={c.id} value={c.id}>{c.name} - {c.year}</option>
             ))}
-          </select>
+          </SearchableSelect>
           {currentCycle && (
             <Badge
               status={currentCycle.enrollmentOpen ? 'pending' : 'active'}

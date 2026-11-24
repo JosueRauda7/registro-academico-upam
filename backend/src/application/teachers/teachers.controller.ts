@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../domain/enums/role.enum';
+import { CreateTeacherDto } from './dto/create-teacher.dto';
 
 @ApiTags('Teachers')
 @ApiBearerAuth('jwt-auth')
@@ -33,10 +34,10 @@ export class TeachersController {
   }
 
   @Post()
-  @Roles(UserRole.ADMINISTRATOR)
+  @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
   @ApiOperation({ summary: 'Crear docente', description: 'Registra un nuevo catedrático.' })
   @ApiResponse({ status: 201, description: 'Docente creado exitosamente' })
-  create(@Body() body: any) {
+  create(@Body() body: CreateTeacherDto) {
     return this.teachersService.create(body);
   }
 

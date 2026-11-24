@@ -1,3 +1,5 @@
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { useDialog } from '@/context/DialogContext';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -22,6 +24,7 @@ const emptyForm = {
 };
 
 export function UsersPage() {
+  const { confirm } = useDialog();
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +118,7 @@ export function UsersPage() {
       return;
     }
     const action = u.isActive ? 'desactivar' : 'reactivar';
-    if (!confirm(`¿${action === 'desactivar' ? 'Desactivar' : 'Reactivar'} la cuenta de ${u.firstName} ${u.lastName}?`)) return;
+    if (!(await confirm(`¿${action === 'desactivar' ? 'Desactivar' : 'Reactivar'} la cuenta de ${u.firstName} ${u.lastName}?`, { confirmText: action === 'desactivar' ? 'Desactivar' : 'Reactivar', danger: u.isActive }))) return;
     try {
       await usersApi.update(u.id, { isActive: !u.isActive });
       toast.success(`Cuenta ${action === 'desactivar' ? 'desactivada' : 'reactivada'}`);
@@ -126,7 +129,7 @@ export function UsersPage() {
   };
 
   const handleDelete = async (u: User) => {
-    if (!confirm(`¿Desactivar la cuenta de ${u.firstName} ${u.lastName} (${u.email})?`)) return;
+    if (!(await confirm(`¿Desactivar la cuenta de ${u.firstName} ${u.lastName} (${u.email})?`))) return;
     try {
       await usersApi.remove(u.id);
       toast.success('Cuenta desactivada');
@@ -159,7 +162,7 @@ export function UsersPage() {
               className="rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-upam-primary focus:outline-none"
             />
           </div>
-          <select
+          <SearchableSelect
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -168,7 +171,7 @@ export function UsersPage() {
             {Object.values(UserRole).map((r) => (
               <option key={r} value={r}>{ROLE_LABELS[r]}</option>
             ))}
-          </select>
+          </SearchableSelect>
         </div>
 
         {loading ? (
@@ -268,7 +271,7 @@ export function UsersPage() {
           />
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Rol *</label>
-            <select
+            <SearchableSelect
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -276,7 +279,7 @@ export function UsersPage() {
               {Object.values(UserRole).map((r) => (
                 <option key={r} value={r}>{ROLE_LABELS[r]}</option>
               ))}
-            </select>
+            </SearchableSelect>
           </div>
           {form.role === UserRole.STUDENT && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -320,7 +323,7 @@ export function UsersPage() {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Rol *</label>
-            <select
+            <SearchableSelect
               value={editForm.role}
               onChange={(e) => setEditForm({ ...editForm, role: e.target.value as UserRole })}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -328,7 +331,7 @@ export function UsersPage() {
               {Object.values(UserRole).map((r) => (
                 <option key={r} value={r}>{ROLE_LABELS[r]}</option>
               ))}
-            </select>
+            </SearchableSelect>
           </div>
           <Input
             label="Nueva contraseña (dejar vacio para no cambiar)"

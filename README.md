@@ -659,7 +659,11 @@ Todas las rutas están prefijadas con `/api`.
 - El **carnet** es unico: se valida que no exista otro estudiante con el mismo (evita duplicados).
 - La **contraseña** debe tener mínimo 6 caracteres y el correo no puede repetirse (409).
 
-### Importar notas anteriores al sistema desde Excel
+### Aranceles por estudiante
+
+En **Estudiantes → Editar → Aranceles del estudiante**, administradores y administrativos pueden definir matrícula y mensualidad propias en USD y pulsar **Guardar aranceles**. Un campo vacío hereda el precio del ciclo; admite importes positivos con dos decimales. Se usan en nuevos cobros y saldos no pagados, sin cambiar los montos de pagos ya registrados. Para actualizar otra instalación, aplica primero la [migración de aranceles](database/migrations/20261124_student_fees.sql) según la [guía de despliegue](docs/deployment/dockerhub-portainer.md).
+
+## Importar notas anteriores al sistema desde Excel
 
 En **Materias previas**, con rol administrador o administrativo:
 
@@ -799,6 +803,10 @@ Swagger documenta `GET /api/legacy-subjects/template` y `POST /api/legacy-subjec
 - Descargar lista de estudiantes (Excel)
 
 ---
+
+## Aranceles por estudiante
+
+En **Estudiantes → Editar → Aranceles del estudiante**, administradores y administrativos pueden definir matrícula y mensualidad propias en USD y pulsar **Guardar aranceles**. Un campo vacío hereda el precio del ciclo; admite importes positivos con dos decimales. Se usan en nuevos cobros y saldos no pagados, sin cambiar los montos de pagos ya registrados. Para actualizar otra instalación, aplica primero la [migración de aranceles](database/migrations/20261124_student_fees.sql) según la [guía de despliegue](docs/deployment/dockerhub-portainer.md).
 
 ## Importar notas anteriores al sistema desde Excel
 
@@ -986,3 +994,9 @@ Este es un proyecto ficticio desarrollado con fines académicos.
 
 
 
+
+### Planificación y ciclos
+
+En **Ciclos**, administradores y administrativos pueden crear/editar fechas, precios base de matrícula y mensualidad, cantidad de cuotas y estado activo, además de abrir/cerrar inscripciones. Un ciclo nuevo inicia con inscripciones cerradas. Desactivarlo cierra las inscripciones; al reactivarlo se puede abrir de nuevo desde su tarjeta. Los precios base se usan solo para conceptos sin importe propio del estudiante y no cambian pagos ya creados.
+
+En **Planificación**, el servidor exige docentes/salones activos, horas válidas y ausencia de cruces al crear grupos, agregar bloques o reasignar recursos. También contempla otros ciclos activos cuyas fechas coincidan y evita reservas simultáneas del mismo recurso. Se permiten clases consecutivas. Cambiar fechas o reactivar un ciclo revisa sus grupos antes de guardar.

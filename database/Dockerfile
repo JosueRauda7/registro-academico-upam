@@ -9,5 +9,6 @@ FROM postgres:16-alpine
 COPY --from=schema /tmp/schema.sql /docker-entrypoint-initdb.d/10-schema.sql
 COPY initial-settings.sql /docker-entrypoint-initdb.d/11-settings.sql
 COPY security-role.sql /opt/upam/security-role.sql
+COPY migrations /opt/upam/migrations
 COPY init-app-role.sh /docker-entrypoint-initdb.d/20-app-role.sh
 RUN chmod 755 /docker-entrypoint-initdb.d/20-app-role.sh

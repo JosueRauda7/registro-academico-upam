@@ -1,3 +1,4 @@
+import { useDialog } from '@/context/DialogContext';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -13,6 +14,7 @@ import { Plus, Pencil, Trash2, RotateCcw, Search, GraduationCap } from 'lucide-r
 const emptyForm = { code: '', name: '', description: '', years: '5', semestersPerYear: '2' };
 
 export function CareersPage() {
+  const { confirm } = useDialog();
   const [careers, setCareers] = useState<Career[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -92,9 +94,9 @@ export function CareersPage() {
 
   const handleDelete = async (c: Career) => {
     if (
-      !confirm(
+      !(await confirm(
         `¿Desactivar la carrera ${c.name}?\nNo se permite si tiene materias activas asignadas.`,
-      )
+      ))
     )
       return;
     try {

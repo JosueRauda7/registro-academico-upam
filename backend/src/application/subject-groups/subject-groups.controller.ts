@@ -1,3 +1,4 @@
+import { CreateGroupDto, UpdateGroupDto, ScheduleDto } from './dto/group.dto';
 import {
   Controller,
   Get,
@@ -8,6 +9,7 @@ import {
   Body,
   Query,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -48,7 +50,7 @@ export class SubjectGroupsController {
   @ApiParam({ name: 'id', description: 'UUID del grupo' })
   @ApiResponse({ status: 200, description: 'Grupo encontrado' })
   @ApiResponse({ status: 404, description: 'Grupo no encontrado' })
-  findById(@Param('id') id: string) {
+  findById(@Param('id', ParseUUIDPipe) id: string) {
     return this.subjectGroupsService.findById(id);
   }
 
@@ -58,33 +60,10 @@ export class SubjectGroupsController {
     summary: 'Crear grupo',
     description: 'Crea un grupo de materia en un ciclo con docente, salón y horarios.',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['subjectId', 'cycleId', 'classroomId'],
-      properties: {
-        subjectId: { type: 'string', example: 'uuid-materia' },
-        cycleId: { type: 'string', example: 'uuid-ciclo' },
-        teacherId: { type: 'string', example: 'uuid-docente' },
-        classroomId: { type: 'string', example: 'uuid-salón' },
-        groupNumber: { type: 'number', example: 1 },
-        capacity: { type: 'number', example: 40 },
-        schedules: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              dayOfWeek: { type: 'string', example: 'monday' },
-              startTime: { type: 'string', example: '07:00' },
-              endTime: { type: 'string', example: '09:00' },
-            },
-          },
-        },
-      },
-    },
-  })
+  @ApiBody({ type: CreateGroupDto })
+  @ApiResponse({ status: 409, description: 'Cruce de docente, salón u horarios' })
   @ApiResponse({ status: 201, description: 'Grupo creado exitosamente' })
-  create(@Body() body: any) {
+  create(@Body() body: CreateGroupDto) {
     const { schedules, ...data } = body;
     return this.subjectGroupsService.create(data, schedules);
   }
@@ -97,7 +76,7 @@ export class SubjectGroupsController {
   })
   @ApiParam({ name: 'id', description: 'UUID del grupo' })
   @ApiResponse({ status: 200, description: 'Grupo actualizado' })
-  update(@Param('id') id: string, @Body() body: any) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateGroupDto) {
     return this.subjectGroupsService.update(id, body);
   }
 
@@ -107,7 +86,7 @@ export class SubjectGroupsController {
   @ApiParam({ name: 'id', description: 'UUID del grupo' })
   @ApiResponse({ status: 200, description: 'Grupo eliminado' })
   @ApiResponse({ status: 400, description: 'No se puede eliminar un grupo con inscritos' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.subjectGroupsService.remove(id);
   }
 
@@ -116,7 +95,7 @@ export class SubjectGroupsController {
   @ApiOperation({ summary: 'Agregar horario al grupo', description: 'Agrega un bloque de horario (dia y hora) a un grupo.' })
   @ApiParam({ name: 'id', description: 'UUID del grupo' })
   @ApiResponse({ status: 201, description: 'Horario agregado' })
-  addSchedule(@Param('id') id: string, @Body() body: any) {
+  addSchedule(@Param('id', ParseUUIDPipe) id: string, @Body() body: ScheduleDto) {
     return this.subjectGroupsService.addSchedule(id, body);
   }
 
@@ -126,7 +105,7 @@ export class SubjectGroupsController {
   @ApiParam({ name: 'id', description: 'UUID del grupo' })
   @ApiParam({ name: 'scheduleId', description: 'UUID del horario' })
   @ApiResponse({ status: 200, description: 'Horario eliminado' })
-  removeSchedule(@Param('scheduleId') scheduleId: string) {
-    return this.subjectGroupsService.removeSchedule(scheduleId);
+  removeSchedule(@Param('id', ParseUUIDPipe) id: string, @Param('scheduleId', ParseUUIDPipe) scheduleId: string) {
+    return this.subjectGroupsService.removeSchedule(id, scheduleId);
   }
 }

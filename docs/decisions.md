@@ -96,6 +96,46 @@ Mantener historial cronológico con identificadores estables. Registrar contexto
 - Alternativa: montar archivos SQL del repositorio en Portainer; descartada porque obliga a preparar rutas en el host y limita el editor Web. Publicar cuentas demo como instalación por defecto se evitó mediante separación del DDL y bootstrap.
 - Consecuencias: un Stack nuevo empieza sin información académica/financiera; los datos anteriores se trasladan con backup/restauración verificables por separado. No se modifican credenciales ni volúmenes del servicio existente.
 
+## DEC-013 — Diálogos compartidos para confirmaciones de interfaz
+
+- Fecha: 2026-11-24. Estado: APLICADA por solicitud de sustituir alerts/confirmaciones del navegador por modales de la aplicación.
+- Decisión: proveedor React con confirm/alert asíncronos, cola de solicitudes y cancelación al navegar. Todas las acciones existentes esperan confirmación explícita; cerrar/Cancelar no ejecuta la operación. Reutilizar Modal con dialog nativo para foco modal y Escape, sin paquetes nuevos ni sustitución global de funciones window.
+- Consecuencias: mensajes como texto React, foco inicial en Cancelar y cancelación de solicitudes al salir de la pantalla. Las once confirmaciones existentes migradas; no había llamadas nativas alert/prompt. APIs y permisos efectivos permanecen en backend. Compatibilidad de navegadores antiguos sin dialog no certificada.
+
+## DEC-014 — Búsqueda por etiquetas y listas de prerrequisitos
+
+- Fecha: 2026-11-24. Estado: APLICADA por solicitud del usuario.
+- Decisión: selector compartido que busca por label y mantiene IDs como valores, selección múltiple para prerrequisitos con etiquetas removibles. Reutilizar opciones y eventos del select y no añadir dependencias. La búsqueda no cambia el valor hasta elegir una opción.
+- Datos/API: lista prerequisiteSubjectIds, carga/visualización completa y comprobación de todos los requisitos en inscripción. DTOs concretos y guardado atómico de materia/lista; grafo serializado en PostgreSQL para impedir ciclos concurrentes. Reutilizar tabla existente; no migrar ni borrar datos anteriores.
+- Compatibilidad: mantener prerequisiteSubjectId escalar como alternativa depreciada, rechazar ambas representaciones en una solicitud. Campo omitido conserva y lista vacía limpia. Prerrequisitos existentes inactivos pueden mantenerse o quitarse; solo nuevos deben estar activos y todos deben corresponder a la carrera.
+- Consecuencias: clientes antiguos con campo escalar conservan su semántica de reemplazo por un prerrequisito; la pantalla actual usa siempre la lista completa. Las confirmaciones y cambios SSH locales previos se conservan.
+
+## DEC-015 — Ruta canónica de Configuración sin tilde
+
+- Fecha: 2026-11-24. Estado: APLICADA para corregir el retorno al dashboard desde el menú del administrador.
+- Decisión: usar /configuracion como ruta canónica coincidente con Sidebar, protegerla explícitamente para administrator y conservar /configuración como redirección replace por compatibilidad. No ampliar permisos ni cambiar contratos de API.
+- Evidencia: el menú enviaba /configuracion mientras App solo registraba /configuración, por lo que se ejecutaba el wildcard al dashboard. Verificación de los 19 enlaces del menú con React Router y acceso de lectura API por rol.
+
+## DEC-016 — Aranceles propios con herencia del ciclo e historial inmutable
+
+- Fecha: 2026-11-24. Estado: APLICADA por solicitud de configurar matrícula y mensualidad por estudiante para administrador/administrativo.
+- Decisión: dos overrides nullable en students, importes positivos USD de dos decimales; NULL usa el importe del ciclo. Formulario y endpoint propios con roles/DTOs, separados del perfil general. No reprecificar pagos creados, incluidos los pendientes del proveedor; nuevos cobros y saldos de conceptos no pagados usan el precio vigente.
+- Integridad: cálculo del servidor para Wompi/manual, comparación exacta de centavos y resumen con montos pagados reales. No se añaden cuotas por ciclo ni exenciones cero en esta función; un cambio del estudiante afecta nuevos cobros en cualquier ciclo.
+- Datos/despliegue: migración SQL aditiva verificada en instancia efímera antes de aplicarla localmente; defaults NULL conservan cobro anterior. DDL inicial e imagen distribuible actualizados sin publicar tags nuevos. Rollback de código puede mantener las columnas, sin eliminarlas ni perder aranceles.
+
+## DEC-017 — Creación de recursos de planificación por administrativos
+
+- Fecha: 2026-11-24. Estado: APLICADA por solicitud explícita del usuario para docentes, salones, grupos y horarios.
+- Decisión: ampliar solo las altas de docentes y salones a administrative, conservando administrator. Grupos y horarios ya permiten ambos roles y mantienen su contrato. Editar/desactivar docentes y salones conserva su política anterior.
+- Seguridad: DTOs de creación delimitan datos de la ficha y capacidad, sin permitir vinculación de cuentas ni IDs/relaciones internas. No se amplía la creación de usuarios o roles privilegiados. Pruebas HTTP con guards reales para los cinco roles y solicitudes anónimas; persistencia de pruebas aislada del sistema.
+
+## DEC-018 — Disponibilidad por ocupación y escrituras de planificación atómicas
+
+- Fecha: 2026-11-24. Estado: APLICADA. Solicitud de validar docente/salón al planificar y completar gestión de ciclos para administrator/administrative. El usuario aclaró: docente activo y sin cruces; no configurar disponibilidad semanal.
+- Decisión: centralizar grupos, horarios (incluido endpoint anterior en subjects) y cambios de calendario/estado del ciclo bajo un bloqueo advisory transaccional común. Verificar recursos activos, intervalos válidos, conflictos entre ciclos con fechas coincidentes y capacidad; guardar grupo y horarios como unidad. Adjuntar clases con límites horarios coincidentes está permitido. Cambios de docente/salón y reactivación/fechas del ciclo no pueden introducir cruces.
+- Ciclos: ambos roles crean, editan, activan/desactivan y abren/cierran inscripciones. Nuevo ciclo activo/cerrado; desactivar cierra inscripción. Mantener ciclos e historial existentes y aranceles propios prioritarios por concepto; importes base se usan en ausencia de overrides, sin reprecificar pagos ya creados. Edición acotada por DTO y estado de inscripción mediante endpoints específicos.
+- Consecuencias: serialización global de escrituras de planificación simplifica concurrencia al volumen actual; no bloquea lecturas de catálogo. SQL externo puede evadir la política; no se introduce una restricción de exclusión ni cambios de esquema. Conflictos históricos no se corrigen automáticamente. No se eliminan ciclos con historial ni se modifican datos académicos reales para probar.
+
 ## Plantilla para futuras decisiones
 
 ```text

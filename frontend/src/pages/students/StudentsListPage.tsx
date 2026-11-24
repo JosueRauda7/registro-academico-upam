@@ -1,3 +1,5 @@
+import { StudentFeesSection } from './StudentFeesSection';
+import { useDialog } from '@/context/DialogContext';
 import { useEffect, useMemo, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -84,6 +86,7 @@ function validateForm(opts: {
 }
 
 export function StudentsListPage() {
+  const { confirm } = useDialog();
   const { user: currentUser } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -216,7 +219,7 @@ export function StudentsListPage() {
 
   const handleToggleActive = async (s: Student) => {
     const action = s.user?.isActive ? 'desactivar' : 'reactivar';
-    if (!confirm(`¿${action === 'desactivar' ? 'Desactivar' : 'Reactivar'} la cuenta de ${s.user?.firstName} ${s.user?.lastName}?`)) return;
+    if (!(await confirm(`¿${action === 'desactivar' ? 'Desactivar' : 'Reactivar'} la cuenta de ${s.user?.firstName} ${s.user?.lastName}?`, { confirmText: action === 'desactivar' ? 'Desactivar' : 'Reactivar', danger: s.user?.isActive === true }))) return;
     try {
       await studentsApi.update(s.id, { isActive: !s.user?.isActive });
       toast.success(`Cuenta ${action === 'desactivar' ? 'desactivada' : 'reactivada'}`);
@@ -467,6 +470,10 @@ export function StudentsListPage() {
             <Button type="submit" loading={saving}>Guardar Cambios</Button>
           </div>
         </form>
+        {editingStudent && <StudentFeesSection student={editingStudent} onSaved={fees => {
+          setEditingStudent(current => current ? { ...current, ...fees } : null);
+          loadStudents();
+        }} />}
       </Modal>
     </Layout>
   );

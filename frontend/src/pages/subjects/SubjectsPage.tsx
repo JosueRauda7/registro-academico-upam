@@ -1,3 +1,5 @@
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { useDialog } from '@/context/DialogContext';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -18,10 +20,11 @@ const emptyForm = {
   career: '',
   year: '1',
   semester: '1',
-  prerequisiteSubjectId: '',
+  prerequisiteSubjectIds: [] as string[],
 };
 
 export function SubjectsPage() {
+  const { confirm } = useDialog();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [careers, setCareers] = useState<Career[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +73,7 @@ export function SubjectsPage() {
       career: s.career,
       year: String(s.year),
       semester: String(s.semester),
-      prerequisiteSubjectId: s.prerequisites?.[0]?.prerequisiteSubjectId || '',
+      prerequisiteSubjectIds: s.prerequisites?.map(p => p.prerequisiteSubjectId) ?? [],
     });
     setShowModal(true);
   };
@@ -86,7 +89,7 @@ export function SubjectsPage() {
         career: form.career,
         year: parseInt(form.year),
         semester: parseInt(form.semester),
-        prerequisiteSubjectId: form.prerequisiteSubjectId || null,
+        prerequisiteSubjectIds: form.prerequisiteSubjectIds,
       };
     if (editing) {
       await subjectsApi.update(editing.id, payload);
@@ -105,7 +108,7 @@ export function SubjectsPage() {
   };
 
   const handleDelete = async (s: Subject) => {
-    if (!confirm(`¿Desactivar la materia ${s.code} - ${s.name}?\nNo se eliminan inscripciones existentes.`)) return;
+    if (!(await confirm(`¿Desactivar la materia ${s.code} - ${s.name}?\nNo se eliminan inscripciones existentes.`))) return;
     try {
       await subjectsApi.remove(s.id);
       toast.success('Materia desactivada');
@@ -174,13 +177,11 @@ export function SubjectsPage() {
                       <td className="px-4 py-3 text-center">{s.year}</td>
                       <td className="px-4 py-3 text-center">{s.semester}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">
-                        {s.prerequisites?.[0]?.prerequisiteSubject ? (
-                          <span>
-                            {s.prerequisites[0].prerequisiteSubject.code} - {s.prerequisites[0].prerequisiteSubject.name}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">Ninguno</span>
-                        )}
+                        {s.prerequisites?.length ? s.prerequisites.map(prerequisite => (
+                          <p key={prerequisite.prerequisiteSubjectId} className="text-xs text-gray-500">
+                            {prerequisite.prerequisiteSubject?.code} - {prerequisite.prerequisiteSubject?.name}
+                          </p>
+                        )) : <span className="text-gray-400">Sin prerrequisitos</span>}
                       </td>
                       <td className="px-4 py-3">
                         <Badge status={s.isActive ? 'active' : 'failed'} label={s.isActive ? 'Activa' : 'Inactiva'} />
@@ -233,9 +234,9 @@ export function SubjectsPage() {
           />
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Carrera *</label>
-            <select
+            <SearchableSelect
               value={form.career}
-              onChange={(e) => setForm({ ...form, career: e.target.value })}
+              onChange={(e) => setForm({ ...form, career: e.target.value, prerequisiteSubjectIds: [] })}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               required
             >
@@ -243,24 +244,25 @@ export function SubjectsPage() {
               {careers.map((c) => (
                 <option key={c.id} value={c.name}>{c.name}</option>
               ))}
-            </select>
+            </SearchableSelect>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Prerrequisito (opcional)</label>
-            <select
-              value={form.prerequisiteSubjectId}
-              onChange={(e) => setForm({ ...form, prerequisiteSubjectId: e.target.value })}
+            <label className="mb-1 block text-sm font-medium text-gray-700">Prerrequisitos (opcionales)</label>
+            <SearchableSelect
+              multiple
+              value={form.prerequisiteSubjectIds}
+              onChange={(e) => setForm({ ...form, prerequisiteSubjectIds: Array.from(e.target.selectedOptions, option => option.value) })}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
             >
-              <option value="">Sin prerrequisito</option>
+
               {subjects
-                .filter((s) => s.isActive && (!editing || s.id !== editing.id))
+                .filter((s) => form.prerequisiteSubjectIds.includes(s.id) || (s.isActive && s.career === form.career && (!editing || s.id !== editing.id)))
                 .map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.code} - {s.name}
                   </option>
                 ))}
-            </select>
+            </SearchableSelect>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input

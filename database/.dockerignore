@@ -4,3 +4,5 @@
 !init-app-role.sh
 !security-role.sql
 !initial-settings.sql
+!migrations/
+!migrations/**

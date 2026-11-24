@@ -1,0 +1,11 @@
+# Evidencia — Planificación y ciclos
+
+- Fecha: 2026-11-24. Sin secretos, tokens, PII, IDs reales o logs de acceso. Datos de pruebas ficticios, año 2190 y correos example.invalid.
+- Backend: npm run typecheck en builder con src/test actuales montados readonly, correcto tras ajustar tipado nullable de teacherId y comprobación de ciclo previo. Build Nest final correcto.
+- Frontend: npm run typecheck y build Vite correctos; bundle servido contiene el formulario Nuevo ciclo y su confirmación de creación. Sin navegador automatizado disponible.
+- Regresiones: node --test test/planning-permissions.test.cjs test/student-fees.test.cjs (10 tests Node contando el contenedor de suite) y npm run test:security (7 tests contando contenedor), todos aprobados. Sin llamadas reales a proveedores.
+- Integración: docker compose exec -T backend node < backend/test/docker-planning-cycles.cjs. Primera suite aprobó 98 comprobaciones; suite final ampliada aprobó 110 en la versión final desplegada. Cubre todos los roles para creación/edición/apertura/cierre de ciclos, validación de campos/fechas/importes, estado activo, conflictos por día/recurso/fechas, límites consecutivos y segundos, operaciones simultáneas, rollback, reasignación persistida, ruta anterior de horarios, conservación de inscripciones, defaults/overrides e importes históricos. Resultado: passed, syntheticOnly true, externalPaymentsOrEmails false.
+- Limpieza: finally elimina pagos/estudiante/usuario/grupos/ciclos/materias/docentes/salones sintéticos. Verificación PostgreSQL independiente de las marcas de fixture: cero ciclos, docentes, salones y materias remanentes.
+- Docker: docker compose up -d --build backend frontend exitoso; backend/frontend activos y DB healthy. Ajustes posteriores de backend también reconstruidos; última ejecución conjunta exitosa incorpora código final. No se usa down, synchronize o seeds ni se borran volúmenes.
+- HTTP: /ciclos, /planificacion, bundle y /api/docs-json por frontend 200. Swagger contiene DTOs CreateCycleDto/UpdateCycleDto/ScheduleDto y endpoints de gestión; logs sanitizados confirman arranque Nest/Nginx sin ExceptionHandler.
+- Límites: sin interacción visual, ensayo de carga, pagos/correos externos o auditoría de SQL externo; no se reparan datos históricos. Evidencia de defecto anterior es estática; re-test de la solución es runtime con fixtures.

@@ -1,3 +1,5 @@
+import { PlanningRepository } from '../../infrastructure/database/repositories/planning.repository';
+import { CreateSubjectScheduleDto } from '../subject-groups/dto/group.dto';
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { SubjectRepository } from '../../infrastructure/database/repositories/subject.repository';
 import { ScheduleRepository } from '../../infrastructure/database/repositories/schedule.repository';
@@ -13,6 +15,7 @@ export class SubjectsService {
     private readonly subjectGroupRepository: SubjectGroupRepository,
     private readonly careerRepository: CareerRepository,
     private readonly prerequisiteRepository: PrerequisiteRepository,
+    private readonly planning: PlanningRepository,
   ) {}
 
   async findAll(career?: string, all = false) {
@@ -51,12 +54,8 @@ export class SubjectsService {
 
   async create(data: any) {
     await this.validateCareer(data.career);
-    const { prerequisiteSubjectId, ...subjectData } = data;
-    const subject = await this.subjectRepository.create(subjectData);
-    if (prerequisiteSubjectId) {
-      await this.prerequisiteRepository.removeAllForSubject(subject.id);
-      await this.prerequisiteRepository.addPrerequisite(subject.id, prerequisiteSubjectId);
-    }
+    const { subjectData, ids } = this.prerequisiteInput(data);
+    const subject = await this.subjectRepository.saveWithPrerequisites(undefined, subjectData, ids ?? []);
     return this.subjectRepository.findById(subject.id);
   }
 
@@ -65,17 +64,18 @@ export class SubjectsService {
     if (data.career !== undefined) {
       await this.validateCareer(data.career);
     }
-    const { prerequisiteSubjectId, ...subjectData } = data;
-    if (Object.keys(subjectData).length > 0) {
-      await this.subjectRepository.update(id, subjectData);
-    }
-    if (prerequisiteSubjectId !== undefined) {
-      await this.prerequisiteRepository.removeAllForSubject(id);
-      if (prerequisiteSubjectId) {
-        await this.prerequisiteRepository.addPrerequisite(id, prerequisiteSubjectId);
-      }
-    }
+    const { subjectData, ids } = this.prerequisiteInput(data);
+    await this.subjectRepository.saveWithPrerequisites(id, subjectData, ids);
     return this.subjectRepository.findById(id);
+  }
+
+  private prerequisiteInput(data: any) {
+    const { prerequisiteSubjectId, prerequisiteSubjectIds, ...subjectData } = data;
+    if (Object.values(subjectData).some(value => value === null)) throw new BadRequestException('Los campos de la materia no admiten null.');
+    if (prerequisiteSubjectIds !== undefined && prerequisiteSubjectId !== undefined) throw new BadRequestException('Envía prerequisiteSubjectIds o prerequisiteSubjectId, no ambos.');
+    if (prerequisiteSubjectIds !== undefined && !Array.isArray(prerequisiteSubjectIds)) throw new BadRequestException('prerequisiteSubjectIds debe ser una lista.');
+    const ids: string[] | undefined = prerequisiteSubjectIds ?? (prerequisiteSubjectId === undefined ? undefined : prerequisiteSubjectId ? [prerequisiteSubjectId] : []);
+    return { subjectData, ids };
   }
 
   private async validateCareer(career?: string) {
@@ -94,16 +94,9 @@ export class SubjectsService {
     return this.subjectRepository.deactivate(id);
   }
 
-  async createSchedule(data: any) {
-    if (!data.groupId) {
-      throw new BadRequestException('Se requiere el groupId del grupo');
-    }
-    return this.scheduleRepository.create({
-      groupId: data.groupId,
-      dayOfWeek: data.dayOfWeek,
-      startTime: data.startTime,
-      endTime: data.endTime,
-    });
+  createSchedule(data: CreateSubjectScheduleDto) {
+    const { groupId, ...schedule } = data;
+    return this.planning.addSchedule(groupId, schedule);
   }
 
   async findSchedulesByCycle(cycleId: string) {

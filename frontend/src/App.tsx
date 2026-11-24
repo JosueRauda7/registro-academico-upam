@@ -1,3 +1,4 @@
+import { DialogProvider } from '@/context/DialogContext';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { UserRole } from '@/types';
@@ -33,6 +34,7 @@ function App() {
     <SettingsProvider>
       <AuthProvider>
         <BrowserRouter>
+        <DialogProvider>
         <Toaster position="top-right" />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -106,7 +108,7 @@ function App() {
           <Route
             path="/ciclos"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={[UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE]}>
                 <CyclesPage />
               </ProtectedRoute>
             }
@@ -200,16 +202,18 @@ function App() {
             }
           />
           <Route
-            path="/configuración"
+            path="/configuracion"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={[UserRole.ADMINISTRATOR]}>
                 <SettingsPage />
               </ProtectedRoute>
             }
           />
+          <Route path="/configuración" element={<Navigate to="/configuracion" replace />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        </DialogProvider>
         </BrowserRouter>
       </AuthProvider>
     </SettingsProvider>

@@ -53,9 +53,37 @@ Es una arquitectura modular por capas inspirada en Clean Architecture. No aplica
 
 `src/pages/` agrupa pantallas por funcionalidad; `src/api/` concentra llamadas HTTP; `src/components/ui/` aporta componentes reutilizables y `components/layout/` la estructura visual. `types/` y `utils/` concentran tipos y utilidades. `App.tsx` configura React Router, AuthProvider, SettingsProvider y rutas protegidas.
 
+La ruta canónica de Configuración es `/configuracion`, restringida a administrator en ProtectedRoute, en coherencia con el menú y la API. `/configuración` se conserva como redirección con replace para enlaces anteriores.
+
 `AuthContext` persiste token y perfiles en localStorage; `api/axios.ts` agrega Authorization y limpia sesión/redirige ante 401. `ProtectedRoute` y la navegación por rol mejoran la experiencia, pero la autorización efectiva debe residir en backend. localStorage requiere especial atención ante XSS; no se verificó una vulnerabilidad XSS concreta.
 
 El registro público solo admite student, incluso al invocar el servicio directamente. Los JWT de sesión incluyen purpose access y claims obligatorios; los de recuperación tienen purpose password-reset y jti aleatorio, y solo se guarda su hash SHA-256. Los tokens anteriores sin purpose access requieren iniciar sesión otra vez; los enlaces de recuperación anteriores a esta corrección deben solicitarse de nuevo. Los atributos sensibles de User se excluyen por defecto de las consultas; el interceptor sanitiza respuestas anidadas y pagos usa una proyección explícita.
+
+## Permisos de creación en planificación (2026-11-24)
+
+Administrator y administrative pueden crear docentes y salones mediante POST /api/teachers y POST /api/classrooms, además de crear grupos y agregar horarios mediante POST /api/subject-groups y POST /api/subject-groups/:id/schedules (estos dos ya admitían ambos roles). El menú Planificación y sus formularios existentes permiten estas acciones a administrativos. Editar/desactivar docentes y salones conserva el permiso exclusivo de administrator; no se amplía la administración de usuarios.
+
+Las nuevas altas de docentes y salones usan DTOs concretos con whitelist: nombre obligatorio sin espacios vacíos, longitudes acotadas, correo opcional válido (vacío permitido por el formulario) y capacidad entera positiva. No aceptan IDs, userId, relaciones, roles ni estados internos. Crear un docente registra su ficha; no crea ni vincula una cuenta de acceso. No hay cambios de esquema.
+
+## Cruces de planificación y gestión de ciclos (2026-11-24)
+
+PlanningRepository centraliza escrituras de grupos/horarios y ciclos en transacciones con pg_advisory_xact_lock(471250850). Crear grupo y sus bloques es atómico; agregar horarios o cambiar docente/salón revalida todos los bloques existentes. Solo se asignan materias, docentes y salones activos en ciclos activos; el docente puede quedar sin asignar (teacherId null). Capacidad positiva dentro del salón y no inferior al contador de inscritos. DTOs concretos delimitan campos/UUIDs, días monday–saturday y horas HH:mm con fin posterior al inicio; los bloques del mismo grupo no se superponen.
+
+La disponibilidad del docente significa activo y sin otra clase, según aclaración del usuario; no se incorpora una agenda de disponibilidad semanal. Un cruce requiere mismo día e intervalos horarios superpuestos, en grupos y ciclos activos con fechas coincidentes (límites de fechas inclusivos). Aplica dentro del ciclo y entre ciclos simultáneos, incluso si las materias son distintas o iguales. Un bloque puede comenzar cuando termina otro. El control contempla segundos de horarios existentes; nuevas entradas usan minutos. Se validan recursos antes del guardado bajo bloqueo, para impedir carreras entre solicitudes de la API. POST /subjects/schedules usa la misma ruta transaccional. El control no es una restricción SQL para escrituras externas.
+
+Cambiar fechas reales o reactivar un ciclo valida sus grupos activos y revierte toda la operación si hay cruces o recursos inactivos. Cambios solo de nombre/precio con calendario/estado sin cambios no fuerzan corregir conflictos históricos. Borrar horarios verifica pertenencia al grupo; borrar grupo/horario conserva cualquier inscripción asociada, incluso cancelada, mediante comprobación bajo bloqueos de filas.
+
+Gestión de ciclos está disponible para administrator y administrative en menú/ruta /ciclos y POST /cycles, PUT /cycles/:id, PUT /cycles/:id/open-enrollment y close-enrollment. CyclesPage ofrece formulario de creación/edición, fechas, año/período, matrícula/mensualidad base, cantidad de mensualidades y estado activo. Nuevo ciclo inicia activo con inscripción cerrada; abrir requiere activo, desactivar cierra inscripción y reactivar no la abre automáticamente. DTOs validan fechas YYYY-MM-DD reales, fin posterior al inicio, importes USD positivos de hasta dos decimales, mensualidades 1–12, año 1900–2200 y período 1–3. No se admite enrollmentOpen en el formulario genérico: se usa la acción dedicada.
+
+Los importes base se resuelven por concepto con resolveStudentFees: NULL o ausencia de importe propio usa ciclo; un override conserva prioridad. Editar precios no modifica pagos existentes. No se permite reducir la cantidad de mensualidades por debajo de un mes con pagos pendientes/completados al verificar la edición. Esta comprobación no rediseña la concurrencia del subsistema de pagos. No hay DDL ni migraciones nuevas en este trabajo; se conserva la migración de aranceles por estudiante previa.
+
+Planificación carga docentes y salones al entrar, sin depender de visitar otras pestañas; sus selectores muestran activos y conservan la etiqueta de una referencia inactiva seleccionada para permitir reemplazarla. El servidor sigue siendo la autoridad aunque el catálogo cambie tras cargar la página.
+
+## Diálogos de interfaz (2026-11-24)
+
+`DialogProvider`, dentro de BrowserRouter, ofrece `useDialog().confirm(message, options)` y `alert(message, options)`. Son asíncronos: las páginas esperan la elección antes de llamar a la API. Un controlador mantiene solicitudes separadas en cola y cancela todas al navegar/desmontar el proveedor. Las 11 confirmaciones nativas de usuarios, estudiantes, carreras, materias, pensum, planificación y materias previas usan este servicio; notificaciones de resultado existentes conservan react-hot-toast.
+
+`Modal` reutiliza el elemento HTML dialog con showModal/close, título accesible, foco inicial opcional, cierre Escape/X/fondo y estilos existentes. Las confirmaciones enfocan Cancelar y usan variante de peligro para acciones destructivas. El texto se renderiza como string React, sin HTML interpretado. Esto requiere soporte de dialog/showModal en el navegador. No cambia contratos HTTP ni autorización backend.
 
 ## Datos
 
@@ -131,3 +159,21 @@ Consultar el estado actualizado en security/audits/. Quedan pendientes migracion
 El backend ejecuta scripts/bootstrap-admin.cjs antes de NestJS. Sin INITIAL_ADMIN_EMAIL/PASSWORD no hace nada; con ambos valida email/password (16 caracteres mínimo, 72 bytes máximo) y crea el primer administrator solo cuando users está vacía, usando bcrypt 12, transacción y bloqueo de tabla. En una base con usuarios no los cambia. Retirar esas variables tras el primer inicio. Los errores no imprimen parámetros SQL ni secretos. La imagen frontend excluye .env y .env.* del contexto.
 
 Los valores de ejemplo y la guía están en .env.portainer.example y docs/deployment/dockerhub-portainer.md; .env.portainer está ignorado. scripts/publish-images.sh construye/publica tags explícitos, sin latest automático ni credenciales de build. La publicación no despliega un Stack remoto, no migra volúmenes y no certifica producción ni compatibilidad Swarm/ARM64.
+
+## Selectores y prerrequisitos múltiples (2026-11-24)
+
+`SearchableSelect` sustituye los 19 selectores de páginas. Busca localmente por texto visible, sin distinguir mayúsculas/acentos y admitiendo varias palabras; no crea opciones con texto libre. Conserva select nativo como respaldo de eventos/formulario/required, con input combobox, lista navegable y selección múltiple con etiquetas removibles. Los datos de búsqueda no se envían a servicios externos ni se persisten.
+
+Materias usa `prerequisiteSubjectIds: string[]` para crear/editar, carga y muestra todas las relaciones; cambiar carrera limpia la selección. Se pueden retirar también prerrequisitos existentes inactivos. Inscripción requiere aprobar todos los IDs y muestra todos sus nombres. La validación backend de inscripción ya recorría todos los prerrequisitos.
+
+POST/PUT subjects reciben DTOs concretos, con whitelist, UUIDs únicos y hasta 100 prerrequisitos. Campo omitido al editar conserva relaciones, [] las elimina; el campo anterior prerequisiteSubjectId sigue como alternativa escalar depreciada (no se aceptan ambos juntos). La escritura de materia/relaciones usa una transacción y bloqueo advisory PostgreSQL compartido entre ediciones del grafo; valida referencias, carrera, nuevos prerrequisitos activos, no autorreferencia ni ciclos, incluyendo cambios simultáneos. Relaciones inactivas existentes pueden conservarse. Cambiar una carrera tampoco puede dejar dependientes de otra carrera. No hay cambios de tablas ni migraciones: prerequisites ya admite varias filas por materia.
+
+Verificación: frontend/test/select-options.test.cjs para búsqueda; backend/test/docker-prerequisites.cjs para API/PostgreSQL locales con fixtures propios y limpieza. No ejecutar este último sobre producción. La interacción visual y los eventos/foco del combobox necesitan verificación en navegador real, no disponible en este entorno.
+
+## Aranceles por estudiante (2026-11-24)
+
+Students incorpora tuition_amount y monthly_amount NUMERIC(10,2) nullable: NULL hereda el precio del ciclo; valores propios deben estar entre 0.01 y 99999999.99 USD con dos decimales. No se admiten exenciones de importe cero en esta función. Entidad TypeORM con conversión decimal a número y dominio/tipos frontend actualizados. PUT /api/students/:id/fees usa DTO concreto, UUID validado y roles administrator/administrative; omitir un campo lo conserva y null restablece el valor del ciclo. Respuesta explícita de ID/aranceles, sin relaciones sensibles. GET /students/:id limita lectura a personal autorizado o estudiante propietario.
+
+Editar estudiante contiene StudentFeesSection con formulario independiente Guardar aranceles; disponible para ambos roles. Colecturía muestra el importe del estudiante seleccionado. PaymentsService resuelve cada arancel con fallback al ciclo para nuevas órdenes Wompi y pagos manuales; verifica coincidencia exacta en centavos con el importe del servidor. No cambia registros de pagos previos. El resumen mantiene los importes históricos de pagos completados y usa el precio actual para conceptos no pagados, contando meses únicos y sumando montos reales.
+
+La migración aditiva/idempotente database/migrations/20261124_student_fees.sql se aplica antes del nuevo backend sobre volúmenes existentes; no basta reconstruir contenedores. Fue probada dos veces en PostgreSQL efímero con un estudiante sintético previo y luego aplicada en la base local conservando valores NULL. init.sql incluye columnas/restricciones para instalaciones nuevas; database/Dockerfile empaqueta SQL de migraciones en /opt/upam/migrations para futuras imágenes. La imagen local renovada de base de datos fue validada; las imágenes ya publicadas anteriormente no se actualizaron en esta tarea. No se usa synchronize ni seeds.

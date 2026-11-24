@@ -2,6 +2,10 @@ import api from './axios';
 import { Student, CreateStudentData, UpdateStudentData } from '@/types';
 
 export const studentsApi = {
+  updateFees: async (id: string, data: { tuitionAmount?: number | null; monthlyAmount?: number | null }): Promise<{ studentId: string; tuitionAmount: number | null; monthlyAmount: number | null }> => {
+    const response = await api.put(`/students/${id}/fees`, data);
+    return response.data.data;
+  },
   findAll: async (): Promise<Student[]> => {
     const res = await api.get('/students');
     return res.data.data;

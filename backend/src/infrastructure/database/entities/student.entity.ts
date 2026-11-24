@@ -33,6 +33,14 @@ export class StudentEntity {
   @Column({ name: 'enrollment_year' })
   enrollmentYear: number;
 
+  @Column({ name: 'tuition_amount', type: 'numeric', precision: 10, scale: 2, nullable: true,
+    transformer: { to: (value: number | null) => value, from: (value: string | null) => value === null ? null : Number(value) } })
+  tuitionAmount: number | null;
+
+  @Column({ name: 'monthly_amount', type: 'numeric', precision: 10, scale: 2, nullable: true,
+    transformer: { to: (value: number | null) => value, from: (value: string | null) => value === null ? null : Number(value) } })
+  monthlyAmount: number | null;
+
   @Column({ type: 'varchar', nullable: true })
   phone: string;
 

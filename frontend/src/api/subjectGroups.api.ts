@@ -10,7 +10,7 @@ export interface ScheduleInput {
 export interface GroupInput {
   subjectId: string;
   cycleId: string;
-  teacherId?: string;
+  teacherId?: string | null;
   classroomId: string;
   groupNumber?: number;
   capacity?: number;

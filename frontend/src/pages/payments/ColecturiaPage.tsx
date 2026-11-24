@@ -1,3 +1,4 @@
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -107,8 +108,8 @@ export function ColecturiaPage() {
     e.preventDefault();
     const amount =
       form.type === 'monthly'
-        ? selectedCycleData?.monthlyAmount
-        : selectedCycleData?.tuitionAmount;
+        ? students.find(s => s.id === selectedStudent)?.monthlyAmount ?? selectedCycleData?.monthlyAmount
+        : students.find(s => s.id === selectedStudent)?.tuitionAmount ?? selectedCycleData?.tuitionAmount;
 
     if (!selectedStudent || !selectedCycle || !amount) {
       toast.error('Complete los campos obligatorios');
@@ -180,8 +181,8 @@ export function ColecturiaPage() {
   const selectedCycleData = cycles.find((c) => c.id === selectedCycle);
   const fixedAmount =
     form.type === 'monthly'
-      ? selectedCycleData?.monthlyAmount
-      : selectedCycleData?.tuitionAmount;
+      ? students.find(s => s.id === selectedStudent)?.monthlyAmount ?? selectedCycleData?.monthlyAmount
+      : students.find(s => s.id === selectedStudent)?.tuitionAmount ?? selectedCycleData?.tuitionAmount;
 
   const methodLabel = (p: Payment) =>
     p.paymentMethod === 'bank' ? 'Banco' : p.paymentMethod === 'cash' ? 'Efectivo' : 'Wompi';
@@ -213,7 +214,7 @@ export function ColecturiaPage() {
                 <label className="mb-1 block text-sm font-medium text-gray-700">
                   Ciclo Académico *
                 </label>
-                <select
+                <SearchableSelect
                   value={selectedCycle}
                   onChange={(e) => setSelectedCycle(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-upam-primary focus:outline-none focus:ring-1 focus:ring-upam-primary"
@@ -222,7 +223,7 @@ export function ColecturiaPage() {
                   {cycles.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
-                </select>
+                </SearchableSelect>
               </div>
 
               {/* Student Search */}
@@ -298,7 +299,7 @@ export function ColecturiaPage() {
                   <label className="mb-1 block text-sm font-medium text-gray-700">
                     Mes *
                   </label>
-                  <select
+                  <SearchableSelect
                     value={form.month}
                     onChange={(e) => setForm({ ...form, month: e.target.value })}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-upam-primary focus:outline-none focus:ring-1 focus:ring-upam-primary"
@@ -308,7 +309,7 @@ export function ColecturiaPage() {
                     {Array.from({ length: selectedCycleData?.monthlyCount || 6 }, (_, i) => (
                       <option key={i + 1} value={i + 1}>Mes {i + 1}</option>
                     ))}
-                  </select>
+                  </SearchableSelect>
                 </div>
               )}
 
@@ -333,8 +334,8 @@ export function ColecturiaPage() {
                 <p className="mt-1 text-xs text-gray-500">
                   {selectedCycleData
                     ? form.type === 'tuition'
-                      ? `Matrícula: ${formatCurrency(selectedCycleData.tuitionAmount)}`
-                      : `Mensualidad: ${formatCurrency(selectedCycleData.monthlyAmount)}`
+                      ? `Matrícula: ${formatCurrency(fixedAmount ?? selectedCycleData.tuitionAmount)}`
+                      : `Mensualidad: ${formatCurrency(fixedAmount ?? selectedCycleData.monthlyAmount)}`
                     : 'Seleccione un ciclo para ver el monto'}
                 </p>
               </div>

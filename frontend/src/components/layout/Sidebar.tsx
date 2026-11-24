@@ -45,7 +45,7 @@ const navItems: NavItem[] = [
   { to: '/carreras', icon: GraduationCap, label: 'Carreras', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/estudiantes', icon: Users, label: 'Estudiantes', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/materias-previas', icon: BookOpenCheck, label: 'Materias Previas', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
-  { to: '/ciclos', icon: Calendar, label: 'Ciclos', roles: [UserRole.ADMINISTRATOR] },
+  { to: '/ciclos', icon: Calendar, label: 'Ciclos', roles: [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE] },
   { to: '/usuarios', icon: Users, label: 'Usuarios', roles: [UserRole.ADMINISTRATOR] },
   { to: '/configuracion', icon: Settings, label: 'Configuración', roles: [UserRole.ADMINISTRATOR] },
   { to: '/reportes', icon: BarChart3, label: 'Reportes', roles: [UserRole.ADMINISTRATOR, UserRole.COLLECTOR, UserRole.ADMINISTRATIVE, UserRole.TEACHER] },

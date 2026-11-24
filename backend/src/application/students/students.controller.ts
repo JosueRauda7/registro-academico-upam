@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Body, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { StudentsService } from './students.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -6,6 +6,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../domain/enums/role.enum';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { UpdateStudentFeesDto } from './dto/update-student-fees.dto';
 
 @ApiTags('Students')
 @ApiBearerAuth('jwt-auth')
@@ -35,8 +36,8 @@ export class StudentsController {
   @ApiParam({ name: 'id', description: 'UUID del estudiante' })
   @ApiResponse({ status: 200, description: 'Estudiante encontrado' })
   @ApiResponse({ status: 404, description: 'Estudiante no encontrado' })
-  findById(@Param('id') id: string) {
-    return this.studentsService.findById(id);
+  findById(@Param('id') id: string, @CurrentUser() actor: { sub: string; role: UserRole }) {
+    return this.studentsService.findVisibleById(id, actor);
   }
 
   @Post()
@@ -73,5 +74,15 @@ export class StudentsController {
   @ApiResponse({ status: 403, description: 'Sin permisos de administrador o administrativo' })
   update(@Param('id') id: string, @Body() body: any) {
     return this.studentsService.update(id, body);
+  }
+
+  @Put(':id/fees')
+  @Roles(UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE)
+  @ApiOperation({ summary: 'Configurar matrícula y mensualidad del estudiante', description: 'Importes positivos USD con hasta dos decimales. null usa el importe del ciclo. Solo afecta cobros nuevos; los pagos existentes conservan su monto.' })
+  @ApiResponse({ status: 200, description: 'Aranceles guardados' })
+  @ApiResponse({ status: 400, description: 'Importes inválidos' })
+  @ApiResponse({ status: 403, description: 'Solo administradores y administrativos' })
+  updateFees(@Param('id', new ParseUUIDPipe()) id: string, @Body() body: UpdateStudentFeesDto) {
+    return this.studentsService.updateFees(id, body);
   }
 }

@@ -9,7 +9,7 @@ export interface SubjectInput {
   year: number;
   semester: number;
   isActive?: boolean;
-  prerequisiteSubjectId?: string | null;
+  prerequisiteSubjectIds?: string[];
 }
 
 export const subjectsApi = {

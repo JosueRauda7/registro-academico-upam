@@ -8,6 +8,7 @@ import * as bcrypt from 'bcryptjs';
 import { StudentRepository } from '../../infrastructure/database/repositories/student.repository';
 import { UserRepository } from '../../infrastructure/database/repositories/user.repository';
 import { UserRole } from '../../domain/enums/role.enum';
+import { UpdateStudentFeesDto } from './dto/update-student-fees.dto';
 
 const UPAM_EMAIL_DOMAIN = '@upam.edu.sv';
 
@@ -39,6 +40,13 @@ export class StudentsService {
     if (!student) {
       throw new NotFoundException('Estudiante no encontrado');
     }
+    return student;
+  }
+
+  async findVisibleById(id: string, actor: { sub: string; role: UserRole }) {
+    const student = await this.findById(id);
+    const staff = [UserRole.ADMINISTRATOR, UserRole.ADMINISTRATIVE, UserRole.COLLECTOR].includes(actor.role);
+    if (!staff && (actor.role !== UserRole.STUDENT || student.userId !== actor.sub)) throw new NotFoundException('Estudiante no encontrado');
     return student;
   }
 
@@ -197,5 +205,16 @@ export class StudentsService {
 
   async count() {
     return this.studentRepository.count();
+  }
+
+  async updateFees(id: string, data: UpdateStudentFeesDto) {
+    await this.findById(id);
+    const changes: UpdateStudentFeesDto = {};
+    if (data.tuitionAmount !== undefined) changes.tuitionAmount = data.tuitionAmount;
+    if (data.monthlyAmount !== undefined) changes.monthlyAmount = data.monthlyAmount;
+    if (!Object.keys(changes).length) throw new BadRequestException('Envía al menos un arancel para actualizar.');
+    const updated = await this.studentRepository.update(id, changes);
+    if (!updated) throw new NotFoundException('Estudiante no encontrado');
+    return { studentId: id, tuitionAmount: updated.tuitionAmount, monthlyAmount: updated.monthlyAmount };
   }
 }

@@ -52,7 +52,7 @@ export class PaymentsController {
   @ApiBearerAuth('jwt-auth')
   @ApiOperation({
     summary: 'Registrar pago manual',
-    description: 'Permite al colector o administrador registrar un pago recibido en efectivo o por transacción bancaria directamente en el sistema. El monto debe coincidir con el valor del ciclo.',
+    description: 'Permite al colector o administrador registrar un pago recibido en efectivo o por transacción bancaria directamente en el sistema. El monto debe coincidir con el arancel del estudiante o, si no está configurado, el valor del ciclo.',
   })
   @ApiBody({
     schema: {
@@ -61,7 +61,7 @@ export class PaymentsController {
       properties: {
         studentId: { type: 'string', description: 'UUID del estudiante', example: 'uuid-estudiante' },
         cycleId: { type: 'string', description: 'UUID del ciclo', example: 'uuid-ciclo' },
-        amount: { type: 'number', description: 'Monto en USD (debe ser exactamente el valor del ciclo)', example: 150.00 },
+        amount: { type: 'number', description: 'Monto en USD (debe ser exactamente el arancel del estudiante o, si no está configurado, el valor del ciclo)', example: 150.00 },
         type: { type: 'string', enum: ['tuition', 'monthly'], description: 'Tipo de pago', example: 'tuition' },
         month: { type: 'number', description: 'Número del mes (si es mensualidad, 1-6)', example: 1 },
         description: { type: 'string', description: 'Observaciones del pago', example: 'Pago recibido en ventanilla' },

@@ -1,3 +1,4 @@
+import { PlanningRepository } from './repositories/planning.repository';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -54,6 +55,7 @@ const entities = [
 ];
 
 const repositories = [
+  PlanningRepository,
   UserRepository,
   StudentRepository,
   CycleRepository,

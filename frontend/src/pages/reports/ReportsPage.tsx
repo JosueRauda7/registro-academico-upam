@@ -1,3 +1,4 @@
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -181,7 +182,7 @@ export function ReportsPage() {
 
         <div className="flex items-center gap-4">
           <label className="text-sm font-medium text-gray-700">Ciclo:</label>
-          <select
+          <SearchableSelect
             value={selectedCycle}
             onChange={(e) => setSelectedCycle(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-upam-primary focus:outline-none focus:ring-1 focus:ring-upam-primary"
@@ -191,7 +192,7 @@ export function ReportsPage() {
                 {cycle.name}
               </option>
             ))}
-          </select>
+          </SearchableSelect>
         </div>
 
         {hasRole(UserRole.TEACHER) && (

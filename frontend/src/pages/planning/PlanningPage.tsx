@@ -1,3 +1,5 @@
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { useDialog } from '@/context/DialogContext';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -18,6 +20,7 @@ import { Plus, Users, Building2, CalendarDays, Trash2, Pencil, DoorOpen } from '
 type Tab = 'groups' | 'teachers' | 'classrooms';
 
 export function PlanningPage() {
+  const { confirm } = useDialog();
   const [tab, setTab] = useState<Tab>('groups');
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -58,12 +61,16 @@ export function PlanningPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [cyclesData, subjectsData] = await Promise.all([
+      const [cyclesData, subjectsData, teachersData, classroomsData] = await Promise.all([
         cyclesApi.findAll(),
         subjectsApi.findAll(),
+        teachersApi.findAll(),
+        classroomsApi.findAll(),
       ]);
       setCycles(cyclesData);
       setSubjects(subjectsData);
+      setTeachers(teachersData);
+      setClassrooms(classroomsData);
       if (cyclesData.length > 0) setSelectedCycle(cyclesData[0].id);
     } catch {
       toast.error('Error al cargar datos');
@@ -109,7 +116,7 @@ export function PlanningPage() {
       await subjectGroupsApi.create({
         subjectId: groupForm.subjectId,
         cycleId: selectedCycle,
-        teacherId: groupForm.teacherId || undefined,
+        teacherId: groupForm.teacherId || null,
         classroomId: groupForm.classroomId,
         capacity: parseInt(groupForm.capacity) || undefined,
         schedules: groupForm.schedules,
@@ -128,7 +135,7 @@ export function PlanningPage() {
     if (!editingGroup) return;
     try {
       await subjectGroupsApi.update(editingGroup.id, {
-        teacherId: groupForm.teacherId || undefined,
+        teacherId: groupForm.teacherId || null,
         classroomId: groupForm.classroomId,
         capacity: parseInt(groupForm.capacity) || undefined,
       });
@@ -142,7 +149,7 @@ export function PlanningPage() {
   };
 
   const handleDeleteGroup = async (id: string) => {
-    if (!confirm('¿Eliminar este grupo? Se eliminarán sus horarios.')) return;
+    if (!(await confirm('¿Eliminar este grupo? Se eliminarán sus horarios.'))) return;
     try {
       await subjectGroupsApi.remove(id);
       toast.success('Grupo eliminado');
@@ -165,7 +172,7 @@ export function PlanningPage() {
   };
 
   const handleDeleteSchedule = async (groupId: string, scheduleId: string) => {
-    if (!confirm('¿Eliminar este horario?')) return;
+    if (!(await confirm('¿Eliminar este horario?'))) return;
     try {
       await subjectGroupsApi.removeSchedule(groupId, scheduleId);
       toast.success('Horario eliminado');
@@ -203,7 +210,7 @@ export function PlanningPage() {
   };
 
   const handleDeleteTeacher = async (id: string) => {
-    if (!confirm('¿Desactivar este docente?')) return;
+    if (!(await confirm('¿Desactivar este docente?'))) return;
     try {
       await teachersApi.remove(id);
       toast.success('Docente desactivado');
@@ -249,7 +256,7 @@ export function PlanningPage() {
   };
 
   const handleDeleteClassroom = async (id: string) => {
-    if (!confirm('¿Desactivar este salón?')) return;
+    if (!(await confirm('¿Desactivar este salón?'))) return;
     try {
       await classroomsApi.remove(id);
       toast.success('Salón desactivado');
@@ -357,7 +364,7 @@ export function PlanningPage() {
         {tab === 'groups' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <select
+              <SearchableSelect
                 value={selectedCycle}
                 onChange={(e) => setSelectedCycle(e.target.value)}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-upam-primary focus:outline-none"
@@ -365,7 +372,7 @@ export function PlanningPage() {
                 {cycles.map((c) => (
                   <option key={c.id} value={c.id}>{c.name} - {c.year}</option>
                 ))}
-              </select>
+              </SearchableSelect>
               <Button onClick={openCreateGroup}>
                 <Plus size={16} className="mr-2" /> Nuevo Grupo
               </Button>
@@ -530,7 +537,7 @@ export function PlanningPage() {
             <>
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Materia *</label>
-                <select
+                <SearchableSelect
                   value={groupForm.subjectId}
                   onChange={(e) => setGroupForm({ ...groupForm, subjectId: e.target.value })}
                   required
@@ -540,7 +547,7 @@ export function PlanningPage() {
                   {subjects.map((s) => (
                     <option key={s.id} value={s.id}>{s.code} - {s.name}</option>
                   ))}
-                </select>
+                </SearchableSelect>
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Ciclo</label>
@@ -555,32 +562,32 @@ export function PlanningPage() {
           )}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Docente</label>
-            <select
+            <SearchableSelect
               value={groupForm.teacherId}
               onChange={(e) => setGroupForm({ ...groupForm, teacherId: e.target.value })}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
             >
               <option value="">Sin docente</option>
-              {teachers.map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
+              {teachers.filter(t => t.isActive || t.id === groupForm.teacherId).map((t) => (
+                <option key={t.id} value={t.id} disabled={!t.isActive}>{t.name}{!t.isActive ? ' (Inactivo)' : ''}</option>
               ))}
-            </select>
+            </SearchableSelect>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Salón *</label>
-            <select
+            <SearchableSelect
               value={groupForm.classroomId}
               onChange={(e) => setGroupForm({ ...groupForm, classroomId: e.target.value })}
               required
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
             >
               <option value="">Seleccionar salón</option>
-              {classrooms.map((c) => (
-                <option key={c.id} value={c.id}>{c.name} (Capacidad {c.capacity})</option>
+              {classrooms.filter(c => c.isActive || c.id === groupForm.classroomId).map((c) => (
+                <option key={c.id} value={c.id} disabled={!c.isActive}>{c.name} (Capacidad {c.capacity}){!c.isActive ? ' (Inactivo)' : ''}</option>
               ))}
-            </select>
+            </SearchableSelect>
             <p className="mt-1 text-xs text-gray-500">
-              La capacidad del grupo no podra exceder la del salón seleccionado
+              Solo se asignan docentes y salones activos, sin cruces de horario. La capacidad no puede exceder la del salón.
             </p>
           </div>
           <Input
@@ -598,7 +605,7 @@ export function PlanningPage() {
               <div className="space-y-2">
                 {groupForm.schedules.map((s, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <select
+                    <SearchableSelect
                       value={s.dayOfWeek}
                       onChange={(e) => {
                         const schedules = [...groupForm.schedules];
@@ -610,7 +617,7 @@ export function PlanningPage() {
                       {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map((d) => (
                         <option key={d} value={d}>{getDayName(d)}</option>
                       ))}
-                    </select>
+                    </SearchableSelect>
                     <input
                       type="time"
                       value={s.startTime}
@@ -729,7 +736,7 @@ export function PlanningPage() {
         <form onSubmit={handleAddSchedule} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Dia *</label>
-            <select
+            <SearchableSelect
               value={scheduleForm.dayOfWeek}
               onChange={(e) => setScheduleForm({ ...scheduleForm, dayOfWeek: e.target.value })}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -737,7 +744,7 @@ export function PlanningPage() {
               {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map((d) => (
                 <option key={d} value={d}>{getDayName(d)}</option>
               ))}
-            </select>
+            </SearchableSelect>
           </div>
           <div className="flex gap-3">
             <Input

@@ -1,3 +1,5 @@
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { useDialog } from '@/context/DialogContext';
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Card } from '@/components/ui/Card';
@@ -28,6 +30,7 @@ interface CreateForm {
 }
 
 export function PensumPage() {
+  const { confirm } = useDialog();
   const [careers, setCareers] = useState<Career[]>([]);
   const [career, setCareer] = useState('');
   const [pensum, setPensum] = useState<Pensum | null>(null);
@@ -123,7 +126,7 @@ export function PensumPage() {
   };
 
   const handleDeactivate = async (s: PensumSubject) => {
-    if (!confirm(`¿Desactivar ${s.code} - ${s.name} del pensum?`)) return;
+    if (!(await confirm(`¿Desactivar ${s.code} - ${s.name} del pensum?`))) return;
     try {
       await subjectsApi.remove(s.id);
       toast.success('Materia desactivada');
@@ -176,7 +179,7 @@ export function PensumPage() {
             <div className="flex flex-wrap items-end gap-3">
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Carrera</label>
-                <select
+                <SearchableSelect
                   value={career}
                   onChange={(e) => setCareer(e.target.value)}
                   className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -184,7 +187,7 @@ export function PensumPage() {
                   {careers.map((c) => (
                     <option key={c.id} value={c.name}>{c.name}</option>
                   ))}
-                </select>
+                </SearchableSelect>
               </div>
               <Button
                 variant="outline"
